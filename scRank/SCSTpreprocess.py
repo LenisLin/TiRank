@@ -35,7 +35,7 @@ def perform_magic_preprocessing(input_data, require_normalization=True):
 
 def calculate_cells_similarity(input_data, require_normalization=True):
 
-    # The input is a pandas DataFrame where rows represent genes and columns represent cells.
+    # The input is a anndata object where rows represent genes and columns represent cells.
 
     # If the data needs normalization (require_normalization=True), then normalization is performed.
 
@@ -65,6 +65,32 @@ def calculate_cells_similarity(input_data, require_normalization=True):
     print(f"Cell similarity network done!")
 
     return similarity_df
+
+# This function calculates the cell subpopulation mean rank.
+def calculate_populations_meanRank(input_data, category):
+    """
+    Calculates the mean of features for each cell subpopulation (category)
+
+    Args:
+        input_data (DataFrame): Input dataframe where rows are different samples and columns are features.
+        category (Series): A series indicating the category of each sample.
+
+    Returns:
+        DataFrame: A dataframe where rows represent categories and columns represent the mean of features for that category.
+    """
+
+    # First, ensure the category Series has the same index as the input_data DataFrame
+    category.index = input_data.index
+
+    # Combine the category series with input dataframe
+    input_data_combined = pd.concat([input_data, category.rename('Category')], axis=1)
+
+    # Now group by the 'Category' column and find the mean of each group
+    meanrank_df = input_data_combined.groupby('Category').mean()
+
+    print(f"Cell subpopulation mean feature calculation done!")
+
+    return meanrank_df
 
 # This function computes the cell similarity network for spatial transcriptomics data.
 # The function also calculates the Euclidean distances between spatial positions of cells.

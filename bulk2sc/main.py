@@ -59,7 +59,16 @@ scPath = "/mnt/data/lyx/scRankv2/data/scRNAseq/CRC/"
 scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE144735.h5ad"))
 
 # Preprocessing scRNA-seq data
+# scAnndata_magic = perform_magic_preprocessing(scAnndata,require_normalization=True)
+similarity_df = calculate_cells_similarity(
+    input_data=scAnndata, require_normalization=True)
+with open(os.path.join(savePath, 'similarity_df.pkl'), 'wb') as f:
+    pickle.dump(similarity_df, f)
+f.close()
 
+f = open(os.path.join(savePath, 'similarity_df.pkl'), 'rb')
+similarity_df = pickle.load(f)
+f.close()
 
 # Get gene-pairs matrix
 scExp = pd.DataFrame(scAnndata.X.T)  # 这里的接口很难受，得再调一下
@@ -80,10 +89,7 @@ GPextractor = GenePairExtractor(
 
 bulk_gene_pairs_mat, single_cell_gene_pairs_mat = GPextractor.run_extraction()
 bulk_gene_pairs_mat = pd.DataFrame(bulk_gene_pairs_mat.T)
-
 single_cell_gene_pairs_mat = pd.DataFrame(single_cell_gene_pairs_mat.T)
-single_cell_gene_pairs_mat = calculate_populations_meanRank(
-    single_cell_gene_pairs_mat, scAnndata.obs["Cell_subtype"])
 
 with open(os.path.join(savePath, 'bulk_gene_pairs_mat.pkl'), 'wb') as f:
     pickle.dump(bulk_gene_pairs_mat, f)
@@ -101,6 +107,10 @@ f = open(os.path.join(savePath, 'single_cell_gene_pairs_mat.pkl'), 'rb')
 single_cell_gene_pairs_mat = pickle.load(f)
 f.close()
 
+# expand bulk data
+# expand_times = (single_cell_gene_pairs_mat.shape[0] / bulk_gene_pairs_mat.shape[0] )/ (2048/256)
+# expand_times = int(expand_times)+1
+
 # Define your train_loader and test_loader here
 train_dataset_Bulk = BulkDataset(
     bulk_gene_pairs_mat, bulkClinical, mode="Cox", expand_times=1)
@@ -111,7 +121,7 @@ train_loader_Bulk = DataLoader(
     train_dataset_Bulk, batch_size=256, shuffle=False)
 
 # Use a larger batch size for X_b since it has more samples
-train_loader_SC = DataLoader(train_dataset_SC, batch_size=2048, shuffle=False)
+train_loader_SC = DataLoader(train_dataset_SC, batch_size=2048, shuffle=True)
 
 # training
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -131,20 +141,22 @@ optimizer = Adam(model.parameters(), lr=0.001)
 scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
 
 # Hyperparameters for the losses
-alphas = [2, 1, 0.1]
+alphas = [5, 1, 1, 1]
 
 # Assign the mode of analysis
-infer_mode = "Subpopulation"
+infer_mode = "Cell"
+if infer_mode == "Cell":
+    adj_A = torch.from_numpy(similarity_df.values)
 
-n_epochs = 100
+n_epochs = 40
 
 for epoch in range(n_epochs):
     train_loss = Train_one_epoch(
         model=model,
         dataloader_A=train_loader_Bulk, dataloader_B=train_loader_SC,
         pheno="Cox", infer_mode=infer_mode,
-        adj_A=None,
-        optimizer=optimizer, alphas=alphas, device=device)  # infer_type = "SC",
+        adj_A=adj_A,
+        optimizer=optimizer, alphas=alphas, device=device)
 
     # Step the scheduler
     scheduler.step()
@@ -157,11 +169,11 @@ torch.save(model.state_dict(), "model.pt")
 
 # save model
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
-               nhid2=8, n_output=32, nlayers=3, dropout=0.5, encoder_type="DenseNet")
+               nhid2=8, n_output=32, nlayers=3, dropout=0.5, encoder_type="MLP")
 model.load_state_dict(torch.load("./model.pt"))
 model = model.to("cpu")
 
 Predict(model, bulk_gene_pairs_mat,
         bulk_gene_pairs_mat.index.tolist(), "./GSE39582_riskScore.csv")
 Predict(model, single_cell_gene_pairs_mat,
-        single_cell_gene_pairs_mat.index.tolist(), "./GSE144735_riskScore.csv")
+        scAnndata.obs.index.tolist(), "./GSE144735_riskScore.csv")

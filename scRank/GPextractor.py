@@ -11,7 +11,7 @@ from statsmodels.stats.multitest import multipletests
 
 
 class GenePairExtractor():
-    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes, top_gene_pairs, p_value_threshold, max_cutoff, min_cutoff):
+    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes = 500, top_gene_pairs = 2000, p_value_threshold = 0.05, max_cutoff = 0.8, min_cutoff = 0.2):
         self.bulk_expression = bulk_expression
         self.clinical_data = clinical_data
         self.single_cell_expression = single_cell_expression
@@ -63,7 +63,7 @@ class GenePairExtractor():
 
         # Transform the single-cell gene pairs
         single_cell_gene_pairs_mat = self.transform_single_cell_gene_pairs(
-            bulk_gene_pairs)
+            bulk_gene_pairs_mat)
 
         print(f"Profile transformation done.")
 
@@ -85,10 +85,10 @@ class GenePairExtractor():
 
     def calculate_binomial_gene_pairs(self):
         # Calculate group means and perform t-test
-        group_labels = self.clinical_data['group']
+        group_labels = self.clinical_data.iloc[:,1]
 
-        group_NR = self.bulk_expression[group_labels == "NR"]
-        group_R = self.bulk_expression[group_labels == "R"]
+        group_NR = self.bulk_expression[group_labels == "0"]
+        group_R = self.bulk_expression[group_labels == "1"]
 
         t_stat, p_value = ttest_ind(group_NR, group_R)
 
@@ -150,7 +150,7 @@ class GenePairExtractor():
             columns=["gene", "correlation", "pvalue"])
         for i in range(self.bulk_expression.shape[0]):
             exp_gene = self.bulk_expression.iloc[i, :].astype(float)
-            correlation, pvalue = pearsonr(exp_gene, self.bulk_cli)
+            correlation, pvalue = pearsonr(exp_gene, self.clinical_data.iloc[:,1])
 
             correlation_results = correlation_results.append(
                 {"gene": self.bulk_expression.index[i], "correlation": correlation, "pvalue": pvalue}, ignore_index=True)
