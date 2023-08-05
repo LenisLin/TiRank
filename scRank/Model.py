@@ -117,50 +117,70 @@ class MLPEncoderModel(nn.Module):
 
 
 class RiskscorePredictor(nn.Module):
-    def __init__(self, n_features, nhid, dropout=0.5):
+    def __init__(self, n_features, nhid, nhout=1, dropout=0.5):
         super(RiskscorePredictor, self).__init__()
         self.RiskscoreMLP = nn.Sequential(
-            # nn.Linear(n_features, nhid),
-            # nn.LeakyReLU(),
-            # nn.Dropout(dropout),
-            # nn.Linear(nhid, nhid),
-            # nn.LeakyReLU(),
-            # nn.Dropout(dropout),
-            # nn.Linear(nhid, 1),
-            nn.Linear(n_features, 1),
+            nn.Linear(n_features, nhid),
+            nn.LeakyReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(nhid, nhid),
+            nn.LeakyReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(nhid, nhout),
+            # nn.Linear(n_features, 1),
         )
 
     def forward(self, embedding):
         risk_score = torch.sigmoid(self.RiskscoreMLP(embedding))
         return risk_score.squeeze()
 
+# Bionomial Predictor
+
+
+class ClassscorePredictor(nn.Module):
+    def __init__(self, n_features, nhid, nhout=2, dropout=0.5):
+        super(ClassscorePredictor, self).__init__()
+        self.ClassscoreMLP = nn.Sequential(
+            nn.Linear(n_features, nhid),
+            nn.LeakyReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(nhid, nhid),
+            nn.LeakyReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(nhid, nhout),
+        )
+
+    def forward(self, embedding):
+        proba_score = self.ClassscoreMLP(embedding)
+        return proba_score
+
 
 # Confidence score Predictor
 
 
-class ConfidencescorePredictor(nn.Module):
-    def __init__(self, n_features, nhid, dropout=0.5):
-        super(ConfidencescorePredictor, self).__init__()
-        self.ConfidencescoreMLP = nn.Sequential(
-            # nn.Linear(n_features, nhid),
-            # nn.LeakyReLU(),
-            # nn.Dropout(dropout),
-            # nn.Linear(nhid, nhid),
-            # nn.LeakyReLU(),
-            # nn.Dropout(dropout),
-            # nn.Linear(nhid, 1),
-            nn.Linear(n_features, 1),
-        )
+# class ConfidencescorePredictor(nn.Module):
+#     def __init__(self, n_features, nhid, dropout=0.5):
+#         super(ConfidencescorePredictor, self).__init__()
+#         self.ConfidencescoreMLP = nn.Sequential(
+#             # nn.Linear(n_features, nhid),
+#             # nn.LeakyReLU(),
+#             # nn.Dropout(dropout),
+#             # nn.Linear(nhid, nhid),
+#             # nn.LeakyReLU(),
+#             # nn.Dropout(dropout),
+#             # nn.Linear(nhid, 1),
+#             nn.Linear(n_features, 1),
+#         )
 
-    def forward(self, embedding):
-        confidence_score = torch.tanh(self.ConfidencescoreMLP(embedding))
-        return confidence_score.squeeze()
+#     def forward(self, embedding):
+#         confidence_score = torch.tanh(self.ConfidencescoreMLP(embedding))
+#         return confidence_score.squeeze()
 
 # Main network
 
 
 class scRank(nn.Module):
-    def __init__(self, n_features, nhead, nhid1, nhid2, nlayers, n_output, dropout=0.5, encoder_type="MLP"):
+    def __init__(self, n_features, nhead, nhid1, nhid2, nlayers, n_output, n_pred=1, dropout=0.5, mode="Cox", encoder_type="MLP"):
         super(scRank, self).__init__()
         self.encoder_type = encoder_type
 
@@ -174,12 +194,18 @@ class scRank(nn.Module):
             self.encoder = DenseNetEncoderModel(
                 n_features, nhid1, nlayers, n_output, dropout)
 
-        self.riskscorepredictor = RiskscorePredictor(n_output, nhid2, dropout)
-        self.confidencescorepredictor = ConfidencescorePredictor(n_output, nhid2, dropout)
+        if mode in ["Cox", "Regression"]:
+            self.predictor = RiskscorePredictor(
+                n_output, nhid2, n_pred, dropout)
+
+        if mode == "Bionomial":
+            self.predictor = ClassscorePredictor(
+                n_output, nhid2, n_pred, dropout)
+        # self.confidencescorepredictor = ConfidencescorePredictor(n_output, nhid2, dropout)
 
     def forward(self, x):
         embedding = self.encoder(x)
-        risk_score = self.riskscorepredictor(embedding)
-        confidence_score = self.confidencescorepredictor(embedding)
+        risk_score = self.predictor(embedding)
+        # confidence_score = self.confidencescorepredictor(embedding)
 
-        return embedding, risk_score, confidence_score
+        return embedding, risk_score

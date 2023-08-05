@@ -11,7 +11,7 @@ from statsmodels.stats.multitest import multipletests
 
 
 class GenePairExtractor():
-    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes = 500, top_gene_pairs = 2000, p_value_threshold = 0.05, max_cutoff = 0.8, min_cutoff = 0.2):
+    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes=500, top_gene_pairs=2000, p_value_threshold=0.05, max_cutoff=0.8, min_cutoff=0.2):
         self.bulk_expression = bulk_expression
         self.clinical_data = clinical_data
         self.single_cell_expression = single_cell_expression
@@ -85,24 +85,33 @@ class GenePairExtractor():
 
     def calculate_binomial_gene_pairs(self):
         # Calculate group means and perform t-test
-        group_labels = self.clinical_data.iloc[:,1]
+        group_labels = self.clinical_data.iloc[:, 0]
+        group_NR = self.bulk_expression.loc[:, group_labels == 0]
+        group_R = self.bulk_expression.loc[:, group_labels == 1]
 
-        group_NR = self.bulk_expression[group_labels == "0"]
-        group_R = self.bulk_expression[group_labels == "1"]
+        # Calculate t-tests and log fold changes
+        p_values = []
+        t_stats = []
+        logFCs = []
 
-        t_stat, p_value = ttest_ind(group_NR, group_R)
+        for gene in self.bulk_expression.index:
+            t_stat, p_value = ttest_ind(group_NR.loc[gene], group_R.loc[gene])
+            t_stats.append(t_stat)
+            p_values.append(p_value)
 
-        # Compute log fold change
-        mean_NR = group_NR.mean(axis=1)
-        mean_R = group_R.mean(axis=1)
-        logFC = np.log2(mean_R / mean_NR)
+            mean_NR = group_NR.loc[gene].mean()
+            mean_R = group_R.loc[gene].mean()
+
+            # Add a small constant to avoid division by zero
+            logFC = np.log2((mean_R + 1e-10) / (mean_NR + 1e-10))
+            logFCs.append(logFC)
 
         # Store the results in a DataFrame
         DEGs = pd.DataFrame({
-            'logFC': logFC,
+            'logFC': logFCs,
             'AveExpr': self.bulk_expression.mean(axis=1),
-            't': t_stat,
-            'P.Value': p_value,
+            't': t_stats,
+            'P.Value': p_values,
             'gene': self.bulk_expression.index
         })
 
@@ -150,7 +159,8 @@ class GenePairExtractor():
             columns=["gene", "correlation", "pvalue"])
         for i in range(self.bulk_expression.shape[0]):
             exp_gene = self.bulk_expression.iloc[i, :].astype(float)
-            correlation, pvalue = pearsonr(exp_gene, self.clinical_data.iloc[:,1])
+            correlation, pvalue = pearsonr(
+                exp_gene, self.clinical_data.iloc[:, 0])
 
             correlation_results = correlation_results.append(
                 {"gene": self.bulk_expression.index[i], "correlation": correlation, "pvalue": pvalue}, ignore_index=True)
@@ -218,7 +228,7 @@ class GenePairExtractor():
         # Create result DataFrame
         result_df = pd.DataFrame(
             result, index=bulk_GPMat.index, columns=self.single_cell_expression.columns)
-            
+
         return result_df
 
     def split_gene_pairs(self, gene_pairs):

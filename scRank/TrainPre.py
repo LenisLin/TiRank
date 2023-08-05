@@ -1,8 +1,11 @@
 
+from itertools import count
 import torch
 
 import pandas as pd
 import numpy as np
+
+from sklearn.mixture import GaussianMixture
 
 from Loss import *
 
@@ -48,8 +51,8 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
         optimizer.zero_grad()
 
         # Forward pass
-        embeddings_a, risk_scores_a, condidence_scores_a = model(X_a)
-        embeddings_b, _, _ = model(X_b)
+        embeddings_a, risk_scores_a = model(X_a)
+        embeddings_b, _ = model(X_b)
 
         # Calculate loss
         if pheno == 'Cox':
@@ -63,24 +66,21 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 
         if infer_mode == 'Subpopulation':
             mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
-            rejection_loss_ = rejection_loss(condidence_scores_a, e)
 
             # total loss
 
             total_loss = bulk_loss_ * \
-                alphas[0] + mmd_loss_ * \
-                alphas[1] + rejection_loss_ * alphas[2]
+                alphas[0] + mmd_loss_ * alphas[2]
 
         elif infer_mode in ['Cell', 'Spot']:
             cosine_loss_ = cosine_loss(embeddings_b, A)
             mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
-            rejection_loss_ = rejection_loss(condidence_scores_a, e)
 
             # total loss
 
-            total_loss = bulk_loss_ * \
-                alphas[0] + cosine_loss_ * alphas[1] + mmd_loss_ * \
-                alphas[2] + rejection_loss_ * alphas[3]
+            total_loss = bulk_loss_ * alphas[0] + \
+                cosine_loss_ * alphas[1] + \
+                mmd_loss_ * alphas[2]
 
         # Backward pass and optimization
         total_loss.backward()
@@ -93,27 +93,72 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 # Predict
 
 
-def Predict(model, Exp, rownames, filePath):
+def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True):
     model.eval()
 
-    Exp_Tensor = torch.from_numpy(np.array(Exp))
-    Exp_Tensor = torch.tensor(Exp_Tensor, dtype=torch.float32)
-    embeddings, risk_scores, confidence_scores = model(Exp_Tensor)
+    # Predict on cell
+    Exp_Tensor_sc = torch.from_numpy(np.array(sc_GPmat))
+    Exp_Tensor_sc = torch.tensor(Exp_Tensor_sc, dtype=torch.float32)
+    embeddings_sc, pred_sc = model(Exp_Tensor_sc)
 
-    embeddings = embeddings.detach().numpy()
-    risk_scores = risk_scores.detach().numpy().reshape(-1, 1)
-    confidence_scores = confidence_scores.detach().numpy().reshape(-1, 1)
+    # Predict on bulk
+    Exp_Tensor_bulk = torch.from_numpy(np.array(bulk_GPmat))
+    Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
+    _, pred_bulk = model(Exp_Tensor_bulk)
+
+    if mode == "Cox":
+        pred_bulk = pred_bulk.detach().numpy().reshape(-1, 1)
+        pred_sc = pred_sc.detach().numpy().reshape(-1, 1)
+
+    if mode == "Bionomial":
+        pred_sc = torch.nn.functional.softmax(
+            pred_sc)[:, 1].detach().numpy().reshape(-1, 1)
+
+        pred_bulk = torch.nn.functional.softmax(
+            pred_bulk)[:, 1].detach().numpy().reshape(-1, 1)
+
+    embeddings = embeddings_sc.detach().numpy()
+
+    if do_reject:
+        reject_mask = Reject(pred_sc)
+        print(
+            f"Reject {int(sum(reject_mask))}({int(sum(reject_mask)) / len(reject_mask) :.2f}%) cells.")
 
     saveDF = pd.DataFrame(data=np.concatenate(
-        (confidence_scores, risk_scores, embeddings), axis=1), index=Exp.index)
+        (reject_mask, pred_sc, embeddings), axis=1), index=sc_GPmat.index)
 
-    colnames = ["Confidence_score", "Risk_score"]
+    colnames = ["Reject", "Pred_score"]
     colnames.extend(["embedding_" + str(i + 1)
                     for i in range(embeddings.shape[1])])
 
     saveDF.columns = colnames
-    saveDF.index = rownames
+    saveDF.index = sc_rownames
 
-    saveDF.to_csv(filePath)
+    return saveDF
 
-    return None
+# Reject
+
+
+def Reject(pred_sc):
+    # Fit a GMM with 2 components on bulk
+    # gmm_bulk = GaussianMixture(n_components=2, random_state=0).fit(pred_bulk)
+
+    # Fit a GMM with 3 components on sc / spot
+    gmm_sc = GaussianMixture(n_components=3, random_state=0).fit(pred_sc)
+
+    # Print the means and covariances
+    print("Means of the gaussians in gmm_sc: ", gmm_sc.means_)
+    print("Covariances of the gaussians in gmm_sc: ", gmm_sc.covariances_)
+
+    # Find the component whose mean is nearest to 0.5
+    diffs = np.abs(gmm_sc.means_ - 0.5)
+    nearest_component = np.argmin(diffs)
+
+    # The mask of those rejection cell
+    labels_sc = gmm_sc.predict(pred_sc)
+
+    mask = np.zeros(shape=(len(labels_sc), 1))
+
+    mask[labels_sc == nearest_component] = 1
+
+    return mask

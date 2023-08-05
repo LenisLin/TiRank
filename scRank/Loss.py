@@ -24,8 +24,12 @@ def cox_loss(pred, t, e, margin=0.1):
     # Compute pairwise time differences
     time_diffs = t.unsqueeze(1) - t.unsqueeze(0)
 
-    # Get a mask for pairs where both events occurred, and the first occurred earlier
-    mask = (e == 1) & (time_diffs < 0)
+    # Compute pairwise event differences
+    event_diffs = e.unsqueeze(1) - e.unsqueeze(0)
+
+    # Get a mask for pairs where both events occurred, and the first occurred earlier, or where the first is censored
+    # but has a longer observed survival time than the second who experienced the event.
+    mask = ((e == 1) | (event_diffs == 1)) & (time_diffs < 0)
 
     # Compute the loss for these pairs, incorporating the margin
     losses = torch.log(1 + torch.exp(-(pred_diffs[mask] - margin)))
@@ -87,7 +91,7 @@ def mmd_loss(embeddings_A, embeddings_B):
         embeddings_A (Tensor), embeddings_B (Tensor): Input tensors containing embeddings
 
     Returns:
-        Tensor: MMD loss, scalar
+        Tensor: MMD loss for each sample in embeddings_B, tensor of shape (embeddings_B.shape[0],)
     """
     kernel_matrix_A = gaussian_kernel(embeddings_A, embeddings_A)
     kernel_matrix_B = gaussian_kernel(embeddings_B, embeddings_B)
@@ -133,27 +137,3 @@ def MSE_loss(y_pred, y_true):
     loss = loss_fn(y_pred, y_true)
 
     return loss
-
-
-def rejection_loss(condidence_score, e):
-    """
-    Calculates a rejection loss based on confidence scores and event indicators.
-
-    Args:
-        confidence_score (Tensor): Confidence score, tensor of shape [batch_size]
-        e (Tensor): Event indicators (1 if event occurred, 0 otherwise), tensor of shape [batch_size]
-
-    Returns:
-        Tensor: Rejection loss, scalar
-    """
-    mask1 = (e == 1)
-    diff1 = torch.ones_like(condidence_score).to(
-        condidence_score.device) - condidence_score
-
-    mask0 = (e == 0)
-    diff0 = (-1) * torch.ones_like(condidence_score).to(
-        condidence_score.device) - condidence_score
-
-    reject_loss = torch.mean(diff1[mask1] ** 2) + torch.mean(diff0[mask0] ** 2)
-
-    return reject_loss
