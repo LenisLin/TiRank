@@ -34,7 +34,7 @@ if not (os.path.exists(savePath)):
 
 # load clinical data
 bulkClinical = pd.read_table(os.path.join(dataPath,
-                                          "RNAseq_treatment/Cellline/GDSC_Erlotinib_meta.csv"), sep=",")
+                                          "RNAseq_treatment/Cellline/GDSC_Gefitinib_meta.csv"), sep=",")
 bulkClinical.head()
 
 bulkClinical.columns = ["ID","Group"]
@@ -43,28 +43,41 @@ del bulkClinical["ID"]
 
 # load bulk expression profile
 bulkExp = pd.read_csv(os.path.join(
-    dataPath, "RNAseq_treatment/Cellline/GDSC_Erlotinib_exp.csv"), index_col=0)
+    dataPath, "RNAseq_treatment/Cellline/GDSC_Gefitinib_exp.csv"), index_col=0)
 
 bulkExp.shape
 bulkExp.iloc[0:5,0:5]
 
+# subset = False
+# if subset:
+#     n_samples = bulkClinical.shape[0] # get number of rows
+#     n_samples_to_pick = int(n_samples * 0.5) # get 50% of the number of rows
+
+#     random_indices = np.random.choice(n_samples, size=n_samples_to_pick, replace=False)
+#     idx_0 = np.where(bulkClinical["Group"] == 0)[0]
+
+#     idx = np.unique(np.concatenate((random_indices,idx_0),axis = 0)) 
+
+#     bulkExp = bulkExp.iloc[:,idx]
+#     bulkClinical = bulkClinical.iloc[idx,:]
+
 # load RNA-seq and scRNA-seq expression profile
 scPath = "/mnt/data/lyx/scRankv2/data/scRNAseq/Cellline/"
-scExp = pd.read_csv(os.path.join(scPath,"GSE149383_10x_exp.csv"),index_col=0)
-scClinical = pd.read_csv(os.path.join(scPath,"GSE149383_10x_meta.csv"),index_col=0)
+scExp = pd.read_csv(os.path.join(scPath,"GSE112274_exp.csv"),index_col=0)
+scClinical = pd.read_csv(os.path.join(scPath,"GSE112274_meta.csv"),index_col=0)
 
 scExp_ = scExp.T
 scExp_.index = scClinical.index
 scAnndata = sc.AnnData(X=scExp_,obs=scClinical)
 del scExp,scClinical,scExp_
 
-# scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE149383_10x.h5ad"))
-scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE149383_10x.h5ad"))
+# scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE117872_Primary.h5ad"))
+scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE117872_Primary.h5ad"))
 
 # Preprocessing scRNA-seq data
 # scAnndata_magic = perform_magic_preprocessing(scAnndata,require_normalization=True)
 similarity_df = calculate_cells_similarity(
-    input_data=scAnndata, require_normalization=True)
+    input_data=scAnndata, require_normalization=False)
 with open(os.path.join(savePath, 'similarity_df.pkl'), 'wb') as f:
     pickle.dump(similarity_df, f)
 f.close()
@@ -132,7 +145,7 @@ train_loader_SC = DataLoader(train_dataset_SC, batch_size=1024, shuffle=True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Define your model here
-encoder_type = "MLP"
+encoder_type = "DenseNet"
 mode = "Bionomial"
 
 # model = TransformerEncoderModel(n_features = bulk_gene_pairs_mat.shape[1], nhead = 2, nhid = 32, nlayers = 2, n_output = 8, dropout=0.5)
@@ -144,7 +157,7 @@ model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
 model = model.to(device)
 
 # Hyperparameters for the losses
-alphas = [2, 1, 1, 1]
+alphas = [1, 1, 1]
 
 # Assign the mode of analysis
 infer_mode = "Cell"
@@ -153,10 +166,10 @@ if infer_mode == "Cell":
 
 
 # Training
-optimizer = Adam(model.parameters(), lr=0.001)
+optimizer = Adam(model.parameters(), lr=0.003)
 scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
 
-n_epochs = 40
+n_epochs = 500
 
 for epoch in range(n_epochs):
     train_loss = Train_one_epoch(
@@ -182,7 +195,7 @@ model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
 model.load_state_dict(torch.load("./model.pt"))
 model = model.to("cpu")
 
-sc_PredDF = Predict(model, bulk_GPmat = bulk_gene_pairs_mat, sc_GPmat = single_cell_gene_pairs_mat, mode = "Bionomial", sc_rownames = scAnndata.obs.index.tolist(), do_reject = True)
+sc_PredDF = Predict(model, bulk_GPmat = bulk_gene_pairs_mat, sc_GPmat = single_cell_gene_pairs_mat, mode = "Bionomial", sc_rownames = scAnndata.obs.index.tolist(), do_reject = True, tolerance = 0.05)
 
 ## Test
 Exp_sc = single_cell_gene_pairs_mat
@@ -203,16 +216,16 @@ pred_prob_bulk = torch.nn.functional.softmax(prob_bulkores_bulk)[:,1].detach().n
 
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 import matplotlib.pyplot as plt
 
 # Assuming df is your dataframe, and 'Group' column is true labels and 'PredClass' column is predicted labels
 true_labels_sc = scAnndata.obs["response"]
 predicted_labels_sc = pred_label_sc
 
-# mask = (sc_PredDF.iloc[:,0] == 0)
-# true_labels_sc = true_labels_sc[mask]
-# predicted_labels_sc = predicted_labels_sc[mask]
+mask = (sc_PredDF.iloc[:,0] == 0)
+true_labels_sc = true_labels_sc[mask]
+predicted_labels_sc = predicted_labels_sc[mask]
 
 true_labels_bulk = bulkClinical["Group"]
 predicted_labels_bulk = pred_label_bulk
@@ -223,9 +236,11 @@ if True:
 
     # First heatmap
     cm = confusion_matrix(true_labels_sc, predicted_labels_sc)
+    accuracy = accuracy_score(true_labels_sc, predicted_labels_sc)
     precision = precision_score(true_labels_sc, predicted_labels_sc)
     recall = recall_score(true_labels_sc, predicted_labels_sc)
 
+    print(f'Single cell Accuracy: {accuracy}')
     print(f'Single cell Precision: {precision}')
     print(f'Single cell Recall: {recall}')
 
@@ -237,9 +252,11 @@ if True:
 
     # Second heatmap
     cm = confusion_matrix(true_labels_bulk, predicted_labels_bulk)
+    accuracy = accuracy_score(true_labels_bulk, predicted_labels_bulk)
     precision = precision_score(true_labels_bulk, predicted_labels_bulk)
     recall = recall_score(true_labels_bulk, predicted_labels_bulk)
 
+    print(f'Bulk Accuracy: {accuracy}')
     print(f'Bulk Precision: {precision}')
     print(f'Bulk Recall: {recall}')
 
@@ -250,7 +267,7 @@ if True:
     ax[1].set_ylabel('Actual')
 
     # Save the entire figure as a .png
-    fig.savefig('cell treatment (without reject) - both.png')
+    fig.savefig('cell treatment (reject) - both.png')
 
     plt.show()
     plt.close()

@@ -127,7 +127,7 @@ class RiskscorePredictor(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout(dropout),
             nn.Linear(nhid, nhout),
-            # nn.Linear(n_features, 1),
+            # nn.Linear(n_features, nhout),
         )
 
     def forward(self, embedding):
@@ -148,6 +148,7 @@ class ClassscorePredictor(nn.Module):
             nn.LeakyReLU(),
             nn.Dropout(dropout),
             nn.Linear(nhid, nhout),
+            # nn.Linear(n_features, nhout),
         )
 
     def forward(self, embedding):

@@ -134,7 +134,7 @@ mode = "Cox"
 # model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
 #                nhid2=8, n_output=32, nlayers=3, dropout=0.5, encoder_type="MLP")
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
-               nhid2=8, n_output=32, nlayers=3, n_pred=1, dropout=0.5, mode = mode, encoder_type=encoder_type)
+               nhid2=8, n_output=32, nlayers=3, n_pred=1, dropout=0.5, mode=mode, encoder_type=encoder_type)
 
 model = model.to(device)
 
@@ -147,7 +147,7 @@ if infer_mode == "Cell":
     adj_A = torch.from_numpy(similarity_df.values)
 
 
-## Training
+# Training
 optimizer = Adam(model.parameters(), lr=0.001)
 scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
 
@@ -171,17 +171,16 @@ for epoch in range(n_epochs):
 # save model
 torch.save(model.state_dict(), "model.pt")
 
+mode = "Cox"
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
-               nhid2=8, n_output=32, nlayers=3, n_pred=1, dropout=0.5, mode = mode, encoder_type=encoder_type)
+               nhid2=8, n_output=32, nlayers=3, n_pred=1, dropout=0.5, mode=mode, encoder_type=encoder_type)
 model.load_state_dict(torch.load("./model.pt"))
 model = model.to("cpu")
 
-Predict(model, bulk_gene_pairs_mat,
-        bulk_gene_pairs_mat.index.tolist(), "./GSE39582_riskScore1.csv")
-Predict(model, single_cell_gene_pairs_mat,
-        scAnndata.obs.index.tolist(), "./GSE144735_riskScore.csv")
+sc_PredDF = Predict(model, bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
+                    mode="Bionomial", sc_rownames=scAnndata.obs.index.tolist(), do_reject=True)
 
-## Test
+# Test
 Exp_sc = single_cell_gene_pairs_mat
 Exp_Tensor_sc = torch.from_numpy(np.array(Exp_sc))
 Exp_Tensor_sc = torch.tensor(Exp_Tensor_sc, dtype=torch.float32)
@@ -214,15 +213,18 @@ import seaborn as sns
 import numpy as np
 
 # Assuming df is your dataframe, and 'Group' column is true labels and 'PredClass' column is predicted labels
-## display the prob score distribution
-sns.distplot(risk_scores_bulk, hist = False, kde = True, kde_kws = {'shade': True, 'linewidth': 3}, label='Bulk')
-sns.distplot(risk_scores_sc, hist = False, kde = True, kde_kws = {'shade': True, 'linewidth': 3}, label='Single Cell')
+# display the prob score distribution
+sns.distplot(risk_scores_bulk, hist=False, kde=True, kde_kws={
+             'shade': True, 'linewidth': 3}, label='Bulk')
+sns.distplot(risk_scores_sc, hist=False, kde=True, kde_kws={
+             'shade': True, 'linewidth': 3}, label='Single Cell')
 
 plt.title('Density Plot')
 plt.xlabel('Values')
 plt.ylabel('Density')
 
-plt.legend(title='Sample Type', loc='upper left')  # Move the legend box to upper left
+# Move the legend box to upper left
+plt.legend(title='Sample Type', loc='upper left')
 plt.savefig('cell survival pred risk - both.png')
 
 plt.show()

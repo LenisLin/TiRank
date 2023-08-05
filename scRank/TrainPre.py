@@ -12,7 +12,7 @@ from Loss import *
 # Training
 
 
-def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="Cell", adj_A=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="Cell", adj_A=None, optimizer=None, alphas=[1, 1, 1], device="cpu"):
 
     model.train()
 
@@ -93,7 +93,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 # Predict
 
 
-def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True):
+def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tolerance = 0.05):
     model.eval()
 
     # Predict on cell
@@ -120,9 +120,7 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True):
     embeddings = embeddings_sc.detach().numpy()
 
     if do_reject:
-        reject_mask = Reject(pred_sc)
-        print(
-            f"Reject {int(sum(reject_mask))}({int(sum(reject_mask)) / len(reject_mask) :.2f}%) cells.")
+        reject_mask = Reject(pred_bulk, pred_sc, tolerance = tolerance, max_components=10)
 
     saveDF = pd.DataFrame(data=np.concatenate(
         (reject_mask, pred_sc, embeddings), axis=1), index=sc_GPmat.index)
@@ -139,26 +137,60 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True):
 # Reject
 
 
-def Reject(pred_sc):
-    # Fit a GMM with 2 components on bulk
-    # gmm_bulk = GaussianMixture(n_components=2, random_state=0).fit(pred_bulk)
+def Reject(pred_bulk, pred_sc, tolerance, max_components):
 
-    # Fit a GMM with 3 components on sc / spot
-    gmm_sc = GaussianMixture(n_components=3, random_state=0).fit(pred_sc)
+    gmm_bulk = GaussianMixture(n_components=2, random_state=42).fit(pred_bulk)
 
-    # Print the means and covariances
-    print("Means of the gaussians in gmm_sc: ", gmm_sc.means_)
-    print("Covariances of the gaussians in gmm_sc: ", gmm_sc.covariances_)
+    gmm_bulk_mean_1 = np.max(gmm_bulk.means_)
+    gmm_bulk_mean_0 = np.min(gmm_bulk.means_)
 
-    # Find the component whose mean is nearest to 0.5
-    diffs = np.abs(gmm_sc.means_ - 0.5)
-    nearest_component = np.argmin(diffs)
+    if (gmm_bulk_mean_1 - gmm_bulk_mean_0) <= 0.5:
+        print("Underfitting!")
 
-    # The mask of those rejection cell
-    labels_sc = gmm_sc.predict(pred_sc)
 
-    mask = np.zeros(shape=(len(labels_sc), 1))
+    # Iterate over the number of components
+    for n_components in range(1, max_components + 1):
+        gmm_sc = GaussianMixture(n_components=n_components, random_state=42).fit(pred_sc)
 
-    mask[labels_sc == nearest_component] = 1
+        means = gmm_sc.means_
+
+        # Check if any of the means are close to 0 or 1
+        zero_close = any(abs(mean - gmm_bulk_mean_0)  <= tolerance for mean in means)
+        one_close = any(abs(gmm_bulk_mean_1 - mean) <= tolerance for mean in means)
+
+        if zero_close and one_close:
+            print(f"Found distributions with means close to 0 and 1 with {n_components} components.")
+
+            # # Print the means and covariances
+            # print("Means of the gaussians in gmm_sc: ", gmm_sc.means_)
+            # print("Covariances of the gaussians in gmm_sc: ", gmm_sc.covariances_)
+
+            # Find the component whose mean is nearest to 0 and 1
+            ## 1
+            diffs_1 = gmm_bulk_mean_1 - gmm_sc.means_
+            nearest_component_1 = np.where(diffs_1 <= tolerance)[0]
+
+            ## 0
+            diffs_0 = gmm_sc.means_ - gmm_bulk_mean_0
+            nearest_component_0 = np.where(diffs_0 <= tolerance)[0]
+
+            ## concat
+            remain_component = np.concatenate((nearest_component_1,nearest_component_0))
+
+            # The mask of those rejection cell
+            labels_sc = gmm_sc.predict(pred_sc)
+
+            mask = np.ones(shape=(len(labels_sc), 1))
+
+            mask[np.isin(labels_sc, remain_component)] = 0
+
+            print(f"Reject {int(sum(mask))}({int(sum(mask))*100 / len(mask) :.2f}%) cells.")
+
+            return mask
+
+
+        
+    print(f"Rejection faild.")
+    mask = np.zeros(shape=(len(pred_sc), 1))
 
     return mask
