@@ -11,7 +11,7 @@ from statsmodels.stats.multitest import multipletests
 
 
 class GenePairExtractor():
-    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes=500, top_gene_pairs=2000, p_value_threshold=0.05, max_cutoff=0.8, min_cutoff=0.2):
+    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes=500, top_gene_pairs=2000, , p_value_threshold=None, padj_value_threshold=None, max_cutoff=0.8, min_cutoff=0.2):
         self.bulk_expression = bulk_expression
         self.clinical_data = clinical_data
         self.single_cell_expression = single_cell_expression
@@ -19,6 +19,7 @@ class GenePairExtractor():
         self.top_var_genes = top_var_genes
         self.top_gene_pairs = top_gene_pairs
         self.p_value_threshold = p_value_threshold
+        self.padj_value_threshold = padj_value_threshold
         self.max_cutoff = max_cutoff
         self.min_cutoff = min_cutoff
 
@@ -52,6 +53,10 @@ class GenePairExtractor():
             regulated_genes_r, regulated_genes_p = self.calculate_regression_gene_pairs()
         else:
             raise ValueError(f"Unsupported mode: {self.analysis_mode}")
+
+        if (len(regulated_genes_r) == 0) or (len(regulated_genes_p) == 0):
+            raise ValueError(
+                "A set of genes is empty. Try increasing the 'top_var_genes' value or loosening the 'p.value' threshold.")
 
         print(f"Get candidate gene pairs done.")
 
@@ -115,11 +120,20 @@ class GenePairExtractor():
             'gene': self.bulk_expression.index
         })
 
+        # Drop the row which p_values is NULL
+        DEGs = DEGs.dropna()
+
         # Adjust p-values for multiple testing
         DEGs['adj.P.Val'] = multipletests(DEGs['P.Value'], method='fdr_bh')[1]
 
         # Filter significant genes
-        DEGs = DEGs[DEGs['adj.P.Val'] < self.p_value_threshold]
+        if (self.p_value_threshold is None) and (self.p_value_threshold is not None):
+            DEGs = DEGs[DEGs['adj.P.Val'] < self.padj_value_threshold]
+        elif (self.p_value_threshold is not None) and (self.p_value_threshold is None):
+            DEGs = DEGs[DEGs['P.Value'] < self.p_value_threshold]
+        else:
+            raise ValueError(
+                "The significant value threshold was not defined.")
 
         # Separate up- and down-regulated genes
         regulated_genes_r = DEGs[DEGs['logFC'] > 0]['gene'].tolist()
@@ -145,15 +159,30 @@ class GenePairExtractor():
         survival_results["HR"] = survival_results["HR"].astype(float)
         survival_results["p_value"] = survival_results["p_value"].astype(float)
 
+        # Drop the row which p_values is NULL
+        survival_results = survival_results.dropna()
+
+        survival_results['adj.P.Val'] = multipletests(
+            survival_results['p_value'], method='fdr_bh')[1]
+
+        # Filter significant genes
+        if (self.p_value_threshold is None) and (self.p_value_threshold is not None):
+            survival_results = survival_results[survival_results['adj.P.Val']
+                                                < self.padj_value_threshold]
+        elif (self.p_value_threshold is not None) and (self.p_value_threshold is None):
+            survival_results = survival_results[survival_results['p_value']
+                                                < self.p_value_threshold]
+        else:
+            raise ValueError(
+                "The significant value threshold was not defined.")
+
         # Construct gene pairs for HR>1 and HR<1 separately
-        survival_results = survival_results[survival_results['p_value']
-                                            < self.p_value_threshold]
         regulated_genes_r = survival_results[survival_results['HR'] > 1]['gene']
         regulated_genes_p = survival_results[survival_results['HR'] < 1]['gene']
 
         return regulated_genes_r, regulated_genes_p
 
-    def regression_gene_pairs(self):
+    def calculate_regression_gene_pairs(self):
         # Bulk dataset Pearson correlation. Define gene pairs based on correlation coefficient and p-value
         correlation_results = pd.DataFrame(
             columns=["gene", "correlation", "pvalue"])
@@ -171,9 +200,21 @@ class GenePairExtractor():
         correlation_results["pvalue"] = correlation_results["pvalue"].astype(
             float)
 
+        correlation_results['adj.P.Val'] = multipletests(
+            correlation_results['pvalue'], method='fdr_bh')[1]
+
+        # Filter significant genes
+        if (self.p_value_threshold is None) and (self.p_value_threshold is not None):
+            correlation_results = correlation_results[correlation_results['adj.P.Val']
+                                                      < self.padj_value_threshold]
+        elif (self.p_value_threshold is not None) and (self.p_value_threshold is None):
+            correlation_results = correlation_results[correlation_results['pvalue']
+                                                      < self.p_value_threshold]
+        else:
+            raise ValueError(
+                "The significant value threshold was not defined.")
+
         # Define gene pairs based on whether correlation is >0 or <0
-        correlation_results = correlation_results[correlation_results['pvalue']
-                                                  < self.p_value_threshold]
         positive_correlation_genes = correlation_results[correlation_results['correlation'] > 0]['gene']
         negative_correlation_genes = correlation_results[correlation_results['correlation'] < 0]['gene']
 
@@ -186,7 +227,7 @@ class GenePairExtractor():
         exp2 = self.bulk_expression.loc[genes_p]
 
         # Compute result matrix
-        result_values = np.where(exp1.values[:, None] > exp2.values, 1, 0)
+        result_values = np.where(exp1.values[:, None] > exp2.values, 1, -1)
         result_values = np.vstack(result_values)
 
         # Create result DataFrame
@@ -223,7 +264,7 @@ class GenePairExtractor():
         exp1 = self.single_cell_expression.loc[genes_1]
         exp2 = self.single_cell_expression.loc[genes_2]
 
-        result = np.where(exp1.values > exp2.values, 1, 0)
+        result = np.where(exp1.values > exp2.values, 1, -1)
 
         # Create result DataFrame
         result_df = pd.DataFrame(

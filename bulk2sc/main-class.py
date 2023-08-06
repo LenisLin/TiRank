@@ -37,7 +37,7 @@ bulkClinical = pd.read_table(os.path.join(dataPath,
                                           "RNAseq_treatment/Cellline/GDSC_Gefitinib_meta.csv"), sep=",")
 bulkClinical.head()
 
-bulkClinical.columns = ["ID","Group"]
+bulkClinical.columns = ["ID", "Group"]
 bulkClinical.index = bulkClinical["ID"]
 del bulkClinical["ID"]
 
@@ -46,7 +46,7 @@ bulkExp = pd.read_csv(os.path.join(
     dataPath, "RNAseq_treatment/Cellline/GDSC_Gefitinib_exp.csv"), index_col=0)
 
 bulkExp.shape
-bulkExp.iloc[0:5,0:5]
+bulkExp.iloc[0:5, 0:5]
 
 # subset = False
 # if subset:
@@ -56,20 +56,21 @@ bulkExp.iloc[0:5,0:5]
 #     random_indices = np.random.choice(n_samples, size=n_samples_to_pick, replace=False)
 #     idx_0 = np.where(bulkClinical["Group"] == 0)[0]
 
-#     idx = np.unique(np.concatenate((random_indices,idx_0),axis = 0)) 
+#     idx = np.unique(np.concatenate((random_indices,idx_0),axis = 0))
 
 #     bulkExp = bulkExp.iloc[:,idx]
 #     bulkClinical = bulkClinical.iloc[idx,:]
 
 # load RNA-seq and scRNA-seq expression profile
 scPath = "/mnt/data/lyx/scRankv2/data/scRNAseq/Cellline/"
-scExp = pd.read_csv(os.path.join(scPath,"GSE112274_exp.csv"),index_col=0)
-scClinical = pd.read_csv(os.path.join(scPath,"GSE112274_meta.csv"),index_col=0)
+scExp = pd.read_csv(os.path.join(scPath, "GSE112274_exp.csv"), index_col=0)
+scClinical = pd.read_csv(os.path.join(
+    scPath, "GSE112274_meta.csv"), index_col=0)
 
 scExp_ = scExp.T
 scExp_.index = scClinical.index
-scAnndata = sc.AnnData(X=scExp_,obs=scClinical)
-del scExp,scClinical,scExp_
+scAnndata = sc.AnnData(X=scExp_, obs=scClinical)
+del scExp, scClinical, scExp_
 
 # scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE117872_Primary.h5ad"))
 scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE117872_Primary.h5ad"))
@@ -98,7 +99,7 @@ GPextractor = GenePairExtractor(
     analysis_mode="Bionomial",
     top_var_genes=500,
     top_gene_pairs=1000,
-    p_value_threshold=0.05,
+    padj_value_threshold=0.05,
     max_cutoff=0.8,
     min_cutoff=0.1
 )
@@ -152,7 +153,7 @@ mode = "Bionomial"
 # model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
 #                nhid2=8, n_output=32, nlayers=3, dropout=0.5, encoder_type="MLP")
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
-               nhid2=8, n_output=32, nlayers=3, n_pred=2, dropout=0.5, mode = mode, encoder_type=encoder_type)
+               nhid2=8, n_output=32, nlayers=3, n_pred=2, dropout=0.5, mode=mode, encoder_type=encoder_type)
 
 model = model.to(device)
 
@@ -169,7 +170,7 @@ if infer_mode == "Cell":
 optimizer = Adam(model.parameters(), lr=0.003)
 scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
 
-n_epochs = 500
+n_epochs = 300
 
 for epoch in range(n_epochs):
     train_loss = Train_one_epoch(
@@ -191,28 +192,33 @@ torch.save(model.state_dict(), "model.pt")
 
 mode = "Bionomial"
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
-               nhid2=8, n_output=32, nlayers=3, n_pred=2, dropout=0.5, mode = mode, encoder_type=encoder_type)
+               nhid2=8, n_output=32, nlayers=3, n_pred=2, dropout=0.5, mode=mode, encoder_type=encoder_type)
 model.load_state_dict(torch.load("./model.pt"))
 model = model.to("cpu")
 
-sc_PredDF = Predict(model, bulk_GPmat = bulk_gene_pairs_mat, sc_GPmat = single_cell_gene_pairs_mat, mode = "Bionomial", sc_rownames = scAnndata.obs.index.tolist(), do_reject = True, tolerance = 0.05)
+sc_PredDF = Predict(model, bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
+                    mode="Bionomial", sc_rownames=scAnndata.obs.index.tolist(), do_reject=True, tolerance=0.05)
 
-## Test
+# Test
 Exp_sc = single_cell_gene_pairs_mat
 Exp_Tensor_sc = torch.from_numpy(np.array(Exp_sc))
 Exp_Tensor_sc = torch.tensor(Exp_Tensor_sc, dtype=torch.float32)
 
 embeddings, prob_scores_sc = model(Exp_Tensor_sc)
-pred_label_sc = torch.max(prob_scores_sc,dim=1).indices.detach().numpy().reshape(-1, 1)
-pred_prob_sc = torch.nn.functional.softmax(prob_scores_sc)[:,1].detach().numpy().reshape(-1, 1)
+pred_label_sc = torch.max(
+    prob_scores_sc, dim=1).indices.detach().numpy().reshape(-1, 1)
+pred_prob_sc = torch.nn.functional.softmax(
+    prob_scores_sc)[:, 1].detach().numpy().reshape(-1, 1)
 
 Exp_bulk = bulk_gene_pairs_mat
 Exp_Tensor_bulk = torch.from_numpy(np.array(Exp_bulk))
 Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
 
 embeddings, prob_bulkores_bulk = model(Exp_Tensor_bulk)
-pred_label_bulk = torch.max(prob_bulkores_bulk,dim=1).indices.detach().numpy().reshape(-1, 1)
-pred_prob_bulk = torch.nn.functional.softmax(prob_bulkores_bulk)[:,1].detach().numpy().reshape(-1, 1)
+pred_label_bulk = torch.max(
+    prob_bulkores_bulk, dim=1).indices.detach().numpy().reshape(-1, 1)
+pred_prob_bulk = torch.nn.functional.softmax(
+    prob_bulkores_bulk)[:, 1].detach().numpy().reshape(-1, 1)
 
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
@@ -223,7 +229,7 @@ import matplotlib.pyplot as plt
 true_labels_sc = scAnndata.obs["response"]
 predicted_labels_sc = pred_label_sc
 
-mask = (sc_PredDF.iloc[:,0] == 0)
+mask = (sc_PredDF.iloc[:, 0] == 0)
 true_labels_sc = true_labels_sc[mask]
 predicted_labels_sc = predicted_labels_sc[mask]
 
@@ -232,7 +238,8 @@ predicted_labels_bulk = pred_label_bulk
 
 # Compute confusion matrix
 if True:
-    fig, ax = plt.subplots(1, 2, figsize=(20, 7))  # create a figure with 1 row and 2 columns of subplots
+    # create a figure with 1 row and 2 columns of subplots
+    fig, ax = plt.subplots(1, 2, figsize=(20, 7))
 
     # First heatmap
     cm = confusion_matrix(true_labels_sc, predicted_labels_sc)
@@ -244,7 +251,8 @@ if True:
     print(f'Single cell Precision: {precision}')
     print(f'Single cell Recall: {recall}')
 
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[0, 1], yticklabels=[0, 1], ax=ax[0])  # add ax=ax[0]
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[
+                0, 1], yticklabels=[0, 1], ax=ax[0])  # add ax=ax[0]
 
     ax[0].set_title('Confusion Matrix (Single Cell)')
     ax[0].set_xlabel('Predicted')
@@ -260,7 +268,8 @@ if True:
     print(f'Bulk Precision: {precision}')
     print(f'Bulk Recall: {recall}')
 
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[0, 1], yticklabels=[0, 1], ax=ax[1])  # add ax=ax[1]
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[
+                0, 1], yticklabels=[0, 1], ax=ax[1])  # add ax=ax[1]
 
     ax[1].set_title('Confusion Matrix (Bulk)')
     ax[1].set_xlabel('Predicted')
@@ -272,15 +281,18 @@ if True:
     plt.show()
     plt.close()
 
-## display the prob score distribution
-sns.distplot(pred_prob_bulk, hist = False, kde = True, kde_kws = {'shade': True, 'linewidth': 3}, label='Bulk')
-sns.distplot(pred_prob_sc, hist = False, kde = True, kde_kws = {'shade': True, 'linewidth': 3}, label='Single Cell')
+# display the prob score distribution
+sns.distplot(pred_prob_bulk, hist=False, kde=True, kde_kws={
+             'shade': True, 'linewidth': 3}, label='Bulk')
+sns.distplot(pred_prob_sc, hist=False, kde=True, kde_kws={
+             'shade': True, 'linewidth': 3}, label='Single Cell')
 
 plt.title('Density Plot')
 plt.xlabel('Values')
 plt.ylabel('Density')
 
-plt.legend(title='Sample Type', loc='upper left')  # Move the legend box to upper left
+# Move the legend box to upper left
+plt.legend(title='Sample Type', loc='upper left')
 plt.savefig('cell treatment pred prob - both.png')
 
 plt.show()

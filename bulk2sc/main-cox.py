@@ -82,7 +82,7 @@ GPextractor = GenePairExtractor(
     analysis_mode="Cox",
     top_var_genes=500,
     top_gene_pairs=1000,
-    p_value_threshold=0.05,
+    padj_value_threshold=0.05,
     max_cutoff=0.8,
     min_cutoff=0.1
 )
