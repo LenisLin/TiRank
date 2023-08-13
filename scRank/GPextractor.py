@@ -11,7 +11,7 @@ from statsmodels.stats.multitest import multipletests
 
 
 class GenePairExtractor():
-    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes=500, top_gene_pairs=2000, , p_value_threshold=None, padj_value_threshold=None, max_cutoff=0.8, min_cutoff=0.2):
+    def __init__(self, bulk_expression, clinical_data, single_cell_expression, analysis_mode, top_var_genes=500, top_gene_pairs=2000, p_value_threshold=None, padj_value_threshold=None, max_cutoff=0.8, min_cutoff=0.2):
         self.bulk_expression = bulk_expression
         self.clinical_data = clinical_data
         self.single_cell_expression = single_cell_expression
@@ -127,9 +127,9 @@ class GenePairExtractor():
         DEGs['adj.P.Val'] = multipletests(DEGs['P.Value'], method='fdr_bh')[1]
 
         # Filter significant genes
-        if (self.p_value_threshold is None) and (self.p_value_threshold is not None):
+        if (self.p_value_threshold is None) and (self.padj_value_threshold is not None):
             DEGs = DEGs[DEGs['adj.P.Val'] < self.padj_value_threshold]
-        elif (self.p_value_threshold is not None) and (self.p_value_threshold is None):
+        elif (self.p_value_threshold is not None) and (self.padj_value_threshold is None):
             DEGs = DEGs[DEGs['P.Value'] < self.p_value_threshold]
         else:
             raise ValueError(
@@ -166,10 +166,10 @@ class GenePairExtractor():
             survival_results['p_value'], method='fdr_bh')[1]
 
         # Filter significant genes
-        if (self.p_value_threshold is None) and (self.p_value_threshold is not None):
+        if (self.p_value_threshold is None) and (self.padj_value_threshold is not None):
             survival_results = survival_results[survival_results['adj.P.Val']
                                                 < self.padj_value_threshold]
-        elif (self.p_value_threshold is not None) and (self.p_value_threshold is None):
+        elif (self.p_value_threshold is not None) and (self.padj_value_threshold is None):
             survival_results = survival_results[survival_results['p_value']
                                                 < self.p_value_threshold]
         else:
@@ -204,10 +204,10 @@ class GenePairExtractor():
             correlation_results['pvalue'], method='fdr_bh')[1]
 
         # Filter significant genes
-        if (self.p_value_threshold is None) and (self.p_value_threshold is not None):
+        if (self.p_value_threshold is None) and (self.padj_value_threshold is not None):
             correlation_results = correlation_results[correlation_results['adj.P.Val']
                                                       < self.padj_value_threshold]
-        elif (self.p_value_threshold is not None) and (self.p_value_threshold is None):
+        elif (self.p_value_threshold is not None) and (self.padj_value_threshold is None):
             correlation_results = correlation_results[correlation_results['pvalue']
                                                       < self.p_value_threshold]
         else:

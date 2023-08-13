@@ -6,6 +6,45 @@ import pandas as pd
 
 from scipy.spatial.distance import cdist
 
+# unbalanced
+from collections import Counter
+from imblearn.over_sampling import SMOTE, RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler, TomekLinks
+
+def is_imbalanced(bulkClinical, threshold):
+    counts = bulkClinical.iloc[:,0].value_counts(normalize=True)
+    return counts.min() < threshold
+
+def perform_sampling_on_RNAseq(bulkExp, bulkClinical, mode="SMOTE", threshold=0.5):
+    # Ensure classes are imbalanced before any action
+    if not is_imbalanced(bulkClinical, threshold):
+        print("Classes are balanced!")
+        return bulkExp, bulkClinical
+
+    X = bulkExp.T.values
+    y = bulkClinical.values.ravel()
+    
+    if mode == "downsample":
+        sampler = RandomUnderSampler(random_state=42)
+    elif mode == "upsample":
+        sampler = RandomOverSampler(random_state=42)
+    elif mode == "SMOTE":
+        sampler = SMOTE(random_state=42)
+    elif mode == "tomeklinks":
+        sampler = TomekLinks()
+    else:
+        raise ValueError("Invalid mode selected")
+
+    X_res, y_res = sampler.fit_resample(X, y)
+    
+    # Convert back to DataFrame, making sure the samples are consistent with their labels.
+    samples_order = [f"sample_{i}" for i in range(X_res.shape[0])]
+    bulkExp_resampled = pd.DataFrame(X_res.T, columns=samples_order, index=bulkExp.index)
+    bulkClinical_resampled = pd.DataFrame(y_res, index=samples_order, columns=bulkClinical.columns)
+
+    return bulkExp_resampled, bulkClinical_resampled
+
+
 # This function performs the MAGIC (Markov Affinity-based Graph Imputation of Cells) process on scRNA-seq data.
 
 

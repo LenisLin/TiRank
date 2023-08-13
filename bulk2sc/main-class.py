@@ -34,7 +34,7 @@ if not (os.path.exists(savePath)):
 
 # load clinical data
 bulkClinical = pd.read_table(os.path.join(dataPath,
-                                          "RNAseq_treatment/Cellline/GDSC_Gefitinib_meta.csv"), sep=",")
+                                          "RNAseq_treatment/Cellline/CCLE_Erlotinib_meta.csv"), sep=",")
 bulkClinical.head()
 
 bulkClinical.columns = ["ID", "Group"]
@@ -43,37 +43,27 @@ del bulkClinical["ID"]
 
 # load bulk expression profile
 bulkExp = pd.read_csv(os.path.join(
-    dataPath, "RNAseq_treatment/Cellline/GDSC_Gefitinib_exp.csv"), index_col=0)
+    dataPath, "RNAseq_treatment/Cellline/CCLE_Erlotinib_exp.csv"), index_col=0)
 
 bulkExp.shape
 bulkExp.iloc[0:5, 0:5]
 
-# subset = False
-# if subset:
-#     n_samples = bulkClinical.shape[0] # get number of rows
-#     n_samples_to_pick = int(n_samples * 0.5) # get 50% of the number of rows
-
-#     random_indices = np.random.choice(n_samples, size=n_samples_to_pick, replace=False)
-#     idx_0 = np.where(bulkClinical["Group"] == 0)[0]
-
-#     idx = np.unique(np.concatenate((random_indices,idx_0),axis = 0))
-
-#     bulkExp = bulkExp.iloc[:,idx]
-#     bulkClinical = bulkClinical.iloc[idx,:]
+# sampling
+bulkExp, bulkClinical = perform_sampling_on_RNAseq(bulkExp = bulkExp, bulkClinical = bulkClinical, mode="SMOTE", threshold=0.5)
 
 # load RNA-seq and scRNA-seq expression profile
 scPath = "/mnt/data/lyx/scRankv2/data/scRNAseq/Cellline/"
-scExp = pd.read_csv(os.path.join(scPath, "GSE112274_exp.csv"), index_col=0)
+scExp = pd.read_csv(os.path.join(scPath, "GSE149383_Dropseq_exp.csv"), index_col=0)
 scClinical = pd.read_csv(os.path.join(
-    scPath, "GSE112274_meta.csv"), index_col=0)
+    scPath, "GSE149383_Dropseq_meta.csv"), index_col=0)
 
 scExp_ = scExp.T
 scExp_.index = scClinical.index
 scAnndata = sc.AnnData(X=scExp_, obs=scClinical)
 del scExp, scClinical, scExp_
 
-# scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE117872_Primary.h5ad"))
-scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE117872_Primary.h5ad"))
+# scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE149383_Dropseq.h5ad"))
+scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE149383_Dropseq.h5ad"))
 
 # Preprocessing scRNA-seq data
 # scAnndata_magic = perform_magic_preprocessing(scAnndata,require_normalization=True)
