@@ -3,6 +3,7 @@ import torch
 
 import pandas as pd
 import numpy as np
+import scanpy as sc
 
 from sklearn.mixture import GaussianMixture
 
@@ -11,7 +12,7 @@ from Loss import *
 # Training
 
 
-def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="Cell", adj_A=None, optimizer=None, alphas=[1, 1, 1], device="cpu"):
+def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="Cell", adj_A=None, adj_B=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.train()
 
@@ -46,6 +47,10 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
             A = adj_A[idx, :][:, idx]
             A = A.to(device)
 
+        if adj_B is not None:
+            B = adj_B[idx, :][:, idx]
+            B = B.to(device)
+
         # Zero the parameter gradients
         optimizer.zero_grad()
 
@@ -71,7 +76,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
             total_loss = bulk_loss_ * \
                 alphas[0] + mmd_loss_ * alphas[2]
 
-        elif infer_mode in ['Cell', 'Spot']:
+        elif infer_mode == 'Cell':
             cosine_loss_ = cosine_loss(embeddings_b, A)
             mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
 
@@ -80,6 +85,19 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
             total_loss = bulk_loss_ * alphas[0] + \
                 cosine_loss_ * alphas[1] + \
                 mmd_loss_ * alphas[2]
+
+        elif infer_mode == 'Spot':
+            cosine_loss_exp_ = cosine_loss(embeddings_b, A)
+            cosine_loss_spatial_ = cosine_loss(embeddings_b, B)
+
+            mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
+
+            # total loss
+
+            total_loss = bulk_loss_ * alphas[0] + \
+                cosine_loss_exp_ * alphas[1] + \
+                cosine_loss_spatial_ * alphas[2] + \
+                mmd_loss_ * alphas[3]
 
         # Backward pass and optimization
         total_loss.backward()
@@ -92,7 +110,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 # Predict
 
 
-def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tolerance = 0.05):
+def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tolerance=0.05):
     model.eval()
 
     # Predict on cell
@@ -119,7 +137,8 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tole
     embeddings = embeddings_sc.detach().numpy()
 
     if do_reject:
-        reject_mask = Reject(pred_bulk, pred_sc, tolerance = tolerance, max_components=10)
+        reject_mask = Reject(pred_bulk, pred_sc,
+                             tolerance=tolerance, max_components=10)
 
     saveDF = pd.DataFrame(data=np.concatenate(
         (reject_mask, pred_sc, embeddings), axis=1), index=sc_GPmat.index)
@@ -146,35 +165,39 @@ def Reject(pred_bulk, pred_sc, tolerance, max_components):
     if (gmm_bulk_mean_1 - gmm_bulk_mean_0) <= 0.5:
         print("Underfitting!")
 
-
     # Iterate over the number of components
-    for n_components in range(1, max_components + 1):
-        gmm_sc = GaussianMixture(n_components=n_components, random_state=42).fit(pred_sc)
+    for n_components in range(2, max_components + 1):
+        gmm_sc = GaussianMixture(
+            n_components=n_components, random_state=42).fit(pred_sc)
 
         means = gmm_sc.means_
 
         # Check if any of the means are close to 0 or 1
-        zero_close = any(abs(mean - gmm_bulk_mean_0)  <= tolerance for mean in means)
-        one_close = any(abs(gmm_bulk_mean_1 - mean) <= tolerance for mean in means)
+        zero_close = any(abs(mean - gmm_bulk_mean_0) <=
+                         tolerance for mean in means)
+        one_close = any(abs(gmm_bulk_mean_1 - mean) <=
+                        tolerance for mean in means)
 
         if zero_close and one_close:
-            print(f"Found distributions with means close to 0 and 1 with {n_components} components.")
+            print(
+                f"Found distributions with means close to 0 and 1 with {n_components} components.")
 
             # # Print the means and covariances
             # print("Means of the gaussians in gmm_sc: ", gmm_sc.means_)
             # print("Covariances of the gaussians in gmm_sc: ", gmm_sc.covariances_)
 
             # Find the component whose mean is nearest to 0 and 1
-            ## 1
+            # 1
             diffs_1 = gmm_bulk_mean_1 - gmm_sc.means_
             nearest_component_1 = np.where(diffs_1 <= tolerance)[0]
 
-            ## 0
+            # 0
             diffs_0 = gmm_sc.means_ - gmm_bulk_mean_0
             nearest_component_0 = np.where(diffs_0 <= tolerance)[0]
 
-            ## concat
-            remain_component = np.concatenate((nearest_component_1,nearest_component_0))
+            # concat
+            remain_component = np.concatenate(
+                (nearest_component_1, nearest_component_0))
 
             # The mask of those rejection cell
             labels_sc = gmm_sc.predict(pred_sc)
@@ -183,13 +206,41 @@ def Reject(pred_bulk, pred_sc, tolerance, max_components):
 
             mask[np.isin(labels_sc, remain_component)] = 0
 
-            print(f"Reject {int(sum(mask))}({int(sum(mask))*100 / len(mask) :.2f}%) cells.")
+            print(
+                f"Reject {int(sum(mask))}({int(sum(mask))*100 / len(mask) :.2f}%) cells.")
 
             return mask
 
-
-        
     print(f"Rejection faild.")
     mask = np.zeros(shape=(len(pred_sc), 1))
 
     return mask
+
+
+# categorize
+def categorize(scAnndata, sc_PredDF, do_cluster=False):
+    if sc_PredDF.shape[0] != scAnndata.obs.shape[0]:
+        raise ValueError(
+            "The prediction matrix was not match with original scAnndata.")
+
+    else:
+        if do_cluster:
+            sc.tl.umap(scAnndata)
+            sc.tl.leiden(scAnndata, key_added="clusters")
+
+        scAnndata.obsm["Rank_Embedding"] = sc_PredDF.iloc[:, 2:]
+
+        scAnndata.obs["Reject"] = sc_PredDF.iloc[:, 0]
+        scAnndata.obs["Rank_Score"] = sc_PredDF.iloc[:, 1]
+        scAnndata.obs["Rank_Score"] = scAnndata.obs["Rank_Score"] * \
+            (1 - scAnndata.obs["Reject"])
+        scAnndata.obs["Rank_Label"] = [
+            "Background" if i == 0 else
+            "Rank-" if 0 < i <= 0.5 else
+            "Rank+"
+            for i in scAnndata.obs["Rank_Score"]
+        ]
+
+        print(f"We set Rank score <= 0.5 as Rank- () while > 0.5 as Rank+ ")
+
+    return scAnndata

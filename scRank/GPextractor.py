@@ -159,9 +159,6 @@ class GenePairExtractor():
         survival_results["HR"] = survival_results["HR"].astype(float)
         survival_results["p_value"] = survival_results["p_value"].astype(float)
 
-        # Drop the row which p_values is NULL
-        survival_results = survival_results.dropna()
-
         survival_results['adj.P.Val'] = multipletests(
             survival_results['p_value'], method='fdr_bh')[1]
 
@@ -207,9 +204,11 @@ class GenePairExtractor():
         if (self.p_value_threshold is None) and (self.padj_value_threshold is not None):
             correlation_results = correlation_results[correlation_results['adj.P.Val']
                                                       < self.padj_value_threshold]
+
         elif (self.p_value_threshold is not None) and (self.padj_value_threshold is None):
             correlation_results = correlation_results[correlation_results['pvalue']
                                                       < self.p_value_threshold]
+
         else:
             raise ValueError(
                 "The significant value threshold was not defined.")

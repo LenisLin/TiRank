@@ -120,14 +120,14 @@ class RiskscorePredictor(nn.Module):
     def __init__(self, n_features, nhid, nhout=1, dropout=0.5):
         super(RiskscorePredictor, self).__init__()
         self.RiskscoreMLP = nn.Sequential(
-            nn.Linear(n_features, nhid),
-            nn.LeakyReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(nhid, nhid),
-            nn.LeakyReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(nhid, nhout),
-            # nn.Linear(n_features, nhout),
+            # nn.Linear(n_features, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            # nn.Linear(nhid, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            # nn.Linear(nhid, nhout),
+            nn.Linear(n_features, nhout),
         )
 
     def forward(self, embedding):
@@ -141,14 +141,14 @@ class ClassscorePredictor(nn.Module):
     def __init__(self, n_features, nhid, nhout=2, dropout=0.5):
         super(ClassscorePredictor, self).__init__()
         self.ClassscoreMLP = nn.Sequential(
-            nn.Linear(n_features, nhid),
-            nn.LeakyReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(nhid, nhid),
-            nn.LeakyReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(nhid, nhout),
-            # nn.Linear(n_features, nhout),
+            # nn.Linear(n_features, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            # nn.Linear(nhid, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            # nn.Linear(nhid, nhout),
+            nn.Linear(n_features, nhout),
         )
 
     def forward(self, embedding):
