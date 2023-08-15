@@ -81,14 +81,14 @@ scAnndata = mod.export_posterior(
 # save
 mod.save(f"{ref_run_name}", overwrite=True)
 
-with open(os.path.join(savePath, 'scAnndata.pkl'), 'wb') as f:
+with open(os.path.join(ref_run_name, 'scAnndata.pkl'), 'wb') as f:
     pickle.dump(scAnndata, f)
 f.close()
 
 
-f = open(os.path.join(savePath, 'scAnndata.pkl'), 'rb')
-scAnndata = pickle.load(f)
-f.close()
+# f = open(os.path.join(ref_run_name, 'scAnndata.pkl'), 'rb')
+# scAnndata = pickle.load(f)
+# f.close()
 
 
 # export estimated expression in each cluster
@@ -100,19 +100,19 @@ else:
                               for i in scAnndata.uns['mod']['factor_names']]].copy()
 inf_aver.columns = scAnndata.uns['mod']['factor_names']
 inf_aver.iloc[0:5, 0:5]
-
+inf_aver.index = scAnndata.var.Index[inf_aver.index]
 
 # spatial mapping
 # Load
 
-scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE144735.h5ad"))
+# scAnndata = sc.read_h5ad(os.path.join(ref_run_name, "GSE144735.h5ad"))
 mod = cell2location.models.RegressionModel.load(f"{ref_run_name}", scAnndata)
 
 # Preprocessing - Visum
 stPath = "/mnt/data/lyx/scRankv2/data/ST/CRC/"
 slices = os.listdir(stPath)
 for slice_ in slices:
-    stAnndata = sc.read_visium(os.path.join(stPath, slices[0]))
+    stAnndata = sc.read_visium(os.path.join(stPath, slice_))
 
     # find mitochondria-encoded (MT) genes
     stAnndata.var['MT_gene'] = [gene.startswith(
@@ -122,6 +122,7 @@ for slice_ in slices:
     stAnndata.obsm['MT'] = stAnndata[:,
                                      stAnndata.var['MT_gene'].values].X.toarray()
     stAnndata = stAnndata[:, ~stAnndata.var['MT_gene'].values]
+    stAnndata.var_names_make_unique()
 
     # find shared genes and subset both anndata and reference signatures
     intersect = np.intersect1d(stAnndata.var_names, inf_aver.index)
@@ -130,7 +131,7 @@ for slice_ in slices:
 
     # prepare anndata for cell2location model
     cell2location.models.Cell2location.setup_anndata(
-        adata=stAnndata, batch_key="sample")
+        adata=stAnndata, batch_key=None)
 
     # create and train the model
     mod = cell2location.models.Cell2location(
@@ -144,7 +145,7 @@ for slice_ in slices:
     )
     mod.view_anndata_setup()
 
-    mod.train(max_epochs=30000,
+    mod.train(max_epochs=10000,
               # train using full data (batch_size=None)
               batch_size=None,
               # use all data points in training because
@@ -160,7 +161,7 @@ for slice_ in slices:
     )
 
     # Save model
-    stAnndata.write(os.path.join(savePath, slices[0] + "_deconv.h5ad"))
+    stAnndata.write(os.path.join(run_name, slice_ + "_deconv.h5ad"))
 
 
 #############################

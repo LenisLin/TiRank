@@ -94,7 +94,7 @@ GPextractor = GenePairExtractor(
     top_gene_pairs=1000,
     padj_value_threshold=0.05,
     max_cutoff=0.8,
-    min_cutoff=0.1
+    min_cutoff=-0.8
 )
 
 bulk_gene_pairs_mat, st_gene_pairs_mat = GPextractor.run_extraction()
