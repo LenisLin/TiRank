@@ -34,7 +34,7 @@ if not (os.path.exists(savePath)):
 
 # load clinical data
 bulkClinical = pd.read_table(os.path.join(dataPath,
-                                          "RNAseq_treatment/Cellline/CCLE_Erlotinib_meta.csv"), sep=",")
+                                          "RNAseq_treatment/Cellline/GDSC_Cisplatin_meta.csv"), sep=",")
 bulkClinical.head()
 
 bulkClinical.columns = ["ID", "Group"]
@@ -43,7 +43,7 @@ del bulkClinical["ID"]
 
 # load bulk expression profile
 bulkExp = pd.read_csv(os.path.join(
-    dataPath, "RNAseq_treatment/Cellline/CCLE_Erlotinib_exp.csv"), index_col=0)
+    dataPath, "RNAseq_treatment/Cellline/GDSC_Cisplatin_exp.csv"), index_col=0)
 
 bulkExp.shape
 bulkExp.iloc[0:5, 0:5]
@@ -53,17 +53,17 @@ bulkExp, bulkClinical = perform_sampling_on_RNAseq(bulkExp = bulkExp, bulkClinic
 
 # load RNA-seq and scRNA-seq expression profile
 scPath = "/mnt/data/lyx/scRankv2/data/scRNAseq/Cellline/"
-scExp = pd.read_csv(os.path.join(scPath, "GSE149383_Dropseq_exp.csv"), index_col=0)
+scExp = pd.read_csv(os.path.join(scPath, "GSE117872_Metastatic_exp.csv"), index_col=0)
 scClinical = pd.read_csv(os.path.join(
-    scPath, "GSE149383_Dropseq_meta.csv"), index_col=0)
+    scPath, "GSE117872_Metastatic_meta.csv"), index_col=0)
 
 scExp_ = scExp.T
 scExp_.index = scClinical.index
 scAnndata = sc.AnnData(X=scExp_, obs=scClinical)
 del scExp, scClinical, scExp_
 
-# scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE149383_Dropseq.h5ad"))
-scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE149383_Dropseq.h5ad"))
+# scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE117872_Metastatic.h5ad"))
+scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE117872_Metastatic.h5ad"))
 
 # Preprocessing scRNA-seq data
 # scAnndata_magic = perform_magic_preprocessing(scAnndata,require_normalization=True)
@@ -136,7 +136,7 @@ train_loader_SC = DataLoader(train_dataset_SC, batch_size=1024, shuffle=True)
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Define your model here
-encoder_type = "DenseNet"
+encoder_type = "MLP"
 mode = "Bionomial"
 
 # model = TransformerEncoderModel(n_features = bulk_gene_pairs_mat.shape[1], nhead = 2, nhid = 32, nlayers = 2, n_output = 8, dropout=0.5)
@@ -202,19 +202,19 @@ pred_label_sc = torch.max(
 pred_prob_sc = torch.nn.functional.softmax(
     prob_scores_sc)[:, 1].detach().numpy().reshape(-1, 1)
 
-Exp_bulk = bulk_gene_pairs_mat
-Exp_Tensor_bulk = torch.from_numpy(np.array(Exp_bulk))
-Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
+# Exp_bulk = bulk_gene_pairs_mat
+# Exp_Tensor_bulk = torch.from_numpy(np.array(Exp_bulk))
+# Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
 
-embeddings, prob_bulkores_bulk = model(Exp_Tensor_bulk)
-pred_label_bulk = torch.max(
-    prob_bulkores_bulk, dim=1).indices.detach().numpy().reshape(-1, 1)
-pred_prob_bulk = torch.nn.functional.softmax(
-    prob_bulkores_bulk)[:, 1].detach().numpy().reshape(-1, 1)
+# embeddings, prob_bulkores_bulk = model(Exp_Tensor_bulk)
+# pred_label_bulk = torch.max(
+#     prob_bulkores_bulk, dim=1).indices.detach().numpy().reshape(-1, 1)
+# pred_prob_bulk = torch.nn.functional.softmax(
+#     prob_bulkores_bulk)[:, 1].detach().numpy().reshape(-1, 1)
 
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
 
 # Assuming df is your dataframe, and 'Group' column is true labels and 'PredClass' column is predicted labels
@@ -225,8 +225,8 @@ mask = (sc_PredDF.iloc[:, 0] == 0)
 true_labels_sc = true_labels_sc[mask]
 predicted_labels_sc = predicted_labels_sc[mask]
 
-true_labels_bulk = bulkClinical["Group"]
-predicted_labels_bulk = pred_label_bulk
+# true_labels_bulk = bulkClinical["Group"]
+# predicted_labels_bulk = pred_label_bulk
 
 # Compute confusion matrix
 if True:
@@ -238,10 +238,12 @@ if True:
     accuracy = accuracy_score(true_labels_sc, predicted_labels_sc)
     precision = precision_score(true_labels_sc, predicted_labels_sc)
     recall = recall_score(true_labels_sc, predicted_labels_sc)
+    f1score = f1_score(true_labels_sc, predicted_labels_sc)
 
     print(f'Single cell Accuracy: {accuracy}')
     print(f'Single cell Precision: {precision}')
     print(f'Single cell Recall: {recall}')
+    print(f'Single cell F1-Score: {f1score}')
 
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[
                 0, 1], yticklabels=[0, 1], ax=ax[0])  # add ax=ax[0]
