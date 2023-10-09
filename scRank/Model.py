@@ -156,32 +156,31 @@ class ClassscorePredictor(nn.Module):
         return proba_score
 
 
-# Confidence score Predictor
+# Pathology Predictor
 
 
-# class ConfidencescorePredictor(nn.Module):
-#     def __init__(self, n_features, nhid, dropout=0.5):
-#         super(ConfidencescorePredictor, self).__init__()
-#         self.ConfidencescoreMLP = nn.Sequential(
-#             # nn.Linear(n_features, nhid),
-#             # nn.LeakyReLU(),
-#             # nn.Dropout(dropout),
-#             # nn.Linear(nhid, nhid),
-#             # nn.LeakyReLU(),
-#             # nn.Dropout(dropout),
-#             # nn.Linear(nhid, 1),
-#             nn.Linear(n_features, 1),
-#         )
+class PathologyPredictor(nn.Module):
+    def __init__(self, n_features, nhid, nclass, dropout=0.5):
+        super(PathologyPredictor, self).__init__()
+        self.PathologyMLP = nn.Sequential(
+            # nn.Linear(n_features, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            # nn.Linear(nhid, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            nn.Linear(n_features, nclass),
+        )
 
-#     def forward(self, embedding):
-#         confidence_score = torch.tanh(self.ConfidencescoreMLP(embedding))
-#         return confidence_score.squeeze()
+    def forward(self, embedding):
+        pathology_score = torch.tanh(self.PathologyMLP(embedding))
+        return pathology_score.squeeze()
 
 # Main network
 
 
 class scRank(nn.Module):
-    def __init__(self, n_features, nhead, nhid1, nhid2, nlayers, n_output, n_pred=1, dropout=0.5, mode="Cox", encoder_type="MLP"):
+    def __init__(self, n_features, nhead, nhid1, nhid2, nlayers, n_output, n_pred=1, n_patho=6, dropout=0.5, mode="Cox", encoder_type="MLP"):
         super(scRank, self).__init__()
         self.encoder_type = encoder_type
 
@@ -202,11 +201,13 @@ class scRank(nn.Module):
         if mode == "Bionomial":
             self.predictor = ClassscorePredictor(
                 n_output, nhid2, n_pred, dropout)
-        # self.confidencescorepredictor = ConfidencescorePredictor(n_output, nhid2, dropout)
+
+        self.pathologpredictor = PathologyPredictor(
+            n_output, nhid2, n_patho, dropout)
 
     def forward(self, x):
         embedding = self.encoder(x)
         risk_score = self.predictor(embedding)
-        # confidence_score = self.confidencescorepredictor(embedding)
+        patho_pred = self.pathologpredictor(embedding)
 
-        return embedding, risk_score
+        return embedding, risk_score, patho_pred

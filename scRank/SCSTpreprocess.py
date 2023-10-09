@@ -3,8 +3,6 @@ import scanpy as sc
 import pandas as pd
 import numpy as np
 
-# import magic
-
 from scipy.spatial.distance import cdist
 
 # unbalanced
@@ -60,17 +58,6 @@ def PreprocessingST(adata):
     sc.pp.filter_cells(adata, max_counts=35000)
     adata = adata[adata.obs["pct_counts_mt"] < 10]
     sc.pp.filter_genes(adata, min_cells=10)
-
-    # Normalize
-    sc.pp.normalize_total(adata, inplace=True)
-    sc.pp.log1p(adata)
-    sc.pp.highly_variable_genes(adata, flavor="seurat", n_top_genes=2000)
-
-    # Embedding
-    sc.pp.pca(adata)
-    sc.pp.neighbors(adata)
-    sc.tl.umap(adata)
-    sc.tl.leiden(adata, key_added="clusters")
 
     return adata
 
@@ -166,7 +153,7 @@ def calculate_populations_meanRank(input_data, category):
 # The function also calculates the Euclidean distances between spatial positions of cells.
 
 
-def compute_spots_similarity(input_data, perform_normalization=True):
+def compute_spots_similarity(input_data, perform_normalization=True,calculate_distance=True):
 
     # data_path refers to the output directory from the Space Ranger.
     # perform_normalization indicates whether the input data needs to be normalized.
@@ -194,22 +181,26 @@ def compute_spots_similarity(input_data, perform_normalization=True):
     similarity_df = pd.DataFrame(
         dense_similarity_matrix, columns=ann_data.obs_names, index=ann_data.obs_names)
 
-    # Obtain the spatial positions and calculate the Euclidean distances
-    spatial_positions = ann_data.obsm['spatial']
-    euclidean_distances = cdist(
-        spatial_positions, spatial_positions, metric='euclidean')
+    if calculate_distance:
+        # Obtain the spatial positions and calculate the Euclidean distances
+        spatial_positions = ann_data.obsm['spatial']
+        euclidean_distances = cdist(
+            spatial_positions, spatial_positions, metric='euclidean')
 
-# Create an adjacency matrix initialized with zeros
-    adjacency_matrix = np.zeros_like(euclidean_distances, dtype=int)
+    # Create an adjacency matrix initialized with zeros
+        adjacency_matrix = np.zeros_like(euclidean_distances, dtype=int)
 
-    # For each spot, mark the six closest spots as neighbors
-    for i in range(adjacency_matrix.shape[0]):
-        # Get the indices of the six smallest distances
-        # Skip the 0th index because it's the distance to itself
-        closest_indices = euclidean_distances[i].argsort()[1:7]
-        adjacency_matrix[i, closest_indices] = 1
+        # For each spot, mark the six closest spots as neighbors
+        for i in range(adjacency_matrix.shape[0]):
+            # Get the indices of the six smallest distances
+            # Skip the 0th index because it's the distance to itself
+            closest_indices = euclidean_distances[i].argsort()[1:7]
+            adjacency_matrix[i, closest_indices] = 1
 
-    distance_df = pd.DataFrame(
-        adjacency_matrix, columns=ann_data.obs_names, index=ann_data.obs_names)
+        distance_df = pd.DataFrame(
+            adjacency_matrix, columns=ann_data.obs_names, index=ann_data.obs_names)
 
-    return similarity_df, distance_df
+        return similarity_df, distance_df
+
+    return similarity_df
+
