@@ -1,5 +1,3 @@
-
-from cmath import nan
 import torch
 
 import pandas as pd
@@ -15,7 +13,7 @@ from Loss import *
 # Training
 
 
-def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="Cell", adj_A=None, adj_B=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="Cell", adj_A=None, adj_B=None, pre_patho_labels=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.train()
 
@@ -54,12 +52,19 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
             B = adj_B[idx, :][:, idx]
             B = B.to(device)
 
+        if pre_patho_labels is not None:
+            # Convert the tensor idx to numpy for indexing pandas series
+            idx_np = idx.cpu().numpy()
+            pre_patho = pre_patho_labels.iloc[idx_np].values
+            pre_patho = torch.tensor(pre_patho, dtype=torch.uint8)  # Specify dtype if necessary
+            pre_patho = pre_patho.to(device)
+            
         # Zero the parameter gradients
         optimizer.zero_grad()
 
         # Forward pass
-        embeddings_a, risk_scores_a = model(X_a)
-        embeddings_b, _ = model(X_b)
+        embeddings_a, risk_scores_a, _ = model(X_a)
+        embeddings_b, _, pred_patho = model(X_b)
 
         # Calculate loss
         if pheno == 'Cox':
@@ -81,7 +86,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
                 cosine_loss_ * alphas[1] + \
                 mmd_loss_ * alphas[2]
 
-        elif infer_mode == 'Spot':
+        elif infer_mode == 'Spot' and adj_B is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
             cosine_loss_spatial_ = cosine_loss(embeddings_b, B)
 
@@ -92,6 +97,19 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
             total_loss = bulk_loss_ * alphas[0] + \
                 cosine_loss_exp_ * alphas[1] + \
                 cosine_loss_spatial_ * alphas[2] + \
+                mmd_loss_ * alphas[3]
+
+        elif infer_mode == 'Spot' and pre_patho is not None:
+            cosine_loss_exp_ = cosine_loss(embeddings_b, A)
+            pathoLloss = CrossEntropy_loss(pred_patho, pre_patho)
+
+            mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
+
+            # total loss
+
+            total_loss = bulk_loss_ * alphas[0] + \
+                cosine_loss_exp_ * alphas[1] + \
+                pathoLloss * alphas[2] + \
                 mmd_loss_ * alphas[3]
 
         else:
@@ -114,12 +132,12 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tole
     # Predict on cell
     Exp_Tensor_sc = torch.from_numpy(np.array(sc_GPmat))
     Exp_Tensor_sc = torch.tensor(Exp_Tensor_sc, dtype=torch.float32)
-    embeddings_sc, pred_sc = model(Exp_Tensor_sc)
+    embeddings_sc, pred_sc, _  = model(Exp_Tensor_sc)
 
     # Predict on bulk
     Exp_Tensor_bulk = torch.from_numpy(np.array(bulk_GPmat))
     Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
-    _, pred_bulk = model(Exp_Tensor_bulk)
+    _, pred_bulk, _ = model(Exp_Tensor_bulk)
 
     if mode == "Cox":
         pred_bulk = pred_bulk.detach().numpy().reshape(-1, 1)
