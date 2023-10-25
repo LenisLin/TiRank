@@ -51,17 +51,22 @@ def cosine_loss(embeddings, A):
     Returns:
         Tensor: Cosine loss, scalar
     """
+    embeddings = embeddings.to(A.device)
     B = torch.mm(embeddings, embeddings.T)
-    B = B * (1 / torch.diag(B)).to(A.device) - \
-        torch.eye(B.shape[0]).to(A.device)
+
+    # Calculate magnitudes of embeddings
+    magnitudes = torch.norm(embeddings, dim=1, keepdim=True)
+    B /= magnitudes
+    B /= magnitudes.T
+
+    B = B - torch.eye(B.shape[0]).to(B.device)
 
     # Compute the difference between original matrix and embedding space matrix
     matrix_diff = B - A
 
-    cosine_loss = torch.mean(matrix_diff ** 2)
+    cosine_loss = torch.mean(torch.abs(matrix_diff))
 
     return cosine_loss
-
 
 def gaussian_kernel(a, b):
     """

@@ -24,18 +24,15 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 
     if pheno == 'Cox':
         (X_a, t, e) = next(iter_A)
-
-    if pheno in ['Bionomial', 'Regression']:
-        (X_a, label) = next(iter_A)
-
-    X_a = X_a.to(device)
-
-    if pheno == 'Cox':
+        X_a = X_a.to(device)
         t = t.to(device)
         e = e.to(device)
 
     if pheno in ['Bionomial', 'Regression']:
+        (X_a, label) = next(iter_A)
+        X_a = X_a.to(device)
         label = label.to(device)
+        
 
     for batch_B in dataloader_B:
         # Get the next batch of data

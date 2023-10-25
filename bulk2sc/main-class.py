@@ -148,7 +148,7 @@ model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
 model = model.to(device)
 
 # Hyperparameters for the losses
-alphas = [2, 1, 1, 1]
+alphas = [0, 10, 0, 0]
 
 # Assign the mode of analysis
 infer_mode = "Cell"
@@ -160,7 +160,7 @@ if infer_mode == "Cell":
 optimizer = Adam(model.parameters(), lr=0.003)
 scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
 
-n_epochs = 100
+n_epochs = 200
 
 for epoch in range(n_epochs):
     train_loss = Train_one_epoch(
