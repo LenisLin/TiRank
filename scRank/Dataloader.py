@@ -1,9 +1,44 @@
 # DataLoader classes
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
+
+
+def generate_val(bulk_gene_pairs_mat, bulkClinical, mode, need_val = True, validation_proportion = 0.15):
+    """
+    Splits the bulk_gene_pairs_mat and bulkClinical datasets into training and validation sets.
+
+    Parameters:
+    - bulk_gene_pairs_mat: Your bulk gene pairs matrix.
+    - bulkClinical: Your bulk clinical data.
+    - mode: Mode to pass to the BulkDataset constructor.
+    - validation_proportion: The proportion of the dataset to be used as validation set.
+
+    Returns:
+    - A tuple containing:
+        - training set as a BulkDataset instance
+        - validation set as a BulkDataset instance
+    """
+    
+    if not need_val:
+        train_dataset = BulkDataset(bulk_gene_pairs_mat, bulkClinical, mode=mode)
+
+    # Split the gene pairs matrix and clinical data into training and validation sets
+    bulk_gene_pairs_train, bulk_gene_pairs_val, bulkClinical_train, bulkClinical_val = train_test_split(
+        bulk_gene_pairs_mat, 
+        bulkClinical, 
+        test_size=validation_proportion, 
+        random_state=42  # Ensures reproducibility of the split
+    )
+
+    # Create the BulkDataset instances for training and validation
+    train_dataset = BulkDataset(bulk_gene_pairs_train, bulkClinical_train, mode=mode)
+    validation_dataset = BulkDataset(bulk_gene_pairs_val, bulkClinical_val, mode=mode)
+
+    return train_dataset, validation_dataset
 
 # RNA-seq
 
