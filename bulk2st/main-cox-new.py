@@ -219,7 +219,7 @@ Exp_sc = st_gene_pairs_mat
 Exp_Tensor_sc = torch.from_numpy(np.array(Exp_sc))
 Exp_Tensor_sc = torch.tensor(Exp_Tensor_sc, dtype=torch.float32)
 
-st_embeddings, risk_scores_sc = model(Exp_Tensor_sc)
+st_embeddings, risk_scores_sc, _ = model(Exp_Tensor_sc)
 risk_scores_sc = risk_scores_sc.detach().numpy().reshape(-1, 1)
 st_embeddings = st_embeddings.detach().numpy()
 
@@ -227,7 +227,7 @@ Exp_bulk = bulk_gene_pairs_mat
 Exp_Tensor_bulk = torch.from_numpy(np.array(Exp_bulk))
 Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
 
-bulk_embeddings, risk_scores_bulk = model(Exp_Tensor_bulk)
+bulk_embeddings, risk_scores_bulk, _ = model(Exp_Tensor_bulk)
 risk_scores_bulk = risk_scores_bulk.detach().numpy().reshape(-1, 1)
 
 from lifelines import CoxPHFitter

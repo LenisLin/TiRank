@@ -1,14 +1,18 @@
 import torch
+from torch.optim import Adam
+from torch.optim.lr_scheduler import StepLR
 
+import os
 import pandas as pd
 import numpy as np
 import scanpy as sc
-
 from sklearn.mixture import GaussianMixture
 
+import optuna
 from concurrent.futures import ThreadPoolExecutor
 
 from Loss import *
+from Model import *
 
 # Training
 
@@ -119,6 +123,111 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
         running_loss += total_loss.item()
 
     return running_loss / len(dataloader_B)
+
+# Validate
+
+
+def Validate_model(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="Cell", adj_A=None, adj_B=None, pre_patho_labels=None, alphas=[1, 1, 1, 1], device="cpu"):
+    
+    model.eval()  # Set the model to evaluation mode
+
+    validation_loss = 0.0
+    with torch.no_grad():  # No need to track the gradients
+        # RNA-seq data whole batch validation
+        iter_A = iter(dataloader_A)
+
+        if pheno == 'Cox':
+            (X_a, t, e) = next(iter_A)
+            X_a = X_a.to(device)
+            t = t.to(device)
+            e = e.to(device)
+
+        if pheno in ['Bionomial', 'Regression']:
+            (X_a, label) = next(iter_A)
+            X_a = X_a.to(device)
+            label = label.to(device)
+        
+        for batch_B in dataloader_B:
+            # Similar setup as in the training function
+            (X_b, idx) = batch_B
+            X_b = X_b.to(device)
+
+            if adj_A is not None:
+                A = adj_A[idx, :][:, idx]
+                A = A.to(device)
+
+            if adj_B is not None:
+                B = adj_B[idx, :][:, idx]
+                B = B.to(device)
+
+            if pre_patho_labels is not None:
+                idx_np = idx.cpu().numpy()
+                pre_patho = pre_patho_labels.iloc[idx_np].values
+                pre_patho = torch.tensor(pre_patho, dtype=torch.uint8)
+                pre_patho = pre_patho.to(device)
+            
+            # Forward pass only
+            embeddings_a, risk_scores_a, _ = model(X_a)
+            embeddings_b, _, pred_patho = model(X_b)
+
+            # Compute loss as in training function but without backward and optimizer steps
+            # The computation here assumes that the loss functions and infer_mode conditions are the same as in training
+            # Please adapt if your validation conditions differ from the training
+
+            # Calculate loss
+            if pheno == 'Cox':
+                bulk_loss_ = cox_loss(risk_scores_a, t, e)
+
+            elif pheno == 'Bionomial':
+                bulk_loss_ = CrossEntropy_loss(risk_scores_a, label)
+
+            elif pheno == 'Regression':
+                bulk_loss_ = MSE_loss(risk_scores_a, label)
+
+            if infer_mode == 'Cell':
+                cosine_loss_ = cosine_loss(embeddings_b, A)
+                mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
+
+                # total loss
+
+                total_loss = bulk_loss_ * alphas[0] + \
+                    cosine_loss_ * alphas[1] + \
+                    mmd_loss_ * alphas[2]
+
+            elif infer_mode == 'Spot' and adj_B is not None:
+                cosine_loss_exp_ = cosine_loss(embeddings_b, A)
+                cosine_loss_spatial_ = cosine_loss(embeddings_b, B)
+
+                mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
+
+                # total loss
+
+                total_loss = bulk_loss_ * alphas[0] + \
+                    cosine_loss_exp_ * alphas[1] + \
+                    cosine_loss_spatial_ * alphas[2] + \
+                    mmd_loss_ * alphas[3]
+
+            elif infer_mode == 'Spot' and pre_patho is not None:
+                cosine_loss_exp_ = cosine_loss(embeddings_b, A)
+                pathoLloss = CrossEntropy_loss(pred_patho, pre_patho)
+
+                mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
+
+                # total loss
+
+                total_loss = bulk_loss_ * alphas[0] + \
+                    cosine_loss_exp_ * alphas[1] + \
+                    pathoLloss * alphas[2] + \
+                    mmd_loss_ * alphas[3]
+
+            else:
+                raise ValueError(f"Unsupported mode: {infer_mode}. There are two mode: Cell and Spot.")
+            
+            # Add up the total loss for the validation set
+            validation_loss += total_loss.item()
+
+    # Calculate the average loss over all batches in the dataloader
+    return validation_loss / len(dataloader_B)
 
 # Predict
 
@@ -367,3 +476,85 @@ def Pcluster(scAnndata, clusterColName, perm_n = 1001):
 
 
     return df_p_values
+
+## Hyper-paremeters tuning
+def objective(trial, model, train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, device, pheno, infer_mode, model_save_path):
+    
+    # Define hyperparameters with trial object
+    lr_choices = [1e-2, 6e-3, 3e-3, 1e-3, 6e-4, 3e-4, 1e-4,6e-5, 3e-5, 1e-5]
+    lr = trial.suggest_categorical("lr", lr_choices)
+
+    n_epochs_choices = [50,100,150,200,250,300,350,400,450,500]
+    n_epochs = trial.suggest_categorical("n_epochs", n_epochs_choices)
+
+    # Define alpha values as specific choices
+    alpha_choices = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    alphas = [
+        trial.suggest_categorical("alpha_0", alpha_choices),
+        trial.suggest_categorical("alpha_1", alpha_choices),
+        trial.suggest_categorical("alpha_2", alpha_choices),
+        trial.suggest_categorical("alpha_3", alpha_choices),
+    ]
+
+    # Initialize variables for early stopping
+    # best_val_loss = float('inf')
+    # patience = (n_epochs // 4) * 3  # You can adjust the patience level
+    # patience_counter = 0
+
+    optimizer = Adam(model.parameters(), lr=lr)
+    scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
+
+    for epoch in range(n_epochs):
+        ## Train
+        model.train()
+        train_loss = Train_one_epoch(
+            model=model,
+            dataloader_A=train_loader_Bulk, dataloader_B=train_loader_SC,
+            pheno=pheno, infer_mode=infer_mode,
+            adj_A=adj_A,
+            optimizer=optimizer, alphas=alphas, device=device)
+
+        scheduler.step()
+
+        ## Val
+        model.eval()
+        val_loss = Validate_model(
+            model=model,
+            dataloader_A=val_loader_Bulk, dataloader_B=train_loader_SC,
+            pheno=pheno, infer_mode=infer_mode,
+            adj_A=adj_A,
+            alphas=alphas, device=device)
+
+        # # Check for early stopping conditions
+        # if val_loss < best_val_loss:
+        #     best_val_loss = val_loss
+        #     patience_counter = 0  # Reset patience counter on improvement
+        # else:
+        #     patience_counter += 1  # Increment patience counter if no improvement
+
+        trial.report(val_loss, epoch)
+        if trial.should_prune():
+            raise optuna.exceptions.TrialPruned()
+
+        # Early stopping check
+        # if patience_counter >= patience:
+        #     print(f"Early stopping triggered at epoch {epoch} with Validation Loss = {val_loss:.4f}")
+        #     break
+
+    if trial.study.best_trials and val_loss <= trial.study.best_value:
+        print(f"New best trial found: Trial {trial.number} with Validation Loss = {val_loss:.4f}")
+        torch.save(model.state_dict(), os.path.join(model_save_path, "model_trial_{}_val_loss_{:.4f}.pt".format(trial.number, val_loss)))
+
+    return val_loss
+
+def tune_hyperparameters(model, train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, device, pheno, infer_mode, n_trials=50):
+    model_save_path = "./checkpoints/"
+    if not os.path.exists(model_save_path):
+        os.mkdir(model_save_path)
+
+    study = optuna.create_study(direction='minimize')
+    study.optimize(lambda trial: objective(trial, model, train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, device, pheno, infer_mode, model_save_path), n_trials=n_trials)
+    # optuna.visualization.plot_optimization_history(study)
+
+    # Return the best hyperparameters
+    return study.best_trial.params
