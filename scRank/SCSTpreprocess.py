@@ -1,4 +1,5 @@
 # Preprocessing function for scRNA-seq data
+from ctypes import Union
 import scanpy as sc
 import pandas as pd
 import numpy as np
@@ -9,6 +10,35 @@ from scipy.spatial.distance import cdist
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler, TomekLinks
 
+def merge_datasets(bulkClinical_1,bulkClinical_2,bulkExp_1,bulkExp_2):
+
+    genes1 = {x for x in bulkExp_1.index.values}
+    genes2 = {x for x in bulkExp_2.index.values}
+    intersectGenes = genes1.intersection(genes2)
+
+    if len(intersectGenes) == 0:
+        print(f"The length of interaction genes between these two bulk RNA-seq datasets was zero!")
+        return 0
+    
+    intersectGenes_list = [x for x in intersectGenes]
+
+    bulkExp_1 = bulkExp_1.loc[intersectGenes_list,:]
+    bulkExp_2 = bulkExp_2.loc[intersectGenes_list,:]
+
+
+    bulkClinical = np.vstack((bulkClinical_1,bulkClinical_2))
+    bulkExp = np.hstack((bulkExp_1,bulkExp_2))
+
+    pid1 = [x for x in bulkExp_1.columns]
+    pid2 = [y for y in bulkExp_2.columns]
+
+    pid1.extend(pid2)
+
+    pd.DataFrame(bulkExp)
+    bulkClinical = pd.DataFrame(bulkClinical,columns=bulkClinical_1.columns,index=pid1)
+    bulkExp = pd.DataFrame(bulkExp,columns=pid1,index=bulkExp_1.index)
+
+    return  bulkExp, bulkClinical
 
 def is_imbalanced(bulkClinical, threshold):
     counts = bulkClinical.iloc[:, 0].value_counts(normalize=True)
@@ -60,6 +90,16 @@ def PreprocessingST(adata):
     sc.pp.filter_genes(adata, min_cells=10)
 
     return adata
+
+
+# Merge different bulk dataset
+
+
+def Merge_Bulk(bulkExp_1,bulkExp_2,bulkClinical_1,bulkClinical_2):
+    
+
+    return bulkExp, bulkClinical
+
 
 # This function performs the MAGIC (Markov Affinity-based Graph Imputation of Cells) process on scRNA-seq data.
 

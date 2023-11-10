@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import scanpy as sc
 from sklearn.mixture import GaussianMixture
+import scipy.stats as stats
 
 import optuna
 from concurrent.futures import ThreadPoolExecutor
@@ -67,6 +68,8 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
         embeddings_a, risk_scores_a, _ = model(X_a)
         embeddings_b, _, pred_patho = model(X_b)
 
+        regularization_loss_ = regularization_loss(model.feature_weights)
+
         # Calculate loss
         if pheno == 'Cox':
             bulk_loss_ = cox_loss(risk_scores_a, t, e)
@@ -83,9 +86,9 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 
             # total loss
 
-            total_loss = bulk_loss_ * alphas[0] + \
-                cosine_loss_ * alphas[1] + \
-                mmd_loss_ * alphas[2]
+            total_loss = regularization_loss_+ bulk_loss_ * alphas[0] + \
+                    cosine_loss_ * alphas[1] + \
+                    mmd_loss_ * alphas[2]
 
         elif infer_mode == 'Spot' and adj_B is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
@@ -95,7 +98,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 
             # total loss
 
-            total_loss = bulk_loss_ * alphas[0] + \
+            total_loss = regularization_loss_ + bulk_loss_ * alphas[0] + \
                 cosine_loss_exp_ * alphas[1] + \
                 cosine_loss_spatial_ * alphas[2] + \
                 mmd_loss_ * alphas[3]
@@ -108,7 +111,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
 
             # total loss
 
-            total_loss = bulk_loss_ * alphas[0] + \
+            total_loss = regularization_loss_ + bulk_loss_ * alphas[0] + \
                 cosine_loss_exp_ * alphas[1] + \
                 pathoLloss * alphas[2] + \
                 mmd_loss_ * alphas[3]
@@ -232,7 +235,7 @@ def Validate_model(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="C
 # Predict
 
 
-def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tolerance=0.05):
+def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tolerance=0.05, reject_mode = "GMM"):
     model.eval()
 
     # Predict on cell
@@ -259,8 +262,14 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tole
     embeddings = embeddings_sc.detach().numpy()
 
     if do_reject:
-        reject_mask = Reject(pred_bulk, pred_sc,
-                             tolerance=tolerance, max_components=10)
+        if reject_mode == "GMM":
+            reject_mask = Reject_With_GMM(pred_bulk, pred_sc,
+                                tolerance=tolerance, min_components=3, max_components=15)
+        elif reject_mode == "Strict":
+            reject_mask = Reject_With_StrictNumber(pred_bulk, pred_sc,tolerance=tolerance)
+        else:
+            raise ValueError(f"Unsupported Rejcetion Mode: {reject_mode}")
+
 
     saveDF = pd.DataFrame(data=np.concatenate(
         (reject_mask, pred_sc, embeddings), axis=1), index=sc_GPmat.index)
@@ -277,7 +286,8 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tole
 # Reject
 
 
-def Reject(pred_bulk, pred_sc, tolerance, max_components):
+def Reject_With_GMM(pred_bulk, pred_sc, tolerance, min_components, max_components):
+    print(f"Perform Rejection with GMM mode with tolerance={tolerance}, components=[{min_components},{max_components}]!")
 
     gmm_bulk = GaussianMixture(n_components=2, random_state=619).fit(pred_bulk)
 
@@ -288,7 +298,7 @@ def Reject(pred_bulk, pred_sc, tolerance, max_components):
         print("Underfitting!")
 
     # Iterate over the number of components
-    for n_components in range(2, max_components + 1):
+    for n_components in range(min_components, max_components + 1):
         gmm_sc = GaussianMixture(
             n_components=n_components, random_state=619).fit(pred_sc)
 
@@ -310,11 +320,11 @@ def Reject(pred_bulk, pred_sc, tolerance, max_components):
 
             # Find the component whose mean is nearest to 0 and 1
             # 1
-            diffs_1 = gmm_bulk_mean_1 - gmm_sc.means_
+            diffs_1 = abs(gmm_bulk_mean_1 - gmm_sc.means_) 
             nearest_component_1 = np.where(diffs_1 <= tolerance)[0]
 
             # 0
-            diffs_0 = gmm_sc.means_ - gmm_bulk_mean_0
+            diffs_0 = abs(gmm_sc.means_ - gmm_bulk_mean_0)
             nearest_component_0 = np.where(diffs_0 <= tolerance)[0]
 
             # concat
@@ -390,6 +400,53 @@ def Reject(pred_bulk, pred_sc, tolerance, max_components):
 
     return mask
 
+def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
+    print(f"Perform Rejection with Strict Number mode with tolerance={tolerance}!")
+
+    gmm_bulk = GaussianMixture(n_components=2, random_state=619).fit(pred_bulk)
+
+    ## Get mean
+    gmm_bulk_means = gmm_bulk.means_.flatten()
+    gmm_bulk_mean_1 = np.max(gmm_bulk_means)
+    gmm_bulk_mean_0 = np.min(gmm_bulk_means)
+
+    ## Get std
+    gmm_bulk_stds = np.sqrt(gmm_bulk.covariances_)
+    gmm_bulk_std_1 = gmm_bulk_stds[0][0]
+    gmm_bulk_std_0 = gmm_bulk_stds[1][0]
+
+    if (gmm_bulk_mean_1 - gmm_bulk_mean_0) <= 0.8:
+        print("Underfitting!")
+
+    # Calculate the percentile range for the tolerance
+    lower_percentile = 0.5 - tolerance / 2
+    upper_percentile = 0.5 + tolerance / 2
+
+    # Calculate the range for the first Gaussian distribution
+    range_low_1 = stats.norm.ppf(lower_percentile, gmm_bulk_mean_1, gmm_bulk_std_1)
+    range_high_1 = stats.norm.ppf(upper_percentile, gmm_bulk_mean_1, gmm_bulk_std_1)
+
+    # Calculate the range for the second Gaussian distribution
+    range_low_0 = stats.norm.ppf(lower_percentile, gmm_bulk_mean_0, gmm_bulk_std_0)
+    range_high_0 = stats.norm.ppf(upper_percentile, gmm_bulk_mean_0, gmm_bulk_std_0)
+
+    print(f"For the first Gaussian distribution with mean {gmm_bulk_mean_1} and std {gmm_bulk_std_1}:")
+    print(f"The range around the mean that contains {tolerance*100}% of the samples is approximately from {range_low_1} to {range_high_1}")
+
+    print(f"For the second Gaussian distribution with mean {gmm_bulk_mean_0} and std {gmm_bulk_std_0}:")
+    print(f"The range around the mean that contains {tolerance*100}% of the samples is approximately from {range_low_0} to {range_high_0}")
+
+    mask = np.ones(shape=(len(pred_sc), 1))
+
+    # Set mask to zero where the condition for the first Gaussian distribution is met
+    mask[(pred_sc >= range_low_1) & (pred_sc <= range_high_1)] = 0
+
+    # Set mask to zero where the condition for the second Gaussian distribution is met
+    mask[(pred_sc >= range_low_0) & (pred_sc <= range_high_0)] = 0
+
+    print(f"Reject {int(sum(mask))}({int(sum(mask))*100 / len(mask) :.2f}%) cells.")
+
+    return mask
 
 # categorize
 def categorize(scAnndata, sc_PredDF, do_cluster=False):
@@ -484,17 +541,23 @@ def objective(trial, model, train_loader_Bulk, val_loader_Bulk, train_loader_SC,
     lr_choices = [1e-2, 6e-3, 3e-3, 1e-3, 6e-4, 3e-4, 1e-4,6e-5, 3e-5, 1e-5]
     lr = trial.suggest_categorical("lr", lr_choices)
 
-    n_epochs_choices = [50,100,150,200,250,300,350,400,450,500]
+    n_epochs_choices = [200,250,300,350,400,450,500]
     n_epochs = trial.suggest_categorical("n_epochs", n_epochs_choices)
 
     # Define alpha values as specific choices
-    alpha_choices = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    alpha_0_choices = [0.1, 0.2, 0.3, 0.4, 0.5]
+    alpha_1_choices = [1e-1, 5e-2, 1e-2, 5e-3, 1e-3, 5e-4, 1e-4]
+    alpha_2_choices = [0.1, 0.2, 0.3, 0.4, 0.5]
+    alpha_3_choices = [0.1, 0.2, 0.3, 0.4, 0.5]
+
+    # Suggest categorical choices for each alpha
     alphas = [
-        trial.suggest_categorical("alpha_0", alpha_choices),
-        trial.suggest_categorical("alpha_1", alpha_choices),
-        trial.suggest_categorical("alpha_2", alpha_choices),
-        trial.suggest_categorical("alpha_3", alpha_choices),
+        trial.suggest_categorical("alpha_0", alpha_0_choices),
+        trial.suggest_categorical("alpha_1", alpha_1_choices),
+        trial.suggest_categorical("alpha_2", alpha_2_choices),
+        trial.suggest_categorical("alpha_3", alpha_3_choices),
     ]
+
 
     # Initialize variables for early stopping
     # best_val_loss = float('inf')
@@ -523,7 +586,7 @@ def objective(trial, model, train_loader_Bulk, val_loader_Bulk, train_loader_SC,
             dataloader_A=val_loader_Bulk, dataloader_B=train_loader_SC,
             pheno=pheno, infer_mode=infer_mode,
             adj_A=adj_A,
-            alphas=alphas, device=device)
+            alphas=[1,0,1,0], device=device)
 
         # # Check for early stopping conditions
         # if val_loss < best_val_loss:
@@ -540,6 +603,9 @@ def objective(trial, model, train_loader_Bulk, val_loader_Bulk, train_loader_SC,
         # if patience_counter >= patience:
         #     print(f"Early stopping triggered at epoch {epoch} with Validation Loss = {val_loss:.4f}")
         #     break
+
+    if trial.number == 0:
+        torch.save(model.state_dict(), os.path.join(model_save_path, "model_trial_{}_val_loss_{:.4f}.pt".format(trial.number, val_loss)))
 
     if trial.study.best_trials and val_loss <= trial.study.best_value:
         print(f"New best trial found: Trial {trial.number} with Validation Loss = {val_loss:.4f}")
@@ -558,3 +624,29 @@ def tune_hyperparameters(model, train_loader_Bulk, val_loader_Bulk, train_loader
 
     # Return the best hyperparameters
     return study.best_trial.params
+
+## Extract GP on other datasets
+def transform_test_exp(train_exp, test_exp):
+    # Initialize a new DataFrame to store the transformed test data
+    transformed_test_exp = pd.DataFrame(index=test_exp.columns)
+
+    # Iterate over the columns in the train_exp DataFrame
+    for column in train_exp.columns:
+        # Parse the column name to get the two gene names
+        geneA, geneB = column.split('__')
+        
+        # Check if both genes are present in the test_exp
+        if geneA in test_exp.index and geneB in test_exp.index:
+            # Perform the comparison for each sample in test_exp and assign the values to the new DataFrame
+            transformed_test_exp[column] = (test_exp.loc[geneA] > test_exp.loc[geneB]).astype(int) * 2 - 1
+            
+            # Handle cases where geneA == geneB by assigning 0
+            transformed_test_exp.loc[:, column][test_exp.loc[geneA] == test_exp.loc[geneB]] = 0
+        else:
+            # If one or both genes are not present, assign 0 for all samples
+            transformed_test_exp[column] = 0
+
+    # Transpose the DataFrame to match the structure of train_exp
+    # transformed_test_exp = transformed_test_exp.transpose()
+
+    return transformed_test_exp
