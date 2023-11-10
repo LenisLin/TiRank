@@ -5,6 +5,9 @@ warnings.filterwarnings("ignore")
 import sys
 import os
 import pickle
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
 
 import numpy as np
 import pandas as pd
@@ -24,27 +27,37 @@ from TrainPre import *
 from Visualization import *
 
 # Dictionary Path
-dataPath = "/mnt/data/lyx/scRankv2/data/"
+dataPath = "/mnt/data/lyx/scRankv2/data/RNAseq_treatment/Melanoma/"
 savePath = "./tempfiles/"
 
 if not (os.path.exists(savePath)):
     os.makedirs(savePath)
 
 # load clinical data
-bulkClinical = pd.read_table(os.path.join(dataPath,
-                                          "RNAseq_treatment/Melanoma/Liu2019/patient.csv"), sep=",", index_col=0)
-bulkClinical.head()
-
+bulkClinical = pd.read_table(os.path.join(dataPath,"PUCH2021_meta.csv"), sep=",", index_col=0)
 bulkClinical.columns = ["Group","OS_status","OS_time"]
-bulkClinical['Group'] = bulkClinical['Group'].apply(lambda x: 1 if x in ['PR', 'CR'] else 0)
+bulkClinical['Group'] = bulkClinical['Group'].apply(lambda x: 0 if x in ['PR', 'CR', 'CRPR'] else 1)
 bulkClinical = pd.DataFrame(bulkClinical['Group']) 
 
+bulkClinical.head()
+
 # load bulk expression profile
-bulkExp = pd.read_csv(os.path.join(
-    dataPath, "RNAseq_treatment/Melanoma/Liu2019/RNAseq_FPKM.csv"), index_col=0)
+bulkExp = pd.read_csv(os.path.join(dataPath, "PUCH2021_exp.csv"), index_col=0)
 
 bulkExp.shape
 bulkExp.iloc[0:5, 0:5]
+
+# load validation profile
+for dataId in ["Hugo2016","VanAllen2015","Riaz2017"]: # "Gide2019","Liu2019"
+    val_bulkClinical = pd.read_table(os.path.join(dataPath,dataId+"_meta.csv"), sep=",", index_col=0)
+    val_bulkClinical.columns = ["Group","OS_status","OS_time"]
+    val_bulkClinical['Group'] = val_bulkClinical['Group'].apply(lambda x: 0 if x in ['PR', 'CR', 'CRPR'] else 1)
+    val_bulkClinical = pd.DataFrame(val_bulkClinical['Group']) 
+    val_bulkExp = pd.read_csv(os.path.join(dataPath, dataId+"_exp.csv"), index_col=0)
+    # test_bulkExp.iloc[0:5, 0:5]
+
+    # merge two datasets
+    bulkExp, bulkClinical = merge_datasets(bulkClinical_1 = bulkClinical,bulkClinical_2 = val_bulkClinical,bulkExp_1 = bulkExp,bulkExp_2 = val_bulkExp)
 
 # sampling
 bulkExp, bulkClinical = perform_sampling_on_RNAseq(bulkExp = bulkExp, bulkClinical = bulkClinical, mode="SMOTE", threshold=0.5)
@@ -75,10 +88,10 @@ GPextractor = GenePairExtractor(
     clinical_data=bulkClinical,
     single_cell_expression=scExp,
     analysis_mode="Bionomial",
-    top_var_genes=5000,
-    top_gene_pairs=10000,
-    padj_value_threshold=0.1,
-    # p_value_threshold = 0.01,
+    top_var_genes=2000,
+    top_gene_pairs=1000,
+    # padj_value_threshold=0.05,
+    p_value_threshold = 0.05,
     max_cutoff=0.8,
     min_cutoff=-0.8
 )
@@ -86,6 +99,8 @@ GPextractor = GenePairExtractor(
 bulk_gene_pairs_mat, single_cell_gene_pairs_mat = GPextractor.run_extraction()
 bulk_gene_pairs_mat = pd.DataFrame(bulk_gene_pairs_mat.T)
 single_cell_gene_pairs_mat = pd.DataFrame(single_cell_gene_pairs_mat.T)
+
+# val_bulkExp_gene_pairs_mat = transform_test_exp(train_exp = bulk_gene_pairs_mat,test_exp = val_bulkExp) ## validation
 
 with open(os.path.join(savePath, 'bulk_gene_pairs_mat.pkl'), 'wb') as f:
     pickle.dump(bulk_gene_pairs_mat, f)
@@ -121,7 +136,10 @@ mode = "Bionomial"
 # train_dataset_Bulk = BulkDataset(
 #     bulk_gene_pairs_mat, bulkClinical, mode=mode)
 
-train_dataset_Bulk, val_dataset_Bulk = generate_val(bulk_gene_pairs_mat, bulkClinical, mode = mode, need_val = True, validation_proportion = 0.15)
+# val_dataset_Bulk = BulkDataset(
+#     val_bulkExp_gene_pairs_mat, val_bulkClinical, mode=mode)
+
+train_dataset_Bulk, val_dataset_Bulk = generate_val(bulk_gene_pairs_mat, bulkClinical, mode = mode, need_val = True, validation_proportion = 0.2)
 
 train_dataset_SC = SCDataset(single_cell_gene_pairs_mat)
 
@@ -172,7 +190,7 @@ best_params = tune_hyperparameters(
     device=device,
     pheno=mode,
     infer_mode=infer_mode,
-    n_trials=50
+    n_trials=20
 )
 
 print("Best hyperparameters:", best_params)
@@ -198,11 +216,11 @@ print("Best hyperparameters:", best_params)
 mode = "Bionomial"
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
                nhid2=8, n_output=32, nlayers=3, n_pred=2, dropout=0.5, mode=mode, encoder_type=encoder_type)
-model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_17_val_loss_0.4429.pt")))
+model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_1_val_loss_0.5055.pt")))
 model = model.to("cpu")
 
 sc_PredDF = Predict(model, bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
-                    mode="Bionomial", sc_rownames=scAnndata.obs.index.tolist(), do_reject=True, tolerance=0.01)
+                    mode="Bionomial", sc_rownames=scAnndata.obs.index.tolist(), do_reject=True, tolerance=0.1, reject_mode = "Strict")
 
 scAnndata = categorize(scAnndata, sc_PredDF, do_cluster=False)
 sc_pred_df = scAnndata.obs
@@ -231,42 +249,8 @@ pred_label_bulk = torch.max(
 pred_prob_bulk = torch.nn.functional.softmax(
     prob_bulkores_bulk)[:, 1].detach().numpy().reshape(-1, 1)
 
-import seaborn as sns
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-import matplotlib.pyplot as plt
 
-# Assuming df is your dataframe, and 'Group' column is true labels and 'PredClass' column is predicted label
-true_labels_bulk = bulkClinical["Group"]
-predicted_labels_bulk = pred_label_bulk
-
-# Compute confusion matrix
-if True:
-    # create a figure with 1 row and 2 columns of subplots
-    fig, ax = plt.subplots(1, 2, figsize=(20, 7))
-
-    # Second heatmap
-    cm = confusion_matrix(true_labels_bulk, predicted_labels_bulk)
-    accuracy = accuracy_score(true_labels_bulk, predicted_labels_bulk)
-    precision = precision_score(true_labels_bulk, predicted_labels_bulk)
-    recall = recall_score(true_labels_bulk, predicted_labels_bulk)
-
-    print(f'Bulk Accuracy: {accuracy}')
-    print(f'Bulk Precision: {precision}')
-    print(f'Bulk Recall: {recall}')
-
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=[
-                0, 1], yticklabels=[0, 1], ax=ax[1])  # add ax=ax[1]
-
-    ax[1].set_title('Confusion Matrix (Bulk)')
-    ax[1].set_xlabel('Predicted')
-    ax[1].set_ylabel('Actual')
-
-    # Save the entire figure as a .png
-    fig.savefig('cell treatment (reject) - both.png')
-
-    plt.show()
-    plt.close()
+# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # display the prob score distribution
 sns.distplot(pred_prob_bulk, hist=False, kde=True, kde_kws={
@@ -281,8 +265,36 @@ plt.ylabel('Density')
 # Move the legend box to upper left
 plt.legend(title='Sample Type', loc='upper left')
 plt.savefig('cell treatment pred prob - both.png')
-
 plt.show()
 plt.close()
 
 scAnndata.write(os.path.join(savePath,"scAnndata.h5ad"))
+
+## Evaluate on other data
+test_set = ["Gide2019","Hugo2016","Liu2019","PUCH2021","Riaz2017","VanAllen2015"]
+for dataId in test_set:
+    test_bulkClinical = pd.read_table(os.path.join(dataPath,dataId+"_meta.csv"), sep=",", index_col=0)
+    test_bulkClinical.columns = ["Group","OS_status","OS_time"]
+    test_bulkClinical['Group'] = test_bulkClinical['Group'].apply(lambda x: 0 if x in ['PR', 'CR', 'CRPR'] else 1)
+
+    # load bulk expression profile
+    test_bulkExp = pd.read_csv(os.path.join(dataPath, dataId+"_exp.csv"), index_col=0)
+    # test_bulkExp.iloc[0:5, 0:5]
+
+    test_bulkExp_gene_pairs_mat = transform_test_exp(train_exp = bulk_gene_pairs_mat,test_exp = test_bulkExp)
+    test_Exp_Tensor_bulk = torch.from_numpy(np.array(test_bulkExp_gene_pairs_mat))
+    test_Exp_Tensor_bulk = torch.tensor(test_Exp_Tensor_bulk, dtype=torch.float32)
+
+    test_embeddings, test_prob_bulkores_bulk, _ = model(test_Exp_Tensor_bulk)
+    test_pred_label = torch.max(test_prob_bulkores_bulk, dim=1).indices.detach().numpy()
+    test_bulkClinical["scRank_Label"] = [x for x in test_pred_label]
+    test_bulkClinical.to_csv(os.path.join(savePath,"bulk_pred_score",dataId+"_predict_score.csv"))
+
+    true_labels_bulk = test_bulkClinical['Group']
+    predicted_labels_bulk = test_bulkClinical["scRank_Label"]
+
+    cm = confusion_matrix(true_labels_bulk, predicted_labels_bulk)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.savefig(os.path.join(savePath, "bulk_confusion", f'Pred on bulk: {dataId}.png') )
+    plt.show()
+    plt.close()

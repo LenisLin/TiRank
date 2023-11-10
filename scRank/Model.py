@@ -62,28 +62,48 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         x = x + self.pe[:x.size(0), :]
         return self.dropout(x)
-
+        
 
 class DenseNetEncoderModel(nn.Module):
-    def __init__(self, n_features, nhid, nlayers, n_output, dropout=0.5):
+    def __init__(self, n_features, nlayers, n_output, dropout=0.5, growth_rate=0.5):
         super(DenseNetEncoderModel, self).__init__()
         self.model_type = 'DenseNet'
 
+        self.n_features = n_features
+        self.growth_rate = growth_rate
+        self.nlayers = nlayers
+        self.n_output = n_output
+        self.dropout = dropout
+
+        # Calculate the number of output features for each dense layer based on growth rate
+        dense_layer_sizes = [int(n_features + i * n_features * growth_rate) for i in range(nlayers)]
+
+        # Create dense layers
         self.layers = nn.ModuleList()
-        self.layers.append(nn.Linear(n_features, nhid))
-        for i in range(nlayers - 1):
-            self.layers.append(nn.Linear(nhid * (i + 1), nhid))
-        self.layers.append(nn.Linear(nhid * nlayers, n_output))
+        for i, layer_size in enumerate(dense_layer_sizes):
+            if i == 0:
+                self.layers.append(nn.Linear(n_features, layer_size))
+            else:
+                self.layers.append(nn.Linear(dense_layer_sizes[i-1], layer_size))
+        
+        # Final layer that takes the last dense layer size into account
+        self.final_layer = nn.Linear(dense_layer_sizes[-1], n_output)
 
         self.activation = nn.ELU()
-        self.dropout = nn.Dropout(dropout)
+        self.dropout_layer = nn.Dropout(dropout)
 
     def forward(self, x):
-        features = [self.layers[0](x)]
-        for layer in self.layers[1:-1]:
-            features.append(layer(torch.cat(features, dim=1)))
-            features = [self.dropout(self.activation(f)) for f in features]
-        embedding = self.layers[-1](torch.cat(features, dim=1))
+        features = x
+        for layer in self.layers:
+            # Compute the current layer's output
+            layer_output = layer(features)
+            # Apply activation and dropout to the current layer's output
+            layer_output = self.dropout_layer(self.activation(layer_output))
+            # Use the current layer's output as input for the next layer
+            features = layer_output
+
+        # Compute the final embedding without activation or dropout
+        embedding = self.final_layer(features)
         return embedding
 
 
@@ -105,8 +125,9 @@ class MLPEncoderModel(nn.Module):
             nn.ELU(),
             nn.Dropout(dropout),
             *self.hidden_layers,
-            nn.Linear(nhid, n_output),
-            nn.ELU()
+            # nn.Linear(nhid, n_output),
+            # nn.ELU()
+            nn.Linear(nhid, n_output)
         )
 
     def forward(self, x):
@@ -152,7 +173,7 @@ class ClassscorePredictor(nn.Module):
         )
 
     def forward(self, embedding):
-        proba_score = self.ClassscoreMLP(embedding)
+        proba_score = torch.sigmoid(self.ClassscoreMLP(embedding))
         return proba_score
 
 
@@ -169,6 +190,7 @@ class PathologyPredictor(nn.Module):
             # nn.Linear(nhid, nhid),
             # nn.LeakyReLU(),
             # nn.Dropout(dropout),
+            # nn.Linear(nhid, nclass),
             nn.Linear(n_features, nclass),
         )
 
@@ -182,6 +204,12 @@ class PathologyPredictor(nn.Module):
 class scRank(nn.Module):
     def __init__(self, n_features, nhead, nhid1, nhid2, nlayers, n_output, n_pred=1, n_patho=6, dropout=0.5, mode="Cox", encoder_type="MLP"):
         super(scRank, self).__init__()
+
+        # Initialize the learnable weight matrix
+        self.feature_weights = nn.Parameter(torch.Tensor(n_features, 1))
+        nn.init.xavier_uniform_(self.feature_weights)
+
+        ## Encoder
         self.encoder_type = encoder_type
 
         if self.encoder_type == "Transformer":
@@ -192,8 +220,11 @@ class scRank(nn.Module):
                 n_features, nhid1, nlayers, n_output, dropout)
         elif self.encoder_type == "DenseNet":
             self.encoder = DenseNetEncoderModel(
-                n_features, nhid1, nlayers, n_output, dropout)
+                n_features, nlayers, n_output, dropout)
+        else:
+            raise ValueError(f"Unsupported Encoder Type: {self.encoder_type}")
 
+        ## Mode
         if mode in ["Cox", "Regression"]:
             self.predictor = RiskscorePredictor(
                 n_output, nhid2, n_pred, dropout)
@@ -206,7 +237,8 @@ class scRank(nn.Module):
             n_output, nhid2, n_patho, dropout)
 
     def forward(self, x):
-        embedding = self.encoder(x)
+        scaled_x = x * self.feature_weights.T
+        embedding = self.encoder(scaled_x)
         risk_score = self.predictor(embedding)
         patho_pred = self.pathologpredictor(embedding)
 

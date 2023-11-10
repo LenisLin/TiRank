@@ -4,6 +4,18 @@ import torch.nn as nn
 import numpy as np
 
 
+def regularization_loss(feature_weights):
+    """
+    Calculate the L1 regularization loss.
+
+    Parameters:
+    feature_weights (torch.Tensor): The learnable weight matrix.
+
+    Returns:
+    torch.Tensor: The calculated regularization loss.
+    """
+    return torch.sum(torch.abs(feature_weights))
+
 def cox_loss(pred, t, e, margin=0.1):
     assert len(pred) == len(t) == len(e)
     """
