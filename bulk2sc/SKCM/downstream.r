@@ -159,6 +159,22 @@ plot_feature_distribution <- function(data_matrix) {
     return(p)
 }
 
+plot_gene_diff <- function(exp,cli,genes) {
+    data_combine <- as.data.frame(cbind(t(exp[genes,]),cli$Response))
+    colnames(data_combine) <- c(genes,"Response")
+
+    data_long <- tidyr::pivot_longer()
+
+    # Create the boxplot
+    p <- ggplot(data_long, aes(x = as.factor(Sample), y = value)) +
+        geom_boxplot(outlier.shape = NA) + # Hide outliers to avoid overplotting
+        geom_jitter(width = 0.2, alpha = 0.5, size = 0.1) + # Add jitter to show actual points
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) + # Adjust text angle for x-axis labels
+        labs(x = "Sample", y = "Feature Value", fill = "Feature", title = "Feature Distribution per Sample")
+
+    return(p)
+}
+
 for (data in datasets) {
     exp <- read.csv(paste0(dataPath, data, "_exp.csv"), row.names = 1)
     meta <- read.csv(paste0("/home/lyx/project/scRankv2/bulk2sc/SKCM/tempfiles/bulk_pred_score/", data, "_predict_score.csv"), row.names = 1)
@@ -239,4 +255,7 @@ for (data in datasets) {
     # png(paste0(figurePath, data, " Pred response with OS.png"), width = 450, height = 450)
     # print(p)
     # dev.off()
+
+    ## Determine certain DEGs
+
 }
