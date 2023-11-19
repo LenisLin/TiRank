@@ -68,7 +68,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="
         embeddings_a, risk_scores_a, _ = model(X_a)
         embeddings_b, _, pred_patho = model(X_b)
 
-        regularization_loss_ = regularization_loss(model.feature_weights)
+        regularization_loss_ =  0.1 * regularization_loss(model.feature_weights)
 
         # Calculate loss
         if pheno == 'Cox':
@@ -246,37 +246,52 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tole
     # Predict on bulk
     Exp_Tensor_bulk = torch.from_numpy(np.array(bulk_GPmat))
     Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
-    _, pred_bulk, _ = model(Exp_Tensor_bulk)
+    embeddings_bulk, pred_bulk, _ = model(Exp_Tensor_bulk)
 
     if mode == "Cox":
         pred_bulk = pred_bulk.detach().numpy().reshape(-1, 1)
         pred_sc = pred_sc.detach().numpy().reshape(-1, 1)
 
-    if mode == "Bionomial":
+    elif mode == "Bionomial":
         pred_sc = torch.nn.functional.softmax(
             pred_sc)[:, 1].detach().numpy().reshape(-1, 1)
 
         pred_bulk = torch.nn.functional.softmax(
             pred_bulk)[:, 1].detach().numpy().reshape(-1, 1)
 
-    embeddings = embeddings_sc.detach().numpy()
+    elif mode == "Regression":
+        pred_sc = pred_sc.detach().numpy().reshape(-1, 1)
+        pred_bulk = pred_bulk.detach().numpy().reshape(-1, 1)
+
+    embeddings_sc = embeddings_sc.detach().numpy()
+    embeddings_bulk = embeddings_bulk.detach().numpy()
 
     if do_reject:
         if reject_mode == "GMM":
-            reject_mask = Reject_With_GMM(pred_bulk, pred_sc,
-                                tolerance=tolerance, min_components=3, max_components=15)
+            if mode in ["Cox","Bionomial"]:
+                reject_mask = Reject_With_GMM_Bio(pred_bulk, pred_sc,
+                                    tolerance=tolerance, min_components=3, max_components=15)
+            if mode == "Regression":
+                reject_mask = Reject_With_GMM_Reg(pred_bulk, pred_sc,tolerance=tolerance)
+
         elif reject_mode == "Strict":
-            reject_mask = Reject_With_StrictNumber(pred_bulk, pred_sc,tolerance=tolerance)
+            if mode in ["Cox","Bionomial"]:
+                reject_mask = Reject_With_StrictNumber(pred_bulk, pred_sc,tolerance=tolerance)          
+
+            if mode == "Regression":
+                print("Test")
         else:
             raise ValueError(f"Unsupported Rejcetion Mode: {reject_mode}")
-
+    
+    else:
+        reject_mask = np.zeros_like()
 
     saveDF = pd.DataFrame(data=np.concatenate(
-        (reject_mask, pred_sc, embeddings), axis=1), index=sc_GPmat.index)
+        (reject_mask, pred_sc, embeddings_sc), axis=1), index=sc_GPmat.index)
 
     colnames = ["Reject", "Pred_score"]
     colnames.extend(["embedding_" + str(i + 1)
-                    for i in range(embeddings.shape[1])])
+                    for i in range(embeddings_sc.shape[1])])
 
     saveDF.columns = colnames
     saveDF.index = sc_rownames
@@ -286,7 +301,7 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tole
 # Reject
 
 
-def Reject_With_GMM(pred_bulk, pred_sc, tolerance, min_components, max_components):
+def Reject_With_GMM_Bio(pred_bulk, pred_sc, tolerance, min_components, max_components):
     print(f"Perform Rejection with GMM mode with tolerance={tolerance}, components=[{min_components},{max_components}]!")
 
     gmm_bulk = GaussianMixture(n_components=2, random_state=619).fit(pred_bulk)
@@ -400,6 +415,37 @@ def Reject_With_GMM(pred_bulk, pred_sc, tolerance, min_components, max_component
 
     return mask
 
+def Reject_With_GMM_Reg(pred_bulk, pred_sc, tolerance):
+    print(f"Perform Rejection with GMM mode with tolerance={tolerance}!")
+
+    gmm_bulk = GaussianMixture(n_components=1, random_state=619).fit(pred_bulk)
+    gmm_sc = GaussianMixture(n_components=1, random_state=619).fit(pred_sc)
+
+    ## Mean
+    gmm_bulk_mean = gmm_bulk.means_[0][0]
+    gmm_sc_mean = gmm_sc.means_[0][0]
+
+    ## Std
+    gmm_bulk_variance = gmm_bulk.covariances_[0][0]
+    gmm_bulk_std = np.sqrt(gmm_bulk_variance)
+
+    if (abs(gmm_sc_mean - gmm_bulk_mean)) >= 0.5:
+        print("Integration was failed !")
+        mask = np.ones(shape=(len(pred_sc), 1))
+
+    else:
+        if tolerance > gmm_bulk_std:
+            tolerance = gmm_bulk_std
+        lower_bound = gmm_bulk_mean - tolerance
+        upper_bound = gmm_bulk_mean + tolerance
+
+        mask = np.ones(shape=(len(pred_sc), 1))
+        mask[(pred_sc >= lower_bound) & (pred_sc <= upper_bound)] = 0
+
+    print(f"Reject {int(sum(mask))}({int(sum(mask))*100 / len(mask) :.2f}%) cells.")
+
+    return mask
+
 def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
     print(f"Perform Rejection with Strict Number mode with tolerance={tolerance}!")
 
@@ -449,7 +495,7 @@ def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
     return mask
 
 # categorize
-def categorize(scAnndata, sc_PredDF, do_cluster=False):
+def categorize(scAnndata, sc_PredDF, do_cluster=False, mode = None):
     if sc_PredDF.shape[0] != scAnndata.obs.shape[0]:
         raise ValueError(
             "The prediction matrix was not match with original scAnndata.")
@@ -460,19 +506,22 @@ def categorize(scAnndata, sc_PredDF, do_cluster=False):
             sc.tl.leiden(scAnndata, key_added="clusters")
 
         scAnndata.obsm["Rank_Embedding"] = sc_PredDF.iloc[:, 2:]
-
         scAnndata.obs["Reject"] = sc_PredDF.iloc[:, 0]
         scAnndata.obs["Rank_Score"] = sc_PredDF.iloc[:, 1]
-        scAnndata.obs["Rank_Score"] = scAnndata.obs["Rank_Score"] * \
-            (1 - scAnndata.obs["Reject"])
-        scAnndata.obs["Rank_Label"] = [
-            "Background" if i == 0 else
-            "Rank-" if 0 < i <= 0.5 else
-            "Rank+"
-            for i in scAnndata.obs["Rank_Score"]
-        ]
 
-        print(f"We set Rank score <= 0.5 as Rank- () while > 0.5 as Rank+ ")
+        if mode in ["Cox","Bionomial"]:
+            temp = scAnndata.obs["Rank_Score"] * (1 - scAnndata.obs["Reject"])
+            scAnndata.obs["Rank_Label"] = [
+                "Background" if i == 0 else
+                "Rank-" if 0 < i <= 0.5 else
+                "Rank+"
+                for i in temp
+            ]
+
+            print(f"We set Rank score <= 0.5 as Rank- () while > 0.5 as Rank+ ")
+
+        if mode == "Regression":
+            scAnndata.obs["Rank_Label"] = scAnndata.obs["Rank_Score"] * (1 - scAnndata.obs["Reject"])
 
     return scAnndata
 

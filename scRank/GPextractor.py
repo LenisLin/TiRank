@@ -188,8 +188,11 @@ class GenePairExtractor():
             correlation, pvalue = pearsonr(
                 exp_gene, self.clinical_data.iloc[:, 0])
 
-            correlation_results = correlation_results.append(
-                {"gene": self.bulk_expression.index[i], "correlation": correlation, "pvalue": pvalue}, ignore_index=True)
+            correlation_results = pd.concat([
+                correlation_results,pd.Series({"gene": self.bulk_expression.index[i], 
+                "correlation": correlation, 
+                "pvalue": pvalue}).to_frame().T], axis=0, ignore_index=True)
+
 
         correlation_results = correlation_results.dropna()
         correlation_results["correlation"] = correlation_results["correlation"].astype(

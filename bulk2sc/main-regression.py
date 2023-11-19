@@ -65,6 +65,7 @@ del scExp, scClinical, scExp_
 # scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE117872_Primary.h5ad"))
 scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE117872_Primary.h5ad"))
 
+
 # Preprocessing scRNA-seq data
 # scAnndata_magic = perform_magic_preprocessing(scAnndata,require_normalization=True)
 similarity_df = calculate_cells_similarity(
@@ -87,7 +88,7 @@ GPextractor = GenePairExtractor(
     clinical_data=bulkClinical,
     single_cell_expression=scExp,
     analysis_mode="Regression",
-    top_var_genes=10000,
+    top_var_genes=2000,
     top_gene_pairs=500,
     padj_value_threshold=0.05,
     max_cutoff=0.8,
@@ -166,7 +167,7 @@ best_params = tune_hyperparameters(
     device=device,
     pheno=mode,
     infer_mode=infer_mode,
-    n_trials=50
+    n_trials=10
 )
 
 print("Best hyperparameters:", best_params)
@@ -177,13 +178,13 @@ print("Best hyperparameters:", best_params)
 mode = "Regression"
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
                nhid2=8, n_output=32, nlayers=3, n_pred=1, dropout=0.5, mode=mode, encoder_type=encoder_type)
-model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_0_val_loss_0.2359.pt")))
+model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_2_val_loss_0.2831.pt")))
 model = model.to("cpu")
 
 sc_PredDF = Predict(model, bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
                     mode="Regression", sc_rownames=scAnndata.obs.index.tolist(), do_reject=True)
 
-scAnndata = categorize(scAnndata, sc_PredDF, do_cluster=False)
+scAnndata = categorize(scAnndata, sc_PredDF, do_cluster=False, mode = mode)
 
 # Test
 Exp_sc = single_cell_gene_pairs_mat
