@@ -11,8 +11,6 @@ import pandas as pd
 import scanpy as sc
 
 import torch
-from torch.optim.lr_scheduler import StepLR
-from torch.optim import Adam
 from torch.utils.data import DataLoader
 
 sys.path.append("../scRank")
@@ -64,7 +62,6 @@ del scExp, scClinical, scExp_
 
 # scAnndata.write_h5ad(filename=os.path.join(savePath,"GSE117872_Primary.h5ad"))
 scAnndata = sc.read_h5ad(os.path.join(savePath, "GSE117872_Primary.h5ad"))
-
 
 # Preprocessing scRNA-seq data
 # scAnndata_magic = perform_magic_preprocessing(scAnndata,require_normalization=True)
@@ -167,103 +164,61 @@ best_params = tune_hyperparameters(
     device=device,
     pheno=mode,
     infer_mode=infer_mode,
-    n_trials=10
+    n_trials=20
 )
 
 print("Best hyperparameters:", best_params)
 
 
 # Predict
-
 mode = "Regression"
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
                nhid2=8, n_output=32, nlayers=3, n_pred=1, dropout=0.5, mode=mode, encoder_type=encoder_type)
-model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_2_val_loss_0.2831.pt")))
+model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_4_val_loss_0.1893.pt")))
 model = model.to("cpu")
 
-sc_PredDF = Predict(model, bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
-                    mode="Regression", sc_rownames=scAnndata.obs.index.tolist(), do_reject=True)
+bulk_PredDF, sc_PredDF = Predict(model, 
+bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
+                    mode="Regression", 
+                    bulk_rownames = bulkClinical.index.tolist(),
+                    sc_rownames=scAnndata.obs.index.tolist(), 
+                    do_reject=True)
 
 scAnndata = categorize(scAnndata, sc_PredDF, do_cluster=False, mode = mode)
 
 # Test
-Exp_sc = single_cell_gene_pairs_mat
-Exp_Tensor_sc = torch.from_numpy(np.array(Exp_sc))
-Exp_Tensor_sc = torch.tensor(Exp_Tensor_sc, dtype=torch.float32)
-
-embeddings_sc, prob_scores_sc, _ = model(Exp_Tensor_sc)
-pred_prob_sc = prob_scores_sc.detach().numpy().reshape(-1, 1)
-
-Exp_bulk = bulk_gene_pairs_mat
-Exp_Tensor_bulk = torch.from_numpy(np.array(Exp_bulk))
-Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
-
-embeddings_bulk, prob_bulkores_bulk, _ = model(Exp_Tensor_bulk)
-pred_prob_bulk = prob_bulkores_bulk.detach().numpy().reshape(-1, 1)
+pred_prob_sc = sc_PredDF["Pred_score"]
+pred_prob_bulk = bulk_PredDF["Pred_score"]
 
 # Print the entire code for user's own data
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-import pandas as pd
-from scipy.stats import mannwhitneyu
-
-# Replace with your actual data
 true_labels_sc = scAnndata.obs["response"]
 predicted_scores_sc = scAnndata.obs["Rank_Score"]
 predicted_label_sc = scAnndata.obs["Rank_Label"]
-
 true_labels_bulk = bulkClinical["Variable"]
-predicted_scores_bulk  = pred_prob_bulk
 
-# Convert to DataFrame for ease of plotting
+# Convert to DataFrame
 sc_data = pd.DataFrame({'True Label': true_labels_sc, 'Predicted Score': predicted_scores_sc, 'Predicted Score with reject': predicted_label_sc})
-bulk_data = pd.DataFrame({'True Label': true_labels_bulk})
-bulk_data['Predicted Score'] = predicted_scores_bulk
+bulk_data = pd.DataFrame({'True Label': true_labels_bulk, 'Predicted Score': pred_prob_bulk})
 
-# Create a figure with 1 row and 4 columns of subplots
+# Create figure and subplots
 fig, ax = plt.subplots(1, 5, figsize=(30, 7))
 
-# Plot 1: Boxplot for single-cell data
-sns.boxplot(x='True Label', y='Predicted Score', data=sc_data, ax=ax[0])
-ax[0].set_title('Boxplot of Predicted Scores by True Labels (SC)')
+# Plot 1
+create_boxplot(sc_data, 'Boxplot of Predicted Scores by True Labels (SC)', ax[0])
 
-# Statistical Test for Plot 1
-group0 = sc_data[sc_data['True Label'] == 0]['Predicted Score']
-group1 = sc_data[sc_data['True Label'] == 1]['Predicted Score']
+# Plot 2
+sc_data_rejected = sc_data[sc_data['Predicted Score with reject'] != 0]
+create_boxplot(sc_data_rejected, 'Boxplot of Predicted Scores (with reject) by True Labels (SC)', ax[1], score_column='Predicted Score with reject')
 
-stat, p_value = mannwhitneyu(group0, group1)
-ax[0].text(0.5, 0.95, f'p = {p_value:.2e}', ha='center', va='center', transform=ax[0].transAxes)
+# Plot 3
+create_density_plot(pred_prob_bulk, 'Predict Bulk', ax[2], 'Density Plot of True and Predicted Scores (Bulk)')
+create_density_plot(bulk_data['True Label'], 'True Bulk', ax[2], 'Density Plot of True and Predicted Scores (Bulk)')
 
-# Plot 2: Boxplot for single-cell data
-sns.boxplot(x='True Label', y='Predicted Score with reject', data=sc_data[sc_data['Predicted Score with reject'] != 0], ax=ax[1])
-ax[1].set_title('Boxplot of Predicted Scores (with reject) by True Labels (SC)')
+# Plot 4
+create_hist_plot(predicted_scores_sc, ax[3], 'Distribution of Predicted Scores (SC)')
 
-# Statistical Test for Plot 2
-group0 = sc_data[sc_data['True Label'] == 0]['Predicted Score with reject']
-group1 = sc_data[sc_data['True Label'] == 1]['Predicted Score with reject']
-
-group0 = group0[group0 != 0]
-group1 = group1[group1 != 0]
-
-stat, p_value = mannwhitneyu(group0, group1)
-ax[1].text(0.5, 0.95, f'p = {p_value:.2e}', ha='center', va='center', transform=ax[1].transAxes)
-
-# Plot 3: Distribution of predicted and true scores for bulk data
-sns.kdeplot(predicted_scores_bulk, shade=True, linewidth=3, label='Predict Bulk', ax=ax[2])
-sns.kdeplot(bulk_data['True Label'], shade=True, linewidth=3, label='True Bulk', ax=ax[2])
-ax[2].set_title('Density Plot of True and Predicted Scores (Bulk)')
-ax[2].legend()
-
-# Plot 4: Distribution of predicted scores for single-cell data
-sns.histplot(predicted_scores_sc, bins=20, kde=True, ax=ax[3])
-ax[3].set_title('Distribution of Predicted Scores (SC)')
-
-# Plot 5: Density plot for predicted scores of bulk and single-cell data
-sns.kdeplot(predicted_scores_bulk, shade=True, linewidth=3, label='Bulk', ax=ax[4])
-sns.kdeplot(predicted_scores_sc, shade=True, linewidth=3, label='Single Cell', ax=ax[4])
-ax[4].set_title('Density Plot of Predicted Scores (Bulk vs SC)')
-ax[4].legend()
+# Plot 5
+create_comparison_density_plot(pred_prob_bulk, 'Bulk', pred_prob_sc, 'Single Cell', ax[4], 'Density Plot of Predicted Scores (Bulk vs SC)')
 
 plt.tight_layout()
 plt.savefig("test.png")
