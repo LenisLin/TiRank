@@ -155,6 +155,27 @@ class RiskscorePredictor(nn.Module):
         risk_score = torch.sigmoid(self.RiskscoreMLP(embedding))
         return risk_score.squeeze()
 
+# Regression score Predictor
+
+
+class RegscorePredictor(nn.Module):
+    def __init__(self, n_features, nhid, nhout=1, dropout=0.5):
+        super(RegscorePredictor, self).__init__()
+        self.RegscoreMLP = nn.Sequential(
+            # nn.Linear(n_features, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            # nn.Linear(nhid, nhid),
+            # nn.LeakyReLU(),
+            # nn.Dropout(dropout),
+            # nn.Linear(nhid, nhout),
+            nn.Linear(n_features, nhout),
+        )
+
+    def forward(self, embedding):
+        risk_score = self.RegscoreMLP(embedding)
+        return risk_score.squeeze()
+
 # Bionomial Predictor
 
 
@@ -206,7 +227,7 @@ class scRank(nn.Module):
         super(scRank, self).__init__()
 
         # Initialize the learnable weight matrix
-        self.feature_weights = nn.Parameter(torch.Tensor(n_features, 1))
+        self.feature_weights = nn.Parameter(torch.Tensor(n_features, 1),requires_grad=True)
         nn.init.xavier_uniform_(self.feature_weights)
 
         ## Encoder
@@ -225,13 +246,20 @@ class scRank(nn.Module):
             raise ValueError(f"Unsupported Encoder Type: {self.encoder_type}")
 
         ## Mode
-        if mode in ["Cox", "Regression"]:
+        if mode == "Cox":
             self.predictor = RiskscorePredictor(
                 n_output, nhid2, n_pred, dropout)
 
-        if mode == "Bionomial":
+        elif mode == "Regression":
+            self.predictor = RegscorePredictor(
+                n_output, nhid2, n_pred, dropout)
+
+        elif mode == "Bionomial":
             self.predictor = ClassscorePredictor(
                 n_output, nhid2, n_pred, dropout)
+                
+        else:
+            raise ValueError(f"Unsupported Mode: {mode}")
 
         self.pathologpredictor = PathologyPredictor(
             n_output, nhid2, n_patho, dropout)

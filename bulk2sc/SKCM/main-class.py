@@ -159,16 +159,10 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 encoder_type = "MLP"
 mode = "Bionomial"
 
-# model = TransformerEncoderModel(n_features = bulk_gene_pairs_mat.shape[1], nhead = 2, nhid = 32, nlayers = 2, n_output = 8, dropout=0.5)
-# model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
-#                nhid2=8, n_output=32, nlayers=3, dropout=0.5, encoder_type="MLP")
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
                nhid2=8, n_output=32, nlayers=3, n_pred=2, dropout=0.5, mode=mode, encoder_type=encoder_type)
 
 model = model.to(device)
-
-# Hyperparameters for the losses
-# alphas = [1, 1, 1, 1]
 
 # Assign the mode of analysis
 infer_mode = "Cell"
@@ -176,10 +170,6 @@ if infer_mode == "Cell":
     adj_A = torch.from_numpy(similarity_df.values)
 
 # Training
-# optimizer = Adam(model.parameters(), lr=0.001)
-# scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
-
-# n_epochs = 200
 
 best_params = tune_hyperparameters(
     model=model,
@@ -190,111 +180,38 @@ best_params = tune_hyperparameters(
     device=device,
     pheno=mode,
     infer_mode=infer_mode,
-    n_trials=20
+    n_trials=50
 )
 
 print("Best hyperparameters:", best_params)
 
-# for epoch in range(n_epochs):
-#     train_loss = Train_one_epoch(
-#         model=model,
-#         dataloader_A=train_loader_Bulk, dataloader_B=train_loader_SC,
-#         pheno="Bionomial", infer_mode=infer_mode,
-#         adj_A=adj_A,
-#         optimizer=optimizer, alphas=alphas, device=device)
-
-#     # Step the scheduler
-#     scheduler.step()
-
-#     # print(f"Epoch {epoch+1}/{n_epochs} - Train Loss: {train_loss}, Validation Loss: {val_loss}, LR: {scheduler.get_last_lr()[0]}")
-#     print(
-#         f"Epoch {epoch+1}/{n_epochs} - Train Loss: {train_loss}, LR: {scheduler.get_last_lr()[0]}")
-
-# save model
-# torch.save(model.state_dict(), os.path.join(savePath,"model.pt"))
-
 mode = "Bionomial"
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
                nhid2=8, n_output=32, nlayers=3, n_pred=2, dropout=0.5, mode=mode, encoder_type=encoder_type)
-model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_1_val_loss_0.5055.pt")))
+model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_6_val_loss_0.5739.pt")))
 model = model.to("cpu")
 
-sc_PredDF = Predict(model, bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
-                    mode="Bionomial", sc_rownames=scAnndata.obs.index.tolist(), do_reject=True, tolerance=0.1, reject_mode = "Strict")
+bulk_PredDF, sc_PredDF = Predict(model, 
+            bulk_GPmat=bulk_gene_pairs_mat, sc_GPmat=single_cell_gene_pairs_mat,
+            mode="Bionomial", 
+            bulk_rownames = bulkClinical.index.tolist(), sc_rownames=scAnndata.obs.index.tolist(), 
+            do_reject=True, tolerance=0.1, reject_mode = "Strict")
 
 scAnndata = categorize(scAnndata, sc_PredDF, do_cluster=False)
 sc_pred_df = scAnndata.obs
 sc_pred_df.to_csv(os.path.join(savePath,"sc_predict_score.csv"))
 
-# Test
-## scRNA
-Exp_sc = single_cell_gene_pairs_mat
-Exp_Tensor_sc = torch.from_numpy(np.array(Exp_sc))
-Exp_Tensor_sc = torch.tensor(Exp_Tensor_sc, dtype=torch.float32)
+pred_prob_sc = sc_PredDF["Pred_score"] # scRNA
+pred_prob_bulk = bulk_PredDF["Pred_score"] # Bulk RNA
 
-embeddings, prob_scores_sc, _ = model(Exp_Tensor_sc)
-pred_label_sc = torch.max(
-    prob_scores_sc, dim=1).indices.detach().numpy().reshape(-1, 1)
-pred_prob_sc = torch.nn.functional.softmax(
-    prob_scores_sc)[:, 1].detach().numpy().reshape(-1, 1)
+# Display the prob score distribution
+figurePath = os.path.join(savePath,"figures")
+plot_prob_distribution(pred_prob_bulk, pred_prob_sc, os.path.join(figurePath,'SKCM scRank Pred Score Distribution.png'))
 
-## bulk RNA
-Exp_bulk = bulk_gene_pairs_mat
-Exp_Tensor_bulk = torch.from_numpy(np.array(Exp_bulk))
-Exp_Tensor_bulk = torch.tensor(Exp_Tensor_bulk, dtype=torch.float32)
-
-embeddings, prob_bulkores_bulk, _ = model(Exp_Tensor_bulk)
-pred_label_bulk = torch.max(
-    prob_bulkores_bulk, dim=1).indices.detach().numpy().reshape(-1, 1)
-pred_prob_bulk = torch.nn.functional.softmax(
-    prob_bulkores_bulk)[:, 1].detach().numpy().reshape(-1, 1)
-
-
-# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
-# display the prob score distribution
-sns.distplot(pred_prob_bulk, hist=False, kde=True, kde_kws={
-             'shade': True, 'linewidth': 3}, label='Bulk')
-sns.distplot(pred_prob_sc, hist=False, kde=True, kde_kws={
-             'shade': True, 'linewidth': 3}, label='Single Cell')
-
-plt.title('Density Plot')
-plt.xlabel('Values')
-plt.ylabel('Density')
-
-# Move the legend box to upper left
-plt.legend(title='Sample Type', loc='upper left')
-plt.savefig('cell treatment pred prob - both.png')
-plt.show()
-plt.close()
-
+# Save scRNA data
 scAnndata.write(os.path.join(savePath,"scAnndata.h5ad"))
 
-## Evaluate on other data
-test_set = ["Gide2019","Hugo2016","Liu2019","PUCH2021","Riaz2017","VanAllen2015"]
-for dataId in test_set:
-    test_bulkClinical = pd.read_table(os.path.join(dataPath,dataId+"_meta.csv"), sep=",", index_col=0)
-    test_bulkClinical.columns = ["Group","OS_status","OS_time"]
-    test_bulkClinical['Group'] = test_bulkClinical['Group'].apply(lambda x: 0 if x in ['PR', 'CR', 'CRPR'] else 1)
-
-    # load bulk expression profile
-    test_bulkExp = pd.read_csv(os.path.join(dataPath, dataId+"_exp.csv"), index_col=0)
-    # test_bulkExp.iloc[0:5, 0:5]
-
-    test_bulkExp_gene_pairs_mat = transform_test_exp(train_exp = bulk_gene_pairs_mat,test_exp = test_bulkExp)
-    test_Exp_Tensor_bulk = torch.from_numpy(np.array(test_bulkExp_gene_pairs_mat))
-    test_Exp_Tensor_bulk = torch.tensor(test_Exp_Tensor_bulk, dtype=torch.float32)
-
-    test_embeddings, test_prob_bulkores_bulk, _ = model(test_Exp_Tensor_bulk)
-    test_pred_label = torch.max(test_prob_bulkores_bulk, dim=1).indices.detach().numpy()
-    test_bulkClinical["scRank_Label"] = [x for x in test_pred_label]
-    test_bulkClinical.to_csv(os.path.join(savePath,"bulk_pred_score",dataId+"_predict_score.csv"))
-
-    true_labels_bulk = test_bulkClinical['Group']
-    predicted_labels_bulk = test_bulkClinical["scRank_Label"]
-
-    cm = confusion_matrix(true_labels_bulk, predicted_labels_bulk)
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-    plt.savefig(os.path.join(savePath, "bulk_confusion", f'Pred on bulk: {dataId}.png') )
-    plt.show()
-    plt.close()
+# Evaluate on other data
+test_set = ["Gide2019", "Hugo2016", "Liu2019", "PUCH2021", "Riaz2017", "VanAllen2015"]
+evaluate_on_test_data(model, test_set, data_path = dataPath, save_path = figurePath, 
+        bulk_gene_pairs_mat = bulk_gene_pairs_mat)

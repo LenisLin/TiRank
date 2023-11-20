@@ -235,7 +235,7 @@ def Validate_model(model, dataloader_A, dataloader_B, pheno='Cox', infer_mode="C
 # Predict
 
 
-def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tolerance=0.05, reject_mode = "GMM"):
+def Predict(model, bulk_GPmat, sc_GPmat, mode, bulk_rownames = None, sc_rownames = None, do_reject=True, tolerance=0.05, reject_mode = "GMM"):
     model.eval()
 
     # Predict on cell
@@ -286,17 +286,24 @@ def Predict(model, bulk_GPmat, sc_GPmat, mode, sc_rownames, do_reject=True, tole
     else:
         reject_mask = np.zeros_like()
 
-    saveDF = pd.DataFrame(data=np.concatenate(
+    saveDF_sc = pd.DataFrame(data=np.concatenate(
         (reject_mask, pred_sc, embeddings_sc), axis=1), index=sc_GPmat.index)
 
     colnames = ["Reject", "Pred_score"]
     colnames.extend(["embedding_" + str(i + 1)
                     for i in range(embeddings_sc.shape[1])])
 
-    saveDF.columns = colnames
-    saveDF.index = sc_rownames
+    saveDF_sc.columns = colnames
+    saveDF_sc.index = sc_rownames
 
-    return saveDF
+    reject_mask_ = np.zeros_like(pred_bulk)
+    saveDF_bulk = pd.DataFrame(data=np.concatenate(
+        (reject_mask_, pred_bulk, embeddings_bulk), axis=1), index=bulk_GPmat.index)
+
+    saveDF_bulk.columns = colnames
+    saveDF_bulk.index = bulk_rownames
+
+    return saveDF_bulk, saveDF_sc
 
 # Reject
 
