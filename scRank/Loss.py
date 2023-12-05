@@ -14,7 +14,7 @@ def regularization_loss(feature_weights):
     Returns:
     torch.Tensor: The calculated regularization loss.
     """
-    return torch.sum(torch.abs(feature_weights))
+    return torch.mean(torch.abs(feature_weights))
 
 def cox_loss(pred, t, e, margin=0.1):
     assert len(pred) == len(t) == len(e)
@@ -80,44 +80,44 @@ def cosine_loss(embeddings, A):
 
     return cosine_loss
 
-def gaussian_kernel(a, b):
-    """
-    Calculates the Gaussian kernel similarity between two sets of samples.
+# def gaussian_kernel(a, b):
+#     """
+#     Calculates the Gaussian kernel similarity between two sets of samples.
 
-    Args:
-        a (Tensor), b (Tensor): Input tensors where each row is a sample
+#     Args:
+#         a (Tensor), b (Tensor): Input tensors where each row is a sample
 
-    Returns:
-        Tensor: Gaussian kernel similarities
-    """
-    dim1_1, dim1_2 = a.shape[0], b.shape[0]
-    depth = a.shape[1]
-    a = a.view(dim1_1, 1, depth)
-    b = b.view(1, dim1_2, depth)
-    a_core = a.expand(dim1_1, dim1_2, depth)
-    b_core = b.expand(dim1_1, dim1_2, depth)
-    numerator = (a_core - b_core).pow(2).mean(2) / depth
-    return torch.exp(-numerator)
+#     Returns:
+#         Tensor: Gaussian kernel similarities
+#     """
+#     dim1_1, dim1_2 = a.shape[0], b.shape[0]
+#     depth = a.shape[1]
+#     a = a.view(dim1_1, 1, depth)
+#     b = b.view(1, dim1_2, depth)
+#     a_core = a.expand(dim1_1, dim1_2, depth)
+#     b_core = b.expand(dim1_1, dim1_2, depth)
+#     numerator = (a_core - b_core).pow(2).mean(2) / depth
+#     return torch.exp(-numerator)
 
 
-def mmd_loss(embeddings_A, embeddings_B):
-    """
-    Calculates the Maximum Mean Discrepancy (MMD) loss between two sets of embeddings.
+# def mmd_loss(embeddings_A, embeddings_B):
+#     """
+#     Calculates the Maximum Mean Discrepancy (MMD) loss between two sets of embeddings.
 
-    Args:
-        embeddings_A (Tensor), embeddings_B (Tensor): Input tensors containing embeddings
+#     Args:
+#         embeddings_A (Tensor), embeddings_B (Tensor): Input tensors containing embeddings
 
-    Returns:
-        Tensor: MMD loss for each sample in embeddings_B, tensor of shape (embeddings_B.shape[0],)
-    """
-    kernel_matrix_A = gaussian_kernel(embeddings_A, embeddings_A)
-    kernel_matrix_B = gaussian_kernel(embeddings_B, embeddings_B)
-    kernel_matrix_AB = gaussian_kernel(embeddings_A, embeddings_B)
+#     Returns:
+#         Tensor: MMD loss for each sample in embeddings_B, tensor of shape (embeddings_B.shape[0],)
+#     """
+#     kernel_matrix_A = gaussian_kernel(embeddings_A, embeddings_A)
+#     kernel_matrix_B = gaussian_kernel(embeddings_B, embeddings_B)
+#     kernel_matrix_AB = gaussian_kernel(embeddings_A, embeddings_B)
 
-    mmd_loss_ = kernel_matrix_A.mean() + kernel_matrix_B.mean() - \
-        2 * kernel_matrix_AB.mean()
+#     mmd_loss_ = kernel_matrix_A.mean() + kernel_matrix_B.mean() - \
+#         2 * kernel_matrix_AB.mean()
 
-    return mmd_loss_
+#     return mmd_loss_
 
 
 def CrossEntropy_loss(y_pred, y_true):
