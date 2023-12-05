@@ -7,38 +7,28 @@ import torch
 from torch.utils.data import Dataset
 
 
-def generate_val(bulk_gene_pairs_mat, bulkClinical, mode, need_val = True, validation_proportion = 0.15):
-    """
-    Splits the bulk_gene_pairs_mat and bulkClinical datasets into training and validation sets.
+def generate_val(bulkExp, bulkClinical, validation_proportion=0.15):
+    # Transpose bulkExp so that samples are rows
+    bulkExp_transposed = bulkExp.T
 
-    Parameters:
-    - bulk_gene_pairs_mat: Your bulk gene pairs matrix.
-    - bulkClinical: Your bulk clinical data.
-    - mode: Mode to pass to the BulkDataset constructor.
-    - validation_proportion: The proportion of the dataset to be used as validation set.
+    # Concatenate bulkExp and bulkClinical
+    combined = pd.concat([bulkExp_transposed, bulkClinical], axis=1)
 
-    Returns:
-    - A tuple containing:
-        - training set as a BulkDataset instance
-        - validation set as a BulkDataset instance
-    """
-    
-    if not need_val:
-        train_dataset = BulkDataset(bulk_gene_pairs_mat, bulkClinical, mode=mode)
-
-    # Split the gene pairs matrix and clinical data into training and validation sets
-    bulk_gene_pairs_train, bulk_gene_pairs_val, bulkClinical_train, bulkClinical_val = train_test_split(
-        bulk_gene_pairs_mat, 
-        bulkClinical, 
+    # Split the combined dataframe
+    combined_train, combined_val = train_test_split(
+        combined, 
         test_size=validation_proportion, 
-        random_state=42  # Ensures reproducibility of the split
+        random_state=42
     )
 
-    # Create the BulkDataset instances for training and validation
-    train_dataset = BulkDataset(bulk_gene_pairs_train, bulkClinical_train, mode=mode)
-    validation_dataset = BulkDataset(bulk_gene_pairs_val, bulkClinical_val, mode=mode)
+    # Separate the training and validation sets back into bulkExp and bulkClinical
+    bulkExp_train = combined_train.iloc[:, :-1].T
+    bulkClinical_train = combined_train.iloc[:, -1]
 
-    return train_dataset, validation_dataset
+    bulkExp_val = combined_val.iloc[:, :-1].T
+    bulkClinical_val = combined_val.iloc[:, -1]
+
+    return bulkExp_train, bulkExp_val, pd.DataFrame(bulkClinical_train), pd.DataFrame(bulkClinical_val)
 
 # RNA-seq
 

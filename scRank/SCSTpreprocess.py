@@ -1,10 +1,10 @@
 # Preprocessing function for scRNA-seq data
-from ctypes import Union
 import scanpy as sc
 import pandas as pd
 import numpy as np
 
 from scipy.spatial.distance import cdist
+from scipy.stats import zscore
 
 # unbalanced
 from imblearn.over_sampling import SMOTE, RandomOverSampler
@@ -40,8 +40,24 @@ def merge_datasets(bulkClinical_1,bulkClinical_2,bulkExp_1,bulkExp_2):
 
     return  bulkExp, bulkClinical
 
+def normalize_data(exp):
+    """
+    Normalize gene expression data using z-score normalization.
+
+    Args:
+    exp (DataFrame): A pandas DataFrame with genes as rows and samples as columns.
+
+    Returns:
+    DataFrame: A normalized DataFrame.
+    """
+    # Apply z-score normalization
+    normalized_exp = exp.apply(zscore, axis=1)
+    normalized_exp = normalized_exp.dropna()
+
+    return normalized_exp
+
 def is_imbalanced(bulkClinical, threshold):
-    counts = bulkClinical.iloc[:, 0].value_counts(normalize=True)
+    counts = bulkClinical.iloc[:,0].value_counts(normalize=True)
     return counts.min() < threshold
 
 def perform_sampling_on_RNAseq(bulkExp, bulkClinical, mode="SMOTE", threshold=0.5):
@@ -90,15 +106,6 @@ def PreprocessingST(adata):
     sc.pp.filter_genes(adata, min_cells=10)
 
     return adata
-
-
-# Merge different bulk dataset
-
-
-def Merge_Bulk(bulkExp_1,bulkExp_2,bulkClinical_1,bulkClinical_2):
-    
-
-    return bulkExp, bulkClinical
 
 
 # This function performs the MAGIC (Markov Affinity-based Graph Imputation of Cells) process on scRNA-seq data.

@@ -24,7 +24,7 @@ from TrainPre import *
 from Visualization import *
 
 # Dictionary Path
-dataPath = "/mnt/data/lyx/scRankv2/data/"
+dataPath = "/home/lenislin/data/scRankv2/data"
 savePath = "./tempfiles/"
 
 if not (os.path.exists(savePath)):
@@ -50,7 +50,7 @@ bulkExp.iloc[0:5, 0:5]
 # bulkExp, bulkClinical = perform_sampling_on_RNAseq(bulkExp = bulkExp, bulkClinical = bulkClinical, mode="SMOTE", threshold=0.5)
 
 # load RNA-seq and scRNA-seq expression profile
-scPath = "/mnt/data/lyx/scRankv2/data/scRNAseq/Cellline/"
+scPath = "/home/lenislin/data/scRankv2/data/scRNAseq/Cellline/"
 scExp = pd.read_csv(os.path.join(scPath, "GSE117872_Primary_exp.csv"), index_col=0)
 scClinical = pd.read_csv(os.path.join(
     scPath, "GSE117872_Primary_meta.csv"), index_col=0)
@@ -174,7 +174,7 @@ print("Best hyperparameters:", best_params)
 mode = "Regression"
 model = scRank(n_features=bulk_gene_pairs_mat.shape[1], nhead=2, nhid1=96,
                nhid2=8, n_output=32, nlayers=3, n_pred=1, dropout=0.5, mode=mode, encoder_type=encoder_type)
-model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_4_val_loss_0.1893.pt")))
+model.load_state_dict(torch.load(os.path.join("./checkpoints/","model_trial_3_val_loss_0.2300.pt")))
 model = model.to("cpu")
 
 bulk_PredDF, sc_PredDF = Predict(model, 

@@ -18,8 +18,7 @@ def model_predict(model, data_tensor, mode):
 
     elif mode == "Bionomial":
         pred_label = torch.max(prob_scores, dim=1).indices.detach().numpy().reshape(-1, 1)
-        pred_prob = torch.nn.functional.softmax(
-            prob_scores)[:, 1].detach().numpy().reshape(-1, 1)
+        pred_prob = prob_scores[:, 1].detach().numpy().reshape(-1, 1)
 
     elif mode == "Regression":
         pred_prob = prob_scores.detach().numpy().reshape(-1, 1)
@@ -108,3 +107,4 @@ def create_comparison_density_plot(data1, label1, data2, label2, ax, title):
     sns.kdeplot(data2, shade=True, linewidth=3, label=label2, ax=ax)
     ax.set_title(title)
     ax.legend()
+

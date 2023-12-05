@@ -7,8 +7,21 @@ from Loss import *
 
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 import math
+import random
+import numpy as np
+
+# Initial
+
+
+def setup_seed(seed):
+     torch.manual_seed(seed)
+     torch.cuda.manual_seed_all(seed)
+     np.random.seed(seed)
+     random.seed(seed)
+     torch.backends.cudnn.deterministic = True
 
 # Encoder
 
@@ -194,7 +207,7 @@ class ClassscorePredictor(nn.Module):
         )
 
     def forward(self, embedding):
-        proba_score = torch.sigmoid(self.ClassscoreMLP(embedding))
+        proba_score = F.softmax(self.ClassscoreMLP(embedding))
         return proba_score
 
 
@@ -216,8 +229,8 @@ class PathologyPredictor(nn.Module):
         )
 
     def forward(self, embedding):
-        pathology_score = torch.tanh(self.PathologyMLP(embedding))
-        return pathology_score.squeeze()
+        pathology_score = F.softmax(self.PathologyMLP(embedding))
+        return pathology_score
 
 # Main network
 
@@ -229,6 +242,9 @@ class scRank(nn.Module):
         # Initialize the learnable weight matrix
         self.feature_weights = nn.Parameter(torch.Tensor(n_features, 1),requires_grad=True)
         nn.init.xavier_uniform_(self.feature_weights)
+        # nn.init.xavier_normal_(self.feature_weights)
+
+        self.feature_weights = nn.Parameter(torch.ones(n_features),requires_grad=True)
 
         ## Encoder
         self.encoder_type = encoder_type
