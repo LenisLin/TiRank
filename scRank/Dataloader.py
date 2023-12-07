@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-def generate_val(bulkExp, bulkClinical, validation_proportion=0.15):
+def generate_val(bulkExp, bulkClinical, validation_proportion=0.15, mode =  None):
     # Transpose bulkExp so that samples are rows
     bulkExp_transposed = bulkExp.T
 
@@ -21,12 +21,21 @@ def generate_val(bulkExp, bulkClinical, validation_proportion=0.15):
         random_state=42
     )
 
-    # Separate the training and validation sets back into bulkExp and bulkClinical
-    bulkExp_train = combined_train.iloc[:, :-1].T
-    bulkClinical_train = combined_train.iloc[:, -1]
+    if mode == "Bionomial":
+        # Separate the training and validation sets back into bulkExp and bulkClinical
+        bulkExp_train = combined_train.iloc[:, :-1].T
+        bulkClinical_train = combined_train.iloc[:, -1]
 
-    bulkExp_val = combined_val.iloc[:, :-1].T
-    bulkClinical_val = combined_val.iloc[:, -1]
+        bulkExp_val = combined_val.iloc[:, :-1].T
+        bulkClinical_val = combined_val.iloc[:, -1]
+    
+    elif mode == "Cox":
+        # Separate the training and validation sets back into bulkExp and bulkClinical
+        bulkExp_train = combined_train.iloc[:, :-2].T
+        bulkClinical_train = combined_train.iloc[:, -2:]
+
+        bulkExp_val = combined_val.iloc[:, :-2].T
+        bulkClinical_val = combined_val.iloc[:, -2:]       
 
     return bulkExp_train, bulkExp_val, pd.DataFrame(bulkClinical_train), pd.DataFrame(bulkClinical_val)
 

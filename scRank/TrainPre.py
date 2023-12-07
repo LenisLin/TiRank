@@ -142,7 +142,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
         total_loss_all += total_loss.item()
         regularization_loss_all += regularization_loss_.item()
         bulk_loss_all += bulk_loss_.item()
-        cosine_loss_all += cosine_loss_.item()
+        cosine_loss_all += cosine_loss_exp_.item()
         # mmd_loss_all += mmd_loss_.item()
 
     loss_dict["all_loss_"] = total_loss_all / len(dataloader_B)
@@ -655,7 +655,7 @@ def Pcluster(scAnndata, clusterColName, perm_n=1001):
 def objective(trial,
               n_features, nhead, nhid1,
               nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
-              train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, device, infer_mode, model_save_path):
+              train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, adj_B, pre_patho_labels, device, infer_mode, model_save_path):
 
     print(f"Initiate model in trail {trial.number} with mode: {mode}, infer mode: {infer_mode} encoder type: {encoder_type} on device: {device}.")
     model = scRank(n_features=n_features, nhead=nhead, nhid1=nhid1, nhid2=nhid2, n_output=n_output,
@@ -699,7 +699,7 @@ def objective(trial,
             model=model,
             dataloader_A=train_loader_Bulk, dataloader_B=train_loader_SC,
             mode=mode, infer_mode=infer_mode,
-            adj_A=adj_A,
+            adj_A=adj_A,adj_B = adj_B, pre_patho_labels = pre_patho_labels,
             optimizer=optimizer, alphas=alphas, device=device)
 
         train_loss_dcit["Epoch_"+str(epoch+1)] = train_loss_dcit_epoch
@@ -712,7 +712,7 @@ def objective(trial,
             model=model,
             dataloader_A=val_loader_Bulk, dataloader_B=train_loader_SC,
             mode=mode, infer_mode=infer_mode,
-            adj_A=adj_A,
+            adj_A=adj_A,adj_B = adj_B, pre_patho_labels = pre_patho_labels,
             alphas=[1, 0.1, 1, 0], device=device)
 
         # # Check for early stopping conditions
@@ -731,19 +731,16 @@ def objective(trial,
         #     print(f"Early stopping triggered at epoch {epoch} with Validation Loss = {val_loss:.4f}")
         #     break
 
-    if trial.number == 0:
-        plot_loss(train_loss_dcit, alphas, savePath=os.path.join(model_save_path,
-                  "loss_curve_trial_{}_val_loss_{:.4f}.png".format(trial.number, val_loss)))
-        torch.save(model.state_dict(), os.path.join(
-            model_save_path, "model_trial_{}_val_loss_{:.4f}.pt".format(trial.number, val_loss)))
+    # Generate the filename including hyperparameters
+    hyperparams_str = f"lr_{lr}_epochs_{n_epochs}_alpha0_{alphas[0]}_alpha1_{alphas[1]}_alpha2_{alphas[2]}_alpha3_{alphas[3]}"
+    model_filename = f"model_{hyperparams_str}.pt"
+    plot_filename = f"loss_curve_trial_{trial.number}_{hyperparams_str}_val_loss_{val_loss:.4f}.png"
 
-    if trial.study.best_trials and val_loss < trial.study.best_value:
-        print(
-            f"New best trial found: Trial {trial.number} with Validation Loss = {val_loss:.4f}")
-        plot_loss(train_loss_dcit, alphas, savePath=os.path.join(model_save_path,
-                  "loss_curve_trial_{}_val_loss_{:.4f}.png".format(trial.number, val_loss)))
-        torch.save(model.state_dict(), os.path.join(
-            model_save_path, "model_trial_{}_val_loss_{:.4f}.pt".format(trial.number, val_loss)))
+    # Saving the model and plot with new filenames
+    if trial.number == 0 or (trial.study.best_trials and val_loss < trial.study.best_value):
+        print(f"Saving model and plot for Trial {trial.number} with Validation Loss = {val_loss:.4f}")
+        plot_loss(train_loss_dcit, alphas, savePath=os.path.join(model_save_path, plot_filename))
+        torch.save(model.state_dict(), os.path.join(model_save_path, model_filename))
 
     return val_loss
 
@@ -751,8 +748,10 @@ def objective(trial,
 def tune_hyperparameters(
         n_features, nhead, nhid1,
         nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
-        train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, device, infer_mode, n_trials=50):
-    model_save_path = "./checkpoints/"
+        train_loader_Bulk, val_loader_Bulk, train_loader_SC, 
+        adj_A, adj_B,pre_patho_labels,
+        device, infer_mode, n_trials=50, model_save_path = "./checkpoints/"):
+
     if not os.path.exists(model_save_path):
         os.mkdir(model_save_path)
 
@@ -760,14 +759,14 @@ def tune_hyperparameters(
     study.optimize(lambda trial: objective(trial,
                                            n_features, nhead, nhid1,
                                            nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
-                                           train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, device, infer_mode, model_save_path), n_trials=n_trials)
+                                           train_loader_Bulk, val_loader_Bulk, train_loader_SC, 
+                                           adj_A ,adj_B, pre_patho_labels, device, infer_mode, model_save_path), n_trials=n_trials)
     # optuna.visualization.plot_optimization_history(study)
 
     # Return the best hyperparameters
     return study.best_trial.params
 
 # Extract GP on other datasets
-
 
 def transform_test_exp(train_exp, test_exp):
     # Initialize a new DataFrame to store the transformed test data
