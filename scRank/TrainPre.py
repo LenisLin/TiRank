@@ -23,24 +23,18 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
 
     model.train()
 
+    # Initialize variables for loss components
     total_loss_all = 0.0
     regularization_loss_all = 0.0
     bulk_loss_all = 0.0
     cosine_loss_all = 0.0
-    # mmd_loss_all = 0.0
+    patho_loss_all = 0.0  # Added for patho loss
     loss_dict = {}
 
     ## DataLoader Bulk
-    if mode == 'Cox':
-        (X_a, t, e) = next(iter(dataloader_A))
-        X_a = X_a.to(device)
-        t = t.to(device)
-        e = e.to(device)
-
-    if mode in ['Bionomial', 'Regression']:
-        (X_a, label) = next(iter(dataloader_A))
-        X_a = X_a.to(device)
-        label = label.to(device)
+    (X_a, label) = next(iter(dataloader_A))
+    X_a = X_a.to(device)
+    label = label.to(device)
 
     for batch_B in dataloader_B:
         ## DataLoader SC or ST
@@ -69,13 +63,13 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
         # Forward pass
         # embeddings_a, risk_scores_a, _ = model(X_a)
         _, risk_scores_a, _ = model(X_a)
-
         embeddings_b, _, pred_patho = model(X_b)
 
         regularization_loss_ = regularization_loss(model.feature_weights)
 
         # Calculate loss
         if mode == 'Cox':
+            t, e = label[:, 0], label[:, 1]  # Assuming label contains t and e for Cox mode
             bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
         elif mode == 'Bionomial':
@@ -85,17 +79,17 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
             bulk_loss_ = MSE_loss(risk_scores_a, label)
 
         if infer_mode == 'Cell':
-            cosine_loss_ = cosine_loss(embeddings_b, A)
+            cosine_loss_exp_ = cosine_loss(embeddings_b, A)
             # mmd_loss_ = mmd_loss(embeddings_a, embeddings_b)
 
             # total loss
 
             # total_loss = regularization_loss_ + bulk_loss_ * alphas[0] + \
-            #     cosine_loss_ * alphas[1] + \
+            #     cosine_loss_exp_ * alphas[1] + \
             #     mmd_loss_ * alphas[2]
             total_loss = regularization_loss_ * alphas[0] + \
                 bulk_loss_ * alphas[1] + \
-                cosine_loss_ * alphas[2]
+                cosine_loss_exp_ * alphas[2]
 
         elif infer_mode == 'Spot' and adj_B is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
