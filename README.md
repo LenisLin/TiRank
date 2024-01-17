@@ -15,12 +15,12 @@ Firstly, we highly recommend user to create a **new** conda environment and inst
 
   git clone git@github.com:LenisLin/TiRank.git
 
-  cd TiRank
+  cd TiRank/TiRank_pack/TiRank
 
   pip install -e .
 ```
 
-#### Locally conda install (Not recommend)
+#### Locally conda install (Not recommend) (need more test)
 ```{bash}
 git clone git@github.com:LenisLin/TiRank.git
 
