@@ -1,2 +1,2 @@
-# scRank_v2
+# TiRank
 A comprehensive RNA-seq and scRNA-seq integration analysis tool
