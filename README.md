@@ -17,7 +17,7 @@ Firstly, we highly recommend user to create a **new** conda environment and inst
 
   cd TiRank/TiRank_pack/TiRank
 
-  conda install python=3.9.7
+  conda install -y python=3.9.7
 
   pip install -e .
 ```
