@@ -9,7 +9,7 @@ Firstly, we highly recommend user to create a **new** conda environment and inst
 
 #### Locally pip install (Recommend)
 ```{bash}
-  conda create -n -y TiRank
+  conda create -n TiRank python=3.9.7 -y
 
   conda activate TiRank
 
@@ -17,12 +17,25 @@ Firstly, we highly recommend user to create a **new** conda environment and inst
 
   cd TiRank/TiRank_pack/TiRank
 
-  conda install -y python=3.9.7
-
   pip install -e .
 ```
 
-#### Locally conda install (Not recommend) (need more test)
+#### Online pip install (Recommend)
+```{bash}
+  conda create -n TiRank python=3.9.7 -y
+
+  conda activate TiRank
+
+  git clone git@github.com:LenisLin/TiRank.git
+
+  cd ./TiRank
+
+  pip install TiRank
+
+  pip install ./timm-0.5.4.tar
+```
+
+#### Locally conda install (Highly Recommend)
 ```{bash}
 git clone git@github.com:LenisLin/TiRank.git
 
@@ -33,5 +46,7 @@ conda env create -f TiRank.yml
 ```
 
 #### Docker (Recommend)
+```{bash}
 
-#### Web Server (Recommend)
+```
+
