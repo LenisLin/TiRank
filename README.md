@@ -6,23 +6,7 @@ TiRank is a comprehensive tool for integrating and analyzing RNA-seq and scRNA-s
 
 TiRank can be installed through multiple methods. We recommend creating a new conda environment specifically for TiRank for optimal compatibility and isolation from other Python packages.
 
-#### Method 1: Local pip Installation
-1. Create a new conda environment:
-   ```bash
-   conda create -n TiRank python=3.9.7 -y
-   conda activate TiRank
-   ```
-2. Clone the TiRank repository from GitHub:
-   ```bash
-   git clone git@github.com:LenisLin/TiRank.git
-   cd TiRank/TiRank_pack/TiRank
-   ```
-3. Install TiRank using pip:
-   ```bash
-   pip install -e .
-   ```
-
-#### Method 2: Online pip Installation
+#### Method 1: Online pip Installation
 1. Set up a new conda environment:
    ```bash
    conda create -n TiRank python=3.9.7 -y
@@ -44,7 +28,7 @@ TiRank can be installed through multiple methods. We recommend creating a new co
      ```
 5. Download the pre-trained [CTransPath](https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view) model weights.
 
-#### Method 3: Local conda Installation
+#### Method 2: Local conda Installation
 1. Clone the TiRank repository:
    ```bash
    git clone git@github.com:LenisLin/TiRank.git
@@ -55,7 +39,7 @@ TiRank can be installed through multiple methods. We recommend creating a new co
    conda env create -f TiRank.yml
    ```
 
-#### Method 4: Docker Installation (Highly Recommended)
+#### Method 3: Docker Installation (Highly Recommended)
 _(Instructions to be provided)_
 
 ---
