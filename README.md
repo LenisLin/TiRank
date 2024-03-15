@@ -1,6 +1,50 @@
-```
+# Usage
 
+## Load data
+```
+# 1.1 selecting a path to save the results
 savePath = "./web_test"
+savePath_1 = os.path.join(savePath, "1_loaddata")
+if not os.path.exists(savePath_1):
+    os.makedirs(savePath_1, exist_ok=True)
+
+dataPath = "/home/lenislin/Experiment/data/scRankv2/data/ExampleData/SKCM_SC_Res/"
+
+# 1.2 load clinical data
+path_to_bulk_cli = os.path.os.path.join(dataPath, "Liu2019_meta.csv")
+bulkClinical = load_bulk_clinical(path_to_bulk_cli)
+view_dataframe(bulkClinical) 
+
+# 1.3 load bulk expression profile
+path_to_bulk_exp = os.path.join(dataPath, "Liu2019_exp.csv")
+bulkExp = load_bulk_exp(path_to_bulk_exp)
+bulkExp = normalize_data(bulkExp)
+view_dataframe(bulkExp)  ## if user try to view the data
+
+# 1.4 Check name
+check_bulk(savePath, bulkExp, bulkClinical)
+
+# 1.5 load SC data
+path_to_sc_floder = (os.path.join(dataPath,"GSE120575.h5ad"))
+scAnndata = load_sc_data(path_to_sc_floder, savePath)
+st_exp_df = transfer_exp_profile(scAnndata)
+view_dataframe(st_exp_df)  ## if user try to view the data
+```
+## Preprocessing
+```
+# 2.1 selecting a path to save the results
+savePath = "./web_test"
+savePath_1 = os.path.join(savePath, "1_loaddata")
+savePath_2 = os.path.join(savePath, "2_preprocessing")
+
+if not os.path.exists(savePath_2):
+    os.makedirs(savePath_2, exist_ok=True)
+
+# 2.2 load data
+f = open(os.path.join(savePath_1, "anndata.pkl"), "rb")
+scAnndata = pickle.load(f)
+f.close()
+
 # 2.3 Preprocessing on sc/st data
 infer_mode = "Cell"  ## optional parameter
 
@@ -56,8 +100,9 @@ GPextractor.load_data()
 GPextractor.run_extraction()
 GPextractor.save_data()
 
-## 3. Analysis
-# 3.1 TiRank
+```
+## Model Train and Prediction
+```
 savePath = "./web_test"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 savePath_2 = os.path.join(savePath, "2_preprocessing")
@@ -101,4 +146,7 @@ tune_hyperparameters(
 
 # 3.1.3 Inference
 Predict(savePath=savePath, mode=mode, do_reject=True, tolerance=0.05, reject_mode="GMM")
+
+# 3.1.4 Visualization
+plot_score_distribution(savePath)  # Display the prob score distribution
 ```
