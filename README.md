@@ -150,3 +150,18 @@ Predict(savePath=savePath, mode=mode, do_reject=True, tolerance=0.05, reject_mod
 # 3.1.4 Visualization
 plot_score_distribution(savePath)  # Display the prob score distribution
 ```
+
+# Hyperparameter in TiRank
+In TiRank, six key hyperparameters influence the results. The first three are crucial for feature selection in bulk transcriptomics, while the latter three are used for training the multilayer perceptron network. TiRank autonomously chooses suitable combinations for these latter three parameters within a predefined range (Detailed in our article Methods-Tuning of Hyperparameters). However, due to the variability across different bulk transcriptomics datasets, we cannot preset the first three hyperparameters. We give the default setting and clarify the function of each parameter to help users get a optimal results.
+## top_var_genes
+Considering the high dropout rates in single-cell or spatial transcriptome datasets, the initial feature selection step is to select highly variable features, top_var_genes. Default setting for top_var_genes is 2000. If users find the number of filtered genes is low, you could increase the top_var_genes.
+## p_value_threshold
+p_value_threshold indicates the significance between each gene and phenotype(Detailed in our article Methods-scRank workflow design-Step1). A lower p_value_threshold indicates a stronger ability of gene to distinguish different phenotypes in bulk transcriptomics. Default setting for p_value_threshold is 0.05. Depending on the number of filtered genes, users may need to adjust this threshold. If users find the number of filtered genes is low, you could increase the p_value_threshold.
+## top_gene_pairs
+top_gene_pairs is used to selected highly variable gene pairs in bulk transcriptomics that more effectively differentiate phenotypes. Default setting for top_gene_pairs is 2000.
+## alphas
+alphas determine the weight of different components in total loss computation. (Detailed in our article Methods-scRank workflow design-Step2)
+## n_epochs
+n_epochs is the number of training epochs in TiRank.
+## lr
+The learning rate (lr) controls the step size of model training during each iteration of parameter updates. A lower learning rate corresponds to more gradual updates, resulting in slower convergence over each epoch. Conversely, a higher learning rate might cause the model to oscillate around the optimal solution, potentially preventing the attainment of the best results.
