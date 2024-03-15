@@ -1,5 +1,13 @@
 # Usage
 
+## Input
+Bulk Expression: CSV files which rows represent genes and column represent samples. The first row should be samples id and first column should be gene symbol.
+
+Bulk Clinical：CSV files with 1 column if your phenotype label is continuous or binary. Or CSV files with 2 column if your phenotype label is survival with first column represent survival time and second column represent survival status. No need to set column names.
+
+Single-cell Expression：CSV files which rows represent genes and column represent cells. The first row should be cells id and first column should be gene symbol.
+
+Spatial Expression: 10x spaceranger output folder.
 ## Load data
 ```
 # 1.1 selecting a path to save the results
