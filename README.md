@@ -4,7 +4,7 @@
 ```
 from TiRank.main import *
 
-GenePairSelection(scst_exp_path, bulk_exp_path, bulk_cli_path, datatype, mode, savePath, lognormalize = True, validation_proportion=0.15, top_var_genes=2000, top_gene_pairs=1000, p_value_threshold=0.05)
+GenePairSelection(scst_exp_path, bulk_exp_path, bulk_cli_path, datatype, mode, savePath, lognormalize = True, top_var_genes=2000, top_gene_pairs=1000, p_value_threshold=0.05)
 ```
 #### Input:
 
@@ -17,10 +17,7 @@ GenePairSelection(scst_exp_path, bulk_exp_path, bulk_cli_path, datatype, mode, s
 * ```mode```: ```Cox``` represent your phenotype label is survival, ```Classification``` represent your phenotype label is binary, ```Regression``` represent your phenotype label is continuous.
 * ```savePath```: The path to save model.
 * ```lognormalize```: Whether to perform lognormalize.
-* ```validation_proportion```:
-* ```top_var_genes```:
-* ```top_gene_pairs```:
-* ```p_value_threshold```:
+* ```top_var_genes, top_gene_pairs, p_value_threshold```: See datails in **Hyperparameter in TiRank** part
 
 ## Model training and prediction
 ```
@@ -28,10 +25,8 @@ TiRank(savePath, datatype, mode, device="cuda")
 ```
 Input:
 
-* ```savePath```:
-* ```datatype```:
-* ```mode```:
-* ```device```:
+* ```savePath, datatype, mode```:Same as the input in GenePairSelection function
+* ```device```: Whether use ```cuda``` or ```cpu``` to train model
 
 
 # Hyperparameter in TiRank
