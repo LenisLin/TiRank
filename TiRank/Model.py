@@ -10,7 +10,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-from .Loss import *
+from Loss import *
 
 # Initial
 
@@ -33,7 +33,7 @@ def initial_model_para(
         n_patho=0,
         dropout=0.5,
         mode = "Cox",
-        infer_mode="SC",
+        infer_mode="Cell",
         encoder_type = "MLP"
 ):
     savePath_2 = os.path.join(savePath,"2_preprocessing")
@@ -286,9 +286,9 @@ class PathologyPredictor(nn.Module):
 # Main network
 
 
-class TiRankModel(nn.Module):
+class TiRank(nn.Module):
     def __init__(self, n_features, nhead, nhid1, nhid2, nlayers, n_output, n_pred=1, n_patho=0, dropout=0.5, mode="Cox", encoder_type="MLP"):
-        super(TiRankModel, self).__init__()
+        super(TiRank, self).__init__()
 
         # Initialize the learnable weight matrix
         self.feature_weights = nn.Parameter(torch.Tensor(n_features, 1),requires_grad=True)
@@ -318,7 +318,7 @@ class TiRankModel(nn.Module):
             self.predictor = RegscorePredictor(
                 n_output, nhid2, n_pred, dropout)
 
-        elif mode == "Classification":
+        elif mode == "Bionomial":
             self.predictor = ClassscorePredictor(
                 n_output, nhid2, n_pred, dropout)
                 

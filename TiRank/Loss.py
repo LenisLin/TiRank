@@ -1,18 +1,8 @@
 # loss function
 import torch
 import torch.nn as nn
+import numpy as np
 
-def regularization_loss(feature_weights):
-    """
-    Calculate the L1 regularization loss.
-
-    Parameters:
-    feature_weights (torch.Tensor): The learnable weight matrix.
-
-    Returns:
-    torch.Tensor: The calculated regularization loss.
-    """
-    return torch.mean(torch.abs(feature_weights))
 
 def regularization_loss(feature_weights):
     """
@@ -96,20 +86,6 @@ def cosine_loss(embeddings, A):
 
 #     Args:
 #         a (Tensor), b (Tensor): Input tensors where each row is a sample
-<<<<<<< HEAD:scRank/Loss.py
-
-#     Returns:
-#         Tensor: Gaussian kernel similarities
-#     """
-#     dim1_1, dim1_2 = a.shape[0], b.shape[0]
-#     depth = a.shape[1]
-#     a = a.view(dim1_1, 1, depth)
-#     b = b.view(1, dim1_2, depth)
-#     a_core = a.expand(dim1_1, dim1_2, depth)
-#     b_core = b.expand(dim1_1, dim1_2, depth)
-#     numerator = (a_core - b_core).pow(2).mean(2) / depth
-#     return torch.exp(-numerator)
-=======
 
 #     Returns:
 #         Tensor: Gaussian kernel similarities
@@ -123,19 +99,11 @@ def cosine_loss(embeddings, A):
 #     numerator = (a_core - b_core).pow(2).mean(2) / depth
 #     return torch.exp(-numerator)
 
->>>>>>> origin/final:TiRank/Loss.py
 
 # def mmd_loss(embeddings_A, embeddings_B):
 #     """
 #     Calculates the Maximum Mean Discrepancy (MMD) loss between two sets of embeddings.
 
-<<<<<<< HEAD:scRank/Loss.py
-# def mmd_loss(embeddings_A, embeddings_B):
-#     """
-#     Calculates the Maximum Mean Discrepancy (MMD) loss between two sets of embeddings.
-
-=======
->>>>>>> origin/final:TiRank/Loss.py
 #     Args:
 #         embeddings_A (Tensor), embeddings_B (Tensor): Input tensors containing embeddings
 

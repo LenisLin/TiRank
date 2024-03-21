@@ -12,15 +12,15 @@ import numpy as np
 import scipy.stats as stats
 from sklearn.mixture import GaussianMixture
 
-from .Loss import *
-from .Model import TiRankModel
-from .Visualization import plot_loss
-from .Dataloader import transform_test_exp
+from Loss import *
+from Model import *
+from Visualization import plot_loss
+from Dataloader import transform_test_exp
 
 # Training
 
 
-def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC", adj_A=None, adj_B=None, pre_patho_labels=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, pre_patho_labels=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.train()
 
@@ -39,7 +39,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="S
         t = t.to(device)
         e = e.to(device)
 
-    if mode in ['Classification', 'Regression']:
+    if mode in ['Bionomial', 'Regression']:
         (X_a, label) = next(iter(dataloader_A))
         X_a = X_a.to(device)
         label = label.to(device)
@@ -78,13 +78,13 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="S
         if mode == 'Cox':
             bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
-        elif mode == 'Classification':
+        elif mode == 'Bionomial':
             bulk_loss_ = CrossEntropy_loss(risk_scores_a, label)
 
         elif mode == 'Regression':
             bulk_loss_ = MSE_loss(risk_scores_a, label)
 
-        if infer_mode == 'SC':
+        if infer_mode == 'Cell':
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
 
             # total loss
@@ -94,7 +94,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="S
             
             pathoLloss = torch.tensor(0)
 
-        elif infer_mode == 'ST' and adj_B is not None:
+        elif infer_mode == 'Spot' and adj_B is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
             cosine_loss_spatial_ = cosine_loss(embeddings_b, B)
 
@@ -105,7 +105,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="S
                 cosine_loss_exp_ * alphas[2] + \
                 cosine_loss_spatial_ * alphas[3]
 
-        elif infer_mode == 'ST' and pre_patho is not None:
+        elif infer_mode == 'Spot' and pre_patho is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
             pathoLloss = CrossEntropy_loss(pred_patho, pre_patho)
 
@@ -141,7 +141,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="S
 # Validate
 
 
-def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC", adj_A=None, adj_B=None, pre_patho_labels=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, pre_patho_labels=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.eval()  # Set the model to evaluation mode
 
@@ -156,7 +156,7 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC
             t = t.to(device)
             e = e.to(device)
 
-        if mode in ['Classification', 'Regression']:
+        if mode in ['Bionomial', 'Regression']:
             (X_a, label) = next(iter_A)
             X_a = X_a.to(device)
             label = label.to(device)
@@ -192,19 +192,19 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC
             if mode == 'Cox':
                 bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
-            elif mode == 'Classification':
+            elif mode == 'Bionomial':
                 bulk_loss_ = CrossEntropy_loss(risk_scores_a, label)
 
             elif mode == 'Regression':
                 bulk_loss_ = MSE_loss(risk_scores_a, label)
 
-            if infer_mode == 'SC':
+            if infer_mode == 'Cell':
                 cosine_loss_exp_ = cosine_loss(embeddings_b, A)
 
                 # total loss
                 total_loss = bulk_loss_ * alphas[0] + cosine_loss_exp_ * alphas[1]
 
-            elif infer_mode == 'ST' and adj_B is not None:
+            elif infer_mode == 'Spot' and adj_B is not None:
                 cosine_loss_exp_ = cosine_loss(embeddings_b, A)
                 cosine_loss_spatial_ = cosine_loss(embeddings_b, B)
 
@@ -214,7 +214,7 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC
                     cosine_loss_exp_ * alphas[1] + \
                     cosine_loss_spatial_ * alphas[2]
 
-            elif infer_mode == 'ST' and pre_patho is not None:
+            elif infer_mode == 'Spot' and pre_patho is not None:
                 cosine_loss_exp_ = cosine_loss(embeddings_b, A)
                 pathoLloss = CrossEntropy_loss(pred_patho, pre_patho)
 
@@ -448,12 +448,12 @@ def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
 
 def objective(trial,
               n_features, nhead, nhid1,
-              nhid2, n_output, nlayers, n_pred, n_patho, dropout, mode, encoder_type,
+              nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
               train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, adj_B, pre_patho_labels, device, infer_mode, model_save_path):
 
     print(f"Initiate model in trail {trial.number} with mode: {mode}, infer mode: {infer_mode} encoder type: {encoder_type} on device: {device}.")
-    model = TiRankModel(n_features=n_features, nhead=nhead, nhid1=nhid1, nhid2=nhid2, n_output=n_output,
-                   nlayers=nlayers, n_pred=n_pred, n_patho = n_patho, dropout=dropout, mode=mode, encoder_type=encoder_type)
+    model = TiRank(n_features=n_features, nhead=nhead, nhid1=nhid1, nhid2=nhid2, n_output=n_output,
+                   nlayers=nlayers, n_pred=n_pred, dropout=dropout, mode=mode, encoder_type=encoder_type)
     model = model.to(device)
 
     # Define hyperparameters with trial object
@@ -580,7 +580,7 @@ def tune_hyperparameters(
     study = optuna.create_study(direction='minimize')
     study.optimize(lambda trial: objective(trial,
                                            n_features, nhead, nhid1,
-                                           nhid2, n_output, nlayers, n_pred, n_patho, dropout, mode, encoder_type,
+                                           nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
                                            train_loader_Bulk, val_loader_Bulk, train_loader_SC, 
                                            adj_A ,adj_B, patholabels, device, infer_mode, model_save_path), n_trials=n_trials)
     
@@ -631,7 +631,7 @@ def get_best_model(savePath):
     model_save_path = model_para.get('model_save_path', './checkpoints/')
 
 
-    model = TiRankModel(n_features=n_features, nhead=nhead, nhid1=nhid1,
+    model = TiRank(n_features=n_features, nhead=nhead, nhid1=nhid1,
                 nhid2=nhid2, n_output=n_output, nlayers=nlayers, n_pred=n_pred, n_patho=n_patho,dropout=dropout, mode=mode, encoder_type=encoder_type)
     model.load_state_dict(torch.load(filename))
     model = model.to("cpu")
@@ -697,7 +697,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
         pred_bulk = pred_bulk.detach().numpy().reshape(-1, 1)
         pred_sc = pred_sc.detach().numpy().reshape(-1, 1)
 
-    elif mode == "Classification":
+    elif mode == "Bionomial":
         pred_sc = pred_sc[:, 1].detach().numpy().reshape(-1, 1)
         pred_bulk = pred_bulk[:, 1].detach().numpy().reshape(-1, 1)
 
@@ -710,7 +710,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
 
     if do_reject:
         if reject_mode == "GMM":
-            if mode in ["Cox", "Classification"]:
+            if mode in ["Cox", "Bionomial"]:
                 reject_mask = Reject_With_GMM_Bio(pred_bulk, pred_sc,
                                                   tolerance=tolerance, min_components=3, max_components=15)
             if mode == "Regression":
@@ -718,7 +718,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
                     pred_bulk, pred_sc, tolerance=tolerance)
 
         elif reject_mode == "Strict":
-            if mode in ["Cox", "Classification"]:
+            if mode in ["Cox", "Bionomial"]:
                 reject_mask = Reject_With_StrictNumber(
                     pred_bulk, pred_sc, tolerance=tolerance)
 
@@ -765,11 +765,11 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
     scAnndata.obs["Reject"] = saveDF_sc.iloc[:, 0]
     scAnndata.obs["Rank_Score"] = saveDF_sc.iloc[:, 1]
 
-    if mode in ["Cox", "Classification"]:
+    if mode in ["Cox", "Bionomial"]:
         temp = scAnndata.obs["Rank_Score"] * (1 - scAnndata.obs["Reject"])
         scAnndata.obs["Rank_Label"] = [
             "Background" if i == 0 else
-            "Rank-" if 0 <= i < 0.5 else
+            "Rank-" if 0 < i < 0.5 else
             "Rank+"
             for i in temp
         ]

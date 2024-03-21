@@ -165,11 +165,11 @@ def Clustering(ann_data,infer_mode, savePath):
         sc.tl.umap(ann_data)
         sc.tl.leiden(ann_data, key_added="leiden_clusters")
 
-    if infer_mode == "SC":
+    if infer_mode == "Cell":
         sc.pl.umap(ann_data, color=['leiden_clusters'],show = False)
         plt.savefig(os.path.join(savePath_2,"leiden cluster.png"))
 
-    if infer_mode == "ST":
+    if infer_mode == "Spot":
         fig, axs = plt.subplots(1, 2, figsize=(8, 4))  # Create a 1x2 grid for the plots
         sc.pl.spatial(ann_data, img_key="hires", color=["leiden_clusters"],show = False,ax=axs[0])
         sc.pl.umap(ann_data, color=["leiden_clusters"],show = False, ax=axs[1])

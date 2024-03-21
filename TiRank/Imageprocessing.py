@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 from PIL import Image
 import torch
 import torch.nn as nn
@@ -11,13 +10,14 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 
-sys.path.append("../scRank")
 from ctran import ctranspath
 
 def scale_coordinate(data):
     """Convert imagecol and imagerow into high-resolution coordinates."""
     library_id = list(data.uns["spatial"].keys())[0]
     scale = data.uns["spatial"][library_id]["scalefactors"]["tissue_hires_scalef"]
+    if type(data.obsm["spatial"][1,1]) == type('a'):
+        data.obsm["spatial"] = data.obsm["spatial"].astype("float")
     image_coordinates = data.obsm["spatial"] * scale
     data.obs["imagecol"] = image_coordinates[:, 0]
     data.obs["imagerow"] = image_coordinates[:, 1]
@@ -90,6 +90,11 @@ def plot_patho_class_heatmap(data, save_path):
     # Extracting data
     x_coords = data.obs["array_col"].values
     y_coords = data.obs["array_row"].values
+
+    if type(x_coords[0]) == type('a'):
+        x_coords = x_coords.astype("int")
+        y_coords = y_coords.astype("int")
+
     labels = data.obs["patho_class"].values
     
     # Number of unique labels (assuming they are sequential integers starting from 0)
