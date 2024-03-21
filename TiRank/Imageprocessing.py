@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 from PIL import Image
 import torch
 import torch.nn as nn
@@ -11,7 +10,6 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 
-sys.path.append("../TiRank")
 from ctran import ctranspath
 
 def scale_coordinate(data):

@@ -19,6 +19,29 @@ def view_clinical_variables(savePath):
 
     return bulkClinical
 
+def assign_binary_values(df, column_name):
+    # transfer into dataframe
+    df = pd.DataFrame(df)
+
+    # Ensure the column exists in the DataFrame
+    if column_name not in df.columns:
+        raise ValueError(f"Column '{column_name}' not found in DataFrame.")
+
+    # Step 1: Identify the unique categories in the specified column
+    unique_categories = df[column_name].unique().tolist()
+    
+    # Safety check: Ensure there are only two unique categories
+    if len(unique_categories) != 2:
+        raise ValueError("The column does not contain exactly two unique categories.")
+    
+    # Step 2: Assign numerical values to these categories
+    category_to_number = {unique_categories[0]: 0, unique_categories[1]: 1}
+    
+    # Convert the specified column in the DataFrame based on the detected categories
+    df[column_name] = df[column_name].map(category_to_number)
+    
+    return df, category_to_number
+
 def choose_clinical_variable(savePath, bulkClinical, mode, var_1, var_2 = None):
     savePath_2 = os.path.join(savePath,"2_preprocessing")
 
@@ -28,9 +51,28 @@ def choose_clinical_variable(savePath, bulkClinical, mode, var_1, var_2 = None):
         Status_col = var_2
         bulkClinical = bulkClinical.loc[:,[Time_col,Status_col]]
 
-    elif mode == "Bionomial" or "Regression":
+        if type(bulkClinical.iloc[1,0] == type("a")):
+            raise(TypeError("Chosen Time Variable in "+mode+" Mode was not numeric."))
+        
+        if type(bulkClinical.iloc[1,1] == type("a")):
+            raise(TypeError("Chosen Status Variable in "+mode+" Mode was not numeric."))
+
+    elif mode == "Bionomial":
         Variable_col = var_1
         bulkClinical = bulkClinical.loc[:,Variable_col]
+
+        ## convert character into binary numeric vector
+        converted_df, correspondence = assign_binary_values(bulkClinical,Variable_col)
+        print("Correspondence:", correspondence)
+
+        bulkClinical = converted_df
+
+    elif mode == "Regression":
+        Variable_col = var_1
+        bulkClinical = bulkClinical.loc[:,Variable_col]
+
+        if type(bulkClinical.iloc[1,0] == type("a")):
+            raise(TypeError("Chosen Variable in "+mode+" Mode was not numeric."))
 
     else:
         raise(TypeError("Unexpected Mode had been selected."))
