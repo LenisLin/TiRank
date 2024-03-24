@@ -61,7 +61,7 @@ GenePairSelection(scst_exp_path, bulk_exp_path, bulk_cli_path, datatype, mode, s
   
   If your datatype is ST, you should provide 10x spaceranger output folder path.
 * ```bulk_exp_path```: CSV files which rows represent genes and column represent samples. The first row should be samples id and first column should be gene symbol.
-* ```bulk_cli_path```: CSV files with 2 column if your phenotype label is continuous or binary. Or CSV files with 3 column if your phenotype label is survival with first column represent survival time and second column represent survival status. No need to set column names. The first column should be samples id same as the bulk_exp file. Specifically, if your phenotype label is binary you need to convert them to 01 form.
+* ```bulk_cli_path```: CSV files with 2 column if your phenotype label is continuous or binary. Or CSV files with 3 column if your phenotype label is survival with second column represent survival time and third column represent survival status. No need to set column names. The first column should be samples id same as the bulk_exp file. Specifically, if your phenotype label is binary you need to convert them to 01 form.
 * ```datatype```: ```SC``` represent scRNA-seq data. ```ST``` represent spatial transcriptomics data.
 * ```mode```: ```Cox``` represent your phenotype label is survival, ```Classification``` represent your phenotype label is binary, ```Regression``` represent your phenotype label is continuous.
 * ```savePath```: The path to save model.
