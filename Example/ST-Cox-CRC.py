@@ -6,6 +6,9 @@ import torch
 import pickle
 import os
 
+import sys
+sys.path.append("/home/lenislin/Experiment/projects/TiRankv2/github/TiRank")
+
 from TiRank.Model import setup_seed, initial_model_para
 from TiRank.LoadData import *
 from TiRank.SCSTpreprocess import *
@@ -14,18 +17,19 @@ from TiRank.GPextractor import GenePairExtractor
 from TiRank.Dataloader import view_clinical_variables, choose_clinical_variable, generate_val, PackData
 from TiRank.TrainPre import tune_hyperparameters, Predict
 from TiRank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
+from TiRank.Visualization import plot_score_umap, plot_label_distribution_among_conditions
 
 setup_seed(619)
 
 ## 1. Load data
 # 1.1 selecting a path to save the results
-savePath = "./web_test"
+savePath = "./ST_Survival_CRC"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 if not os.path.exists(savePath_1):
     os.makedirs(savePath_1, exist_ok=True)
 
 # 1.2 load clinical data
-dataPath = "/home/lenislin/Experiment/data/scRankv2/data/ExampleData/CRC_ST_Prog/"
+dataPath = "./ExampleData/ST_Prog_CRC/"
 path_to_bulk_cli = os.path.join(dataPath, "GSE39582_clinical_os.csv")
 bulkClinical = load_bulk_clinical(path_to_bulk_cli)
 view_dataframe(bulkClinical)  ## if user try to view the data
@@ -39,16 +43,14 @@ view_dataframe(bulkExp)  ## if user try to view the data
 check_bulk(savePath, bulkExp, bulkClinical)
 
 # 1.5 load ST data
-path_to_st_floder = (
-    "/home/lenislin/Experiment/data/scRankv2/data/ExampleData/CRC_ST_Prog/SN048_A121573_Rep1"
-)
+path_to_st_floder = (os.path.join(dataPath,"SN048_A121573_Rep1"))
 scAnndata = load_st_data(path_to_st_floder, savePath)
 st_exp_df = transfer_exp_profile(scAnndata)
 view_dataframe(st_exp_df)  ## if user try to view the data
 
 ## 2. Preprocessing
 # 2.1 selecting a path to save the results
-savePath = "./web_test"
+savePath = "./ST_Survival_CRC"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 savePath_2 = os.path.join(savePath, "2_preprocessing")
 
@@ -76,7 +78,7 @@ scAnndata = Logtransformation(scAnndata)
 scAnndata = Clustering(scAnndata, infer_mode=infer_mode, savePath=savePath)
 compute_similarity(savePath=savePath, ann_data=scAnndata, calculate_distance=False)
 
-pretrain_path = "/home/lenislin/Experiment/projects/TiRankv2/TiRank_pack/TiRank/pretrainModel/ctranspath.pth"  ## put this file in the package
+pretrain_path = "/home/lenislin/Experiment/projects/TiRankv2/TiRank/pretrainModel/ctranspath.pth"  ## put this file in the package
 
 n_patho_cluster = 6  ## optional variable
 
@@ -126,7 +128,7 @@ GPextractor.save_data()
 
 ## 3. Analysis
 # 3.1 TiRank
-savePath = "./web_test"
+savePath = "./ST_Survival_CRC"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 savePath_2 = os.path.join(savePath, "2_preprocessing")
 savePath_3 = os.path.join(savePath, "3_Analysis")
@@ -153,6 +155,7 @@ initial_model_para(
     n_output=32,
     nlayers=3,
     n_pred=1,
+    n_patho = 6,
     dropout=0.5,
     mode=mode,
     encoder_type=encoder_type,
@@ -163,16 +166,16 @@ tune_hyperparameters(
     ## Parameters Path
     savePath=savePath,
     device=device,
-    n_trials=20,
+    n_trials=5,
 )  ## optional parameters: n_trials
 
 # 3.1.3 Inference
 Predict(savePath=savePath, mode=mode, do_reject=True, tolerance=0.05, reject_mode="GMM")
 
-
 # 3.1.4 Visualization
 plot_score_distribution(savePath)  # Display the prob score distribution
-
+plot_score_umap(savePath,infer_mode)
+plot_label_distribution_among_conditions(savePath,group="leiden_clusters")
 
 # 3.2 DEGs and Pathway enrichment
 fc_threshold = 2
@@ -197,11 +200,11 @@ DEG_volcano(
 
 Pathway_Enrichment(savePath, database=["GO_Biological_Process_2023"])
 
-## Sub-region visualization
-savePath_selecting = os.path.join(savePath_3, "selecting")
-if not os.path.exists(savePath_selecting):
-    os.makedirs(savePath_selecting, exist_ok=True)
+# ## Sub-region visualization
+# savePath_selecting = os.path.join(savePath_3, "selecting")
+# if not os.path.exists(savePath_selecting):
+#     os.makedirs(savePath_selecting, exist_ok=True)
 
-upload_metafile(savePath,"/home/lenislin/Experiment/data/scRankv2/data/ExampleData/CRC_ST_Prog/SN048_A121573_Rep1/meta.csv")
+# upload_metafile(savePath,"/home/lenislin/Experiment/data/scRankv2/data/ExampleData/CRC_ST_Prog/SN048_A121573_Rep1/meta.csv")
 
 

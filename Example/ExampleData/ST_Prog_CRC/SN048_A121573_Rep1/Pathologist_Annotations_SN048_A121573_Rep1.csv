@@ -1,0 +1,2204 @@
+Barcode,Pathologist Annotations
+AAACAAGTATCTCCCA-1,epithelium&submucosa
+AAACACCAATAACTGC-1,exclude
+AAACATTTCCCGGATT-1,submucosa
+AAACCCGAACGAAATC-1,tumor
+AAACCGGGTAGGTACC-1,tumor
+AAACCGTTCGTCCAGG-1,epithelium&submucosa
+AAACCTAAGCAGCCGG-1,tumor&stroma_IC med to high
+AAACCTCATGAAGTTG-1,tumor
+AAACGAGACGGTTGAT-1,epithelium&submucosa
+AAACGGGCGTACGGGT-1,exclude
+AAACTCGTGATATAAG-1,tumor
+AAACTGCTGGCTCCAA-1,submucosa
+AAAGACTGGGCGCTTT-1,tumor
+AAAGGCTACGGACCAT-1,stroma_fibroblastic_IC high
+AAAGGCTCTCGCGCCG-1,epithelium&submucosa
+AAAGTAGCATTGCTCA-1,tumor&stroma_IC med to high
+AAAGTCGACCCTCAGT-1,stroma_fibroblastic_IC high
+AAAGTGTGATTTATCT-1,submucosa
+AAAGTTGACTCCCGTA-1,non neo epithelium
+AAATAAGGTAGTGCCC-1,tumor
+AAATACCTATAAGCAT-1,epithelium&submucosa
+AAATAGGGTGCTATTG-1,IC aggregregate_submucosa
+AAATCCGATACACGCC-1,exclude
+AAATCGTGTACCACAA-1,non neo epithelium
+AAATCTAGCCCTGCTA-1,non neo epithelium
+AAATGATTCGATCAGC-1,exclude
+AAATGGCCCGTGCCCT-1,stroma_fibroblastic_IC high
+AAATGGTCAATGTGCC-1,epithelium&submucosa
+AAATTAACGGGTAGCT-1,non neo epithelium
+AAATTACCTATCGATG-1,epithelium&submucosa
+AAATTCCAGGTCCAAA-1,tumor
+AAATTGATAGTCCTTT-1,tumor&stroma_IC med to high
+AAATTTGCGGGTGTGG-1,submucosa
+AACAACTGGTAGTTGC-1,epithelium&submucosa
+AACAATACATTGTCGA-1,tumor
+AACAATTACTCTACGC-1,tumor&stroma_IC med to high
+AACACACGCTCGCCGC-1,epithelium&submucosa
+AACACGAGACGCGGCC-1,tumor&stroma_IC med to high
+AACAGCTGTGTGGCAA-1,exclude
+AACAGGTAGTATGGAT-1,stroma_fibroblastic_IC high
+AACATATCAACTGGTG-1,epithelium&submucosa
+AACATTGTGACTCGAG-1,tumor
+AACCAAGACTTCTCTG-1,stroma_fibroblastic_IC high
+AACCCGAGCAGAATCG-1,stroma_fibroblastic_IC high
+AACCCTACTGTCAATA-1,epithelium&submucosa
+AACCGCTAAGGGATGC-1,non neo epithelium
+AACCTCGCTTTAGCCC-1,tumor
+AACCTGTCACGGAATT-1,tumor
+AACCTTTAAATACGGT-1,stroma_fibroblastic_IC high
+AACGATAATGCCGTAG-1,epithelium&submucosa
+AACGCTGTTGCTGAAA-1,submucosa
+AACGGACGTACGTATA-1,epithelium&submucosa
+AACGGCCATCTCCGGT-1,submucosa
+AACGTACTGTGGGTAC-1,epithelium&submucosa
+AACGTCAGACTAGTGG-1,exclude
+AACGTGCGAAAGTCTC-1,epithelium&submucosa
+AACTACCCGTTTGTCA-1,tumor&stroma_IC med to high
+AACTAGGCTTGGGTGT-1,submucosa
+AACTCAAGTTAATTGC-1,epithelium&submucosa
+AACTCCAGAGCGTGTT-1,submucosa
+AACTCTCAATAGAGCG-1,non neo epithelium
+AACTCTCAGTGTGCTC-1,epithelium&submucosa
+AACTTGCCCGTATGCA-1,tumor
+AAGACCCAACTGAACA-1,stroma_fibroblastic_IC high
+AAGACTGCAAGCTACT-1,non neo epithelium
+AAGAGATGAATCGGTA-1,tumor&stroma_IC med to high
+AAGAGCTCTTTATCGG-1,non neo epithelium
+AAGAGGATGTACGCGA-1,stroma_fibroblastic_IC high
+AAGAGGCATGGATCGC-1,non neo epithelium
+AAGAGGCCCTTTGGAA-1,tumor
+AAGATGGCACCGGACC-1,tumor&stroma_IC med to high
+AAGATTGGCGGAACGT-1,non neo epithelium
+AAGCACCCTGCGTATC-1,tumor&stroma_IC med to high
+AAGCATACTCTCCTGA-1,epithelium&submucosa
+AAGCCGAAGCGGTTTA-1,tumor&stroma_IC med to high
+AAGCGTCCCTCATCGA-1,tumor&stroma_IC med to high
+AAGCTAGATCGAGTAA-1,submucosa
+AAGCTCGTGCCAAGTC-1,non neo epithelium
+AAGCTCTTTCATGGTG-1,tumor
+AAGGAGCGGTTGGTGC-1,epithelium&submucosa
+AAGGATCGATCGCTTG-1,non neo epithelium
+AAGGATGAGGGACCTC-1,non neo epithelium
+AAGGCAGGCTGTCTCC-1,stroma_fibroblastic_IC high
+AAGGCTGTGCTCATCG-1,non neo epithelium
+AAGGGACAGATTCTGT-1,epithelium&submucosa
+AAGGGACTATGCATTC-1,tumor&stroma_IC med to high
+AAGGTATCCTAATATA-1,non neo epithelium
+AAGGTGATAAACCAGC-1,submucosa
+AAGTAGTGACGCGAGG-1,IC aggregregate_submucosa
+AAGTCAATTGTCGTCA-1,epithelium&submucosa
+AAGTGACGACCGAATT-1,stroma_fibroblastic_IC high
+AAGTGAGTCGGGTTTA-1,tumor&stroma_IC med to high
+AAGTGCCTTGACTGTA-1,epithelium&submucosa
+AAGTGCGTTAGAATCT-1,tumor
+AAGTGTTTGGAGACGG-1,IC aggregregate_submucosa
+AAGTTCACTCCAAGCT-1,tumor
+AAGTTCGGCCAACAGG-1,epithelium&submucosa
+AAGTTGTGATGTTATA-1,exclude
+AATAACAACGCTCGGC-1,stroma_fibroblastic_IC high
+AATAACACTAGAACAA-1,epithelium&submucosa
+AATAGAACAGAGTGGC-1,submucosa
+AATAGAATCTGTTTCA-1,epithelium&submucosa
+AATAGTCCGTCCCGAC-1,submucosa
+AATATCGAATCAATGC-1,tumor&stroma_IC med to high
+AATATCGAGGGTTCTC-1,epithelium&submucosa
+AATATTGGAGTATTGA-1,tumor&stroma_IC med to high
+AATCATGTAAAGACTC-1,submucosa
+AATCGCCTCAGCGCCA-1,submucosa
+AATCGCGCAGAGGACT-1,tumor&stroma_IC med to high
+AATCGTGAGCCGAGCA-1,exclude
+AATCTAGGTTTACTTG-1,tumor
+AATCTATGCCGGAGCC-1,tumor&stroma_IC med to high
+AATCTCTACTGTGGTT-1,tumor&stroma_IC med to high
+AATCTGCGTTGGGACG-1,epithelium&submucosa
+AATCTGGCTTTCTAGT-1,tumor
+AATGACAGCAATGTCT-1,tumor&stroma_IC med to high
+AATGACGTAGGATGTC-1,epithelium&submucosa
+AATGATGATACGCTAT-1,submucosa
+AATGATGCGACTCCTG-1,submucosa
+AATGGTCCACCGTTCA-1,tumor&stroma_IC med to high
+AATGTGCCCGAGGTGT-1,tumor&stroma_IC med to high
+AATGTTGTCGTGAGAC-1,stroma_fibroblastic_IC high
+AATTAAAGGTCGGCGT-1,epithelium&submucosa
+AATTAACGGATTTCCA-1,stroma_fibroblastic_IC high
+AATTAGCGCTGCAGCG-1,exclude
+AATTCATAAGGGATCT-1,epithelium&submucosa
+AATTCGATTCGAGGAT-1,exclude
+AATTCTAGAGTTAGGC-1,epithelium&submucosa
+AATTGAACGCTCTGGT-1,epithelium&submucosa
+AATTGCAGCAATCGAC-1,tumor
+ACAAAGCATGACCTAG-1,tumor
+ACAAATCGCACCGAAT-1,non neo epithelium
+ACAAATGGTAGTGTTT-1,epithelium&submucosa
+ACAACAGCATGAGCTA-1,non neo epithelium
+ACAAGCAGTGCCTAGC-1,tumor&stroma_IC med to high
+ACAAGGAAATCCGCCC-1,epithelium&submucosa
+ACAAGGACAAGAGGTT-1,stroma_fibroblastic_IC high
+ACAAGGATGCTTTAGG-1,stroma_fibroblastic_IC high
+ACAAGGGCAGGCTCTG-1,epithelium&submucosa
+ACAATCCATTTAAACC-1,IC aggregregate_submucosa
+ACAATGAATACGGAGA-1,stroma_fibroblastic_IC high
+ACAATTGTGTCTCTTT-1,epithelium&submucosa
+ACAATTTAGGAGGCTC-1,tumor
+ACAATTTGAGCAGTGG-1,non neo epithelium
+ACACACCAGGACCAGT-1,non neo epithelium
+ACACCACATAATTAGC-1,tumor&stroma_IC med to high
+ACACCCAGCATGCAGC-1,epithelium&submucosa
+ACACCTTAAGTAGGGC-1,epithelium&submucosa
+ACACCTTACTACTTGC-1,submucosa
+ACACGAGACTCCTTCT-1,non neo epithelium
+ACACGGGAACTTAGGG-1,non neo epithelium
+ACACGTAGGCCACAAG-1,tumor
+ACACTGATCAAGGTGT-1,submucosa
+ACACTGGGACAGTCGT-1,tumor&stroma_IC med to high
+ACAGAACTGAGAACAA-1,stroma_fibroblastic_IC high
+ACAGCGACATTCTCAT-1,non neo epithelium
+ACAGGCACGGATCCTT-1,exclude
+ACAGGCTTGCCCGACT-1,epithelium&submucosa
+ACAGGTGGAGGTGAGG-1,epithelium&submucosa
+ACATCAGCTGGGACGC-1,exclude
+ACATCCCGGCCATACG-1,epithelium&submucosa
+ACATCCTGGTAACTGT-1,epithelium&submucosa
+ACATCGATCGTTTACC-1,non neo epithelium
+ACATCGGTCAGCCGCG-1,stroma_fibroblastic_IC high
+ACATCGTATGCAATGG-1,epithelium&submucosa
+ACATGGCGCCAAAGTA-1,epithelium&submucosa
+ACATTAGTTTATATCC-1,exclude
+ACCAACACCACACACT-1,exclude
+ACCAACCGCACTCCAC-1,tumor&stroma_IC med to high
+ACCAACGCTTATTTAT-1,epithelium&submucosa
+ACCAATATGCAAGTTA-1,tumor&stroma_IC med to high
+ACCACAAGTTTCTATC-1,epithelium&submucosa
+ACCACCAATGTAACAA-1,epithelium&submucosa
+ACCACGTGCAGCTATA-1,non neo epithelium
+ACCAGTGCGGGAGACG-1,epithelium&submucosa
+ACCATATCCGCAATAA-1,non neo epithelium
+ACCATCGTATATGGTA-1,epithelium&submucosa
+ACCCAACGCCCGTGGC-1,epithelium&submucosa
+ACCCATCTTGAGGGTA-1,stroma_fibroblastic_IC high
+ACCCATTTGTCCCTCT-1,submucosa
+ACCCGGAAACTCCCAG-1,stroma_fibroblastic_IC high
+ACCCGGATGACGCATC-1,non neo epithelium
+ACCCGGTTACACTTCC-1,epithelium&submucosa
+ACCCGTGTCATCAGTA-1,non neo epithelium
+ACCCTATGCCATATCG-1,IC aggregregate_submucosa
+ACCCTCCCGTCAGGGC-1,tumor
+ACCCTCCCTTGCTATT-1,epithelium&submucosa
+ACCCTGGTAACGCCCT-1,exclude
+ACCGACACATCTCCCA-1,tumor&stroma_IC med to high
+ACCGACTGAGTCCCAC-1,epithelium&submucosa
+ACCGATAGGCATAACC-1,stroma_fibroblastic_IC high
+ACCGATATTTAATCAT-1,tumor
+ACCGATGGTAGCATCG-1,epithelium&submucosa
+ACCGCAATAACTGCCT-1,non neo epithelium
+ACCGCGGTGGAAGTCG-1,epithelium&submucosa
+ACCGGGCCTTTGTTGA-1,epithelium&submucosa
+ACCGTGACCACGTGGG-1,tumor
+ACCTAAGTACCTTTCA-1,stroma_fibroblastic_IC high
+ACCTAATCGACTTCCT-1,stroma_fibroblastic_IC high
+ACCTACAGTATGTGGT-1,tumor&stroma_IC med to high
+ACCTCCGCCCTCGCTG-1,stroma_fibroblastic_IC high
+ACCTCCGTTATTCACC-1,stroma_fibroblastic_IC high
+ACGAAATGGGCGGCAC-1,tumor&stroma_IC med to high
+ACGACTCTAGGGCCGA-1,exclude
+ACGAGGATACCACTCT-1,tumor
+ACGAGTACGGATGCCC-1,submucosa
+ACGATACATAGAACTA-1,exclude
+ACGATCATACATAGAG-1,non neo epithelium
+ACGATCATCTTGTAAA-1,epithelium&submucosa
+ACGATGCATATGTTAT-1,non neo epithelium
+ACGCAAACTAATAGAT-1,stroma_fibroblastic_IC high
+ACGCAATCACTACAGC-1,tumor&stroma_IC med to high
+ACGCATACGTTTACTA-1,submucosa
+ACGCATTCGTGAGTAC-1,non neo epithelium
+ACGCCGCTAGACGACC-1,non neo epithelium
+ACGCGAAGTCAGACGA-1,non neo epithelium
+ACGCGCTACACAGGGT-1,tumor
+ACGCGGGCCAAGGACA-1,submucosa
+ACGCTAGTGATACACT-1,epithelium&submucosa
+ACGCTGTGAGGCGTAG-1,tumor
+ACGGACTCTCAAAGCG-1,exclude
+ACGGATGGTGCGGATA-1,stroma_fibroblastic_IC high
+ACGGCACTTGCTTGGG-1,non neo epithelium
+ACGGCCAACATGGACT-1,epithelium&submucosa
+ACGGCGACGATGGGAA-1,submucosa
+ACGGGAGTGTCGGCCC-1,tumor
+ACGGGCGTATGCGACA-1,exclude
+ACGGTACAGTTCAATG-1,exclude
+ACGTAGATTGCTGATG-1,epithelium&submucosa
+ACGTATTACTCCGATC-1,non neo epithelium
+ACGTTAATGTCGAAGA-1,submucosa
+ACGTTAGATTTGCCCG-1,epithelium&submucosa
+ACGTTCGCAATCAATT-1,tumor
+ACGTTCGTTCAGGAAA-1,tumor
+ACGTTCTGTACAAGTC-1,tumor&stroma_IC med to high
+ACTACCAGCTCTCTGG-1,epithelium&submucosa
+ACTACGCGTTAGAATT-1,stroma_fibroblastic_IC high
+ACTAGTTGCGATCGTC-1,submucosa
+ACTATCCAGGGCATGG-1,exclude
+ACTATCTGCCCGCGTA-1,tumor
+ACTATTTCCGGGCCCA-1,stroma_fibroblastic_IC high
+ACTCAAGTGCAAGGCT-1,stroma_fibroblastic_IC high
+ACTCCCGAATTCGTTT-1,epithelium&submucosa
+ACTCCCTAATGCTAAA-1,stroma_fibroblastic_IC high
+ACTCCCTAGAATAGTA-1,epithelium&submucosa
+ACTCGCCGTTCGATAA-1,tumor
+ACTCGTAACCCGTCCT-1,tumor
+ACTCGTCAGTAATCCC-1,submucosa
+ACTCTCTGACTTAGGT-1,epithelium&submucosa
+ACTCTGACCTAATAGA-1,tumor
+ACTCTTGTATAGTAAC-1,epithelium&submucosa
+ACTGAAACGCCGTTAG-1,non neo epithelium
+ACTGAATGGCGAAAGT-1,epithelium&submucosa
+ACTGCGGACACACCGT-1,tumor
+ACTGTACGATACACAT-1,non neo epithelium
+ACTGTAGCACTTTGGA-1,epithelium&submucosa
+ACTGTCCAGGATTATA-1,non neo epithelium
+ACTGTCTTCTTTAGAA-1,non neo epithelium
+ACTTACGCATCCACGC-1,tumor&stroma_IC med to high
+ACTTATACTTACCCGG-1,epithelium&submucosa
+ACTTATTAGGATCGGT-1,epithelium&submucosa
+ACTTATTTATGTGCCA-1,submucosa
+ACTTCAGGCTGATCCC-1,non neo epithelium
+ACTTCCATGCGGGACA-1,tumor
+ACTTCGCCATACGCAC-1,submucosa
+ACTTGACTCCCTCTTT-1,epithelium&submucosa
+ACTTGGGACCCGGTGG-1,epithelium&submucosa
+ACTTGTGGATGGAACG-1,tumor
+ACTTTACCCTCATGAA-1,epithelium&submucosa
+ACTTTCCTATAGCTTC-1,non neo epithelium
+ACTTTGACTGCATCCT-1,tumor&stroma_IC med to high
+ACTTTGTCGACGCACT-1,tumor&stroma_IC med to high
+AGAAATTATGACTCGC-1,tumor
+AGAACGTGGTACATTC-1,non neo epithelium
+AGAAGAGCGCCGTTCC-1,epithelium&submucosa
+AGAAGGTACACTTCAC-1,tumor
+AGAAGGTTGCCGAATT-1,non neo epithelium
+AGAAGGTTGTAGGTCG-1,exclude
+AGAAGTGATTCGTGAT-1,tumor&stroma_IC med to high
+AGAATAAATCTTCAGG-1,exclude
+AGAATTATGGATTCGA-1,epithelium&submucosa
+AGACCCACCGCTGATC-1,submucosa
+AGACCGCTCCGCGGTT-1,tumor&stroma_IC med to high
+AGACGAAGTGCCGGTC-1,submucosa
+AGACGACGATGCCGCT-1,stroma_fibroblastic_IC high
+AGACTAGCCTTCCAGA-1,epithelium&submucosa
+AGACTGTTACCGGGTC-1,stroma_fibroblastic_IC high
+AGAGAACCGTCTAGGA-1,submucosa
+AGAGAAGGAGTACAAT-1,tumor
+AGAGATCTCTAAAGCG-1,exclude
+AGAGCAGTTATGAGAC-1,tumor&stroma_IC med to high
+AGAGCCGCCGAGATTT-1,tumor&stroma_IC med to high
+AGAGGCTTCGGAAACC-1,non neo epithelium
+AGAGTAAACTTCACTA-1,tumor&stroma_IC med to high
+AGATAACTTCAGGGCC-1,epithelium&submucosa
+AGATACCAATAGAACC-1,tumor
+AGATACCGGTGTTCAC-1,stroma_fibroblastic_IC high
+AGATACTCAAGATCGA-1,epithelium&submucosa
+AGATATAATACGACTA-1,exclude
+AGATCGTGCATAAGAT-1,epithelium&submucosa
+AGATCTCAGGTGTGAT-1,non neo epithelium
+AGATGATGGAGTCTGG-1,epithelium&submucosa
+AGATGCAAGACGTGCA-1,exclude
+AGATTATAGGACGTTT-1,epithelium&submucosa
+AGCAAAGGCCGCTAGT-1,stroma_fibroblastic_IC high
+AGCAACATATCTTATT-1,non neo epithelium
+AGCAACCGAAAGTAAT-1,exclude
+AGCACCAGTACTCACG-1,epithelium&submucosa
+AGCACTACCGGCCTGT-1,stroma_fibroblastic_IC high
+AGCACTACCTCACCAG-1,submucosa
+AGCACTTAAGGACGCC-1,IC aggregregate_submucosa
+AGCAGCCAGATGAATA-1,submucosa
+AGCATATCAATATGCT-1,non neo epithelium
+AGCATCATTTCGAAAG-1,tumor
+AGCATTACGAGGCAAG-1,tumor
+AGCCACAGGTTACCCG-1,tumor&stroma_IC med to high
+AGCCACTCCCGTGCTT-1,epithelium&submucosa
+AGCCCATACATGTAAG-1,tumor&stroma_IC med to high
+AGCCCGGTAGCCTGTA-1,stroma_fibroblastic_IC high
+AGCCCTGTCGCACCGT-1,tumor
+AGCCCTTGGACATCCC-1,tumor&stroma_IC med to high
+AGCCGTGGCTAAATGT-1,tumor
+AGCCTAATACCCACGT-1,tumor
+AGCGACAGGAACGGTC-1,epithelium&submucosa
+AGCGATGCGCCTAATA-1,tumor
+AGCGCATAATGAATCG-1,submucosa
+AGCGCGGGTGCCAATG-1,epithelium&submucosa
+AGCGCTAGAGCGATGT-1,tumor&stroma_IC med to high
+AGCGGCGGTTAGCGGT-1,tumor
+AGCGTGGTATTCTACT-1,non neo epithelium
+AGCTAACAAGCAATGT-1,tumor
+AGCTAAGTACGCAGGC-1,exclude
+AGCTAGAAGCAGAAGT-1,exclude
+AGCTCCATATATGTTC-1,tumor&stroma_IC med to high
+AGCTCCTTCGCACATC-1,epithelium&submucosa
+AGCTCTAGACGTTCCA-1,epithelium&submucosa
+AGCTCTTCGTAACCTT-1,epithelium&submucosa
+AGCTCTTTACTCAGTT-1,epithelium&submucosa
+AGCTGTAACCTCAATC-1,stroma_fibroblastic_IC high
+AGCTTCTTCTCGAGCA-1,tumor
+AGCTTGATCTTAACTT-1,tumor
+AGGACAGTCGAATCCC-1,epithelium&submucosa
+AGGACGACCCATTAGA-1,epithelium&submucosa
+AGGAGGCCTTCGCGCG-1,epithelium&submucosa
+AGGATAAAGTCGGGAT-1,epithelium&submucosa
+AGGATATAGGGATTTA-1,epithelium&submucosa
+AGGATATCCGACTGCA-1,exclude
+AGGATCACGCGATCTG-1,stroma_fibroblastic_IC high
+AGGCACGTGACTGTCC-1,tumor
+AGGCAGATGCGTAAAC-1,epithelium&submucosa
+AGGCAGGGAGCGTACT-1,epithelium&submucosa
+AGGCATTGTCGTAGGG-1,non neo epithelium
+AGGCCACCCGTTATGA-1,non neo epithelium
+AGGCCCTAGAACGCCA-1,stroma_fibroblastic_IC high
+AGGCCTGAGAATCTCG-1,tumor&stroma_IC med to high
+AGGCGATAACTGGCGT-1,tumor&stroma_IC med to high
+AGGCTTCCCGAAGAAG-1,epithelium&submucosa
+AGGGACCGGCTGCGTT-1,epithelium&submucosa
+AGGGACTCTACGCGAC-1,epithelium&submucosa
+AGGGAGACATACTTCG-1,tumor
+AGGGCTGCAGTTACAG-1,epithelium&submucosa
+AGGGTCGATGCGAACT-1,epithelium&submucosa
+AGGGTGCTCTCGAGGG-1,epithelium&submucosa
+AGGGTTCCCTTTGGTT-1,epithelium&submucosa
+AGGGTTTAGTTCGGGA-1,non neo epithelium
+AGGTAGGTACAAAGCT-1,stroma_fibroblastic_IC high
+AGGTATAATTGATAGT-1,epithelium&submucosa
+AGGTCAGGTGAGAGTG-1,tumor
+AGGTCGCGGAGTTACT-1,tumor
+AGGTGCACGTCCACAT-1,tumor
+AGGTGTATCGCCATGA-1,tumor&stroma_IC med to high
+AGGTTACACCATGCCG-1,tumor
+AGGTTTCACACACCTT-1,epithelium&submucosa
+AGTACATCATTTATCA-1,non neo epithelium
+AGTACGGCCCGTATCG-1,tumor
+AGTACTCTTATGCCCA-1,tumor&stroma_IC med to high
+AGTATACACAGCGACA-1,tumor&stroma_IC med to high
+AGTATGCTGGAGACCA-1,tumor
+AGTATTTGGCACGACC-1,epithelium&submucosa
+AGTCAACACCACCATC-1,epithelium&submucosa
+AGTCAAGATGACACTT-1,submucosa
+AGTCACTAGCTCTCGA-1,non neo epithelium
+AGTCCATTGGCTGATG-1,epithelium&submucosa
+AGTCGACGGTCTCAAG-1,non neo epithelium
+AGTCGGCCCAAACGAC-1,epithelium&submucosa
+AGTCGGCTCAACTTTA-1,tumor
+AGTCGGTTGCGTGAGA-1,epithelium&submucosa
+AGTCGTATAAAGCAGA-1,tumor&stroma_IC med to high
+AGTCGTCGACCACCAA-1,epithelium&submucosa
+AGTCGTGGGCATTACG-1,tumor&stroma_IC med to high
+AGTCTAAAGTATACTC-1,tumor
+AGTCTCACAAGACTAC-1,tumor&stroma_IC med to high
+AGTCTTCTCCTCAAAT-1,submucosa
+AGTGAACAAACTTCTC-1,epithelium&submucosa
+AGTGACCTACTTTACG-1,non neo epithelium
+AGTGAGACTTCCAGTA-1,non neo epithelium
+AGTGAGCCTCGCCGCC-1,submucosa
+AGTGAGTCGAATTAAC-1,tumor&stroma_IC med to high
+AGTGATAACCTGCGCG-1,tumor
+AGTGATATGAGTAGTT-1,epithelium&submucosa
+AGTGATTCAAGCAGGA-1,epithelium&submucosa
+AGTGCACGCTTAAGAA-1,epithelium&submucosa
+AGTGCGTAGCTCGTAA-1,epithelium&submucosa
+AGTGCTAAACACAGCA-1,stroma_fibroblastic_IC high
+AGTGCTTGCACGAATA-1,epithelium&submucosa
+AGTGGCGGCAATTTGA-1,epithelium&submucosa
+AGTGGCGTCTGAAGGT-1,tumor
+AGTGGCTCCGTCGGCC-1,exclude
+AGTTAAACACTTGCGA-1,submucosa
+AGTTAAGTCAACCGCT-1,tumor&stroma_IC med to high
+AGTTCCTACAGAATTA-1,non neo epithelium
+AGTTCCTATTTATGTT-1,epithelium&submucosa
+AGTTGGCAAGGCTAGA-1,tumor
+AGTTTGCACCTGCCTC-1,stroma_fibroblastic_IC high
+AGTTTGGCACGGGTTG-1,epithelium&submucosa
+AGTTTGGCCAGACCTA-1,stroma_fibroblastic_IC high
+ATAAACGGACCCGTAA-1,epithelium&submucosa
+ATAAACGTTGCACCAC-1,tumor&stroma_IC med to high
+ATAAAGGCTCGGTCGT-1,epithelium&submucosa
+ATAAATATTAGCAGCT-1,stroma_fibroblastic_IC high
+ATAACGCCGGAGGGTC-1,epithelium&submucosa
+ATAAGGTGGAGAACAT-1,epithelium&submucosa
+ATAAGTAGGATTCAGA-1,submucosa
+ATAAGTAGGGCGACTC-1,epithelium&submucosa
+ATAAGTTACCGCGACG-1,non neo epithelium
+ATAATAGCTGTTGAAT-1,submucosa
+ATAATCTTGGAGAACC-1,tumor&stroma_IC med to high
+ATACAGGCCCTCCAAT-1,stroma_fibroblastic_IC high
+ATACCACGGGCAACTT-1,stroma_fibroblastic_IC high
+ATACCTAACCAAGAAA-1,epithelium&submucosa
+ATACGCCGGCGAAACC-1,epithelium&submucosa
+ATACGGAACGTCGTTT-1,exclude
+ATACGGGTTTCGATTG-1,non neo epithelium
+ATACGGTGAAGATGCA-1,tumor
+ATACGTACTTAGCCAC-1,tumor&stroma_IC med to high
+ATACGTCCACTCCTGT-1,epithelium&submucosa
+ATACTACCCGTACCAC-1,stroma_fibroblastic_IC high
+ATACTGCCTTACACCG-1,stroma_fibroblastic_IC high
+ATACTTGTTCTCGAGC-1,tumor
+ATAGACAACGGGACCT-1,non neo epithelium
+ATAGACGAAGAGAAAG-1,non neo epithelium
+ATAGAGTACTGGGACA-1,epithelium&submucosa
+ATAGAGTTATCAACTT-1,epithelium&submucosa
+ATAGCAACTAGGGAAG-1,stroma_fibroblastic_IC high
+ATAGGCGGCTATAGAA-1,tumor
+ATAGGCTAGCTTCGCA-1,non neo epithelium
+ATAGGTTGGGCAGATG-1,epithelium&submucosa
+ATAGTGAAGCGTTCTC-1,epithelium&submucosa
+ATAGTTCCACCCACTC-1,epithelium&submucosa
+ATATAAAGCGCTCGTG-1,tumor&stroma_IC med to high
+ATATAAATGTAGCTGC-1,stroma_fibroblastic_IC high
+ATATACGCTCGTGACG-1,tumor
+ATATCAACCTACAGAG-1,epithelium&submucosa
+ATATCGGTAGGGAGAT-1,epithelium&submucosa
+ATATCGTTCCTCGAAC-1,submucosa
+ATATCTTAGGGCCTTC-1,non neo epithelium
+ATATGTCTCCCTAGCC-1,submucosa
+ATATTCAGTTAAACCT-1,epithelium&submucosa
+ATATTCCACATAGTGA-1,epithelium&submucosa
+ATATTTAACCCTCAAG-1,epithelium&submucosa
+ATCAAACACTGTTCCA-1,epithelium&submucosa
+ATCAAACGAAGGTTTG-1,epithelium&submucosa
+ATCAATCTGGGCTGCA-1,epithelium&submucosa
+ATCACGTGCTAATTAA-1,non neo epithelium
+ATCAGACGGCACGCCG-1,epithelium&submucosa
+ATCAGCCTCATGCTGC-1,tumor
+ATCAGCTCGTCCACTA-1,tumor&stroma_IC med to high
+ATCAGTAGGCAGGGAT-1,non neo epithelium
+ATCATAGCCCTATGTA-1,tumor
+ATCATCCAATATTTGT-1,epithelium&submucosa
+ATCCAATGGAGGGTCC-1,tumor
+ATCCACATCGACAGAA-1,stroma_fibroblastic_IC high
+ATCCAGAGCAACAACC-1,epithelium&submucosa
+ATCCAGGATTCGTGAA-1,epithelium&submucosa
+ATCCTACCTAAGCTCT-1,epithelium&submucosa
+ATCCTGAATCGCTGCG-1,tumor&stroma_IC med to high
+ATCGACCCAATACAGA-1,epithelium&submucosa
+ATCGCCAGTCAACATT-1,submucosa
+ATCGCTGCGTGCAGCA-1,stroma_fibroblastic_IC high
+ATCGGAGACAGACGGC-1,epithelium&submucosa
+ATCGTTAGCTAGCGGA-1,epithelium&submucosa
+ATCTAATATCCTACGG-1,stroma_fibroblastic_IC high
+ATCTCCCACGGAATAT-1,stroma_fibroblastic_IC high
+ATCTCGTGAGCGAAAC-1,tumor
+ATCTGACATGGAAGGA-1,tumor&stroma_IC med to high
+ATCTGCACCTCTGCGA-1,epithelium&submucosa
+ATCTGGGCTGTTCTTG-1,exclude
+ATCTTATCGCACACCC-1,stroma_fibroblastic_IC high
+ATCTTGACCTGCAACG-1,non neo epithelium
+ATCTTGACTTGTCCAA-1,epithelium&submucosa
+ATCTTTCGTATAACCA-1,tumor
+ATGACGCGTTCTATCC-1,tumor
+ATGACTATCAGCTGTG-1,stroma_fibroblastic_IC high
+ATGACTATGCGACATT-1,epithelium&submucosa
+ATGAGGGCAGCGGCTA-1,tumor&stroma_IC med to high
+ATGATGCAATGGTACA-1,non neo epithelium
+ATGCACTACCGCATTG-1,non neo epithelium
+ATGCATGATCCAGGAT-1,epithelium&submucosa
+ATGCCATTTGCGACCA-1,epithelium&submucosa
+ATGCCGGTCTTGCATA-1,exclude
+ATGCGACAGTCCCATT-1,epithelium&submucosa
+ATGCGAGTCCCACCAC-1,epithelium&submucosa
+ATGCTCTGGCGCGGTA-1,stroma_fibroblastic_IC high
+ATGCTTAGGAGTTGAT-1,tumor&stroma_IC med to high
+ATGGAACCTTTGCACA-1,tumor
+ATGGAGCAGGCCGTGA-1,non neo epithelium
+ATGGATTGACCAAACG-1,epithelium&submucosa
+ATGGGACCTGCTGAAC-1,exclude
+ATGGGCCTCGGCCTCT-1,epithelium&submucosa
+ATGGTCGCGTGGTTTC-1,epithelium&submucosa
+ATGTAAGGCTGCTCTT-1,stroma_fibroblastic_IC high
+ATGTACATGCGGTGAG-1,tumor
+ATGTGAAAGCCTAATG-1,tumor
+ATGTGGACATCTTGAT-1,epithelium&submucosa
+ATGTTCGTCGACCCAC-1,tumor
+ATTAAACATGCGGACC-1,non neo epithelium
+ATTAATGAACCAGTCG-1,exclude
+ATTACATGTCAGTCTT-1,tumor
+ATTACCACACTGCCTG-1,tumor
+ATTACGCGCTGGCAGG-1,stroma_fibroblastic_IC high
+ATTACTTACTGGGCAT-1,submucosa
+ATTAGATTCCTCAGCA-1,exclude
+ATTAGGCGATGCTTTC-1,epithelium&submucosa
+ATTATAGCTACTTTAC-1,stroma_fibroblastic_IC high
+ATTATTATGTCCGTCA-1,stroma_fibroblastic_IC high
+ATTATTCAGAGTCACT-1,stroma_fibroblastic_IC high
+ATTCAACCATTTAAGG-1,epithelium&submucosa
+ATTCACTGATGTTGGA-1,stroma_fibroblastic_IC high
+ATTCAGTAGCAGGGTC-1,tumor&stroma_IC med to high
+ATTCATATACTGTCCA-1,epithelium&submucosa
+ATTCATCGTTGAGGCA-1,stroma_fibroblastic_IC high
+ATTCGACGCCGGGCCT-1,tumor
+ATTCGCGCCTTGAGAG-1,tumor&stroma_IC med to high
+ATTCGTGCTATCTCTT-1,submucosa
+ATTGAAGATCTTAGTG-1,non neo epithelium
+ATTGACCGGCGATGAC-1,exclude
+ATTGATGAGTCCTAAC-1,epithelium&submucosa
+ATTGCCTTTATGTTTG-1,tumor&stroma_IC med to high
+ATTGCGATCAGTAACT-1,epithelium&submucosa
+ATTGCTGCTCCTCCAT-1,epithelium&submucosa
+ATTGGATTACAGCGTA-1,epithelium&submucosa
+ATTGTACAACTCGGCT-1,epithelium&submucosa
+ATTTACAGTTTACTGG-1,stroma_fibroblastic_IC high
+ATTTACTAAGTCCATT-1,epithelium&submucosa
+ATTTCCGGGTTCTGCG-1,stroma_fibroblastic_IC high
+ATTTGCGCGAGTAGCT-1,tumor&stroma_IC med to high
+ATTTGTCTTGGGAGCT-1,non neo epithelium
+CAAACGAGTATCGCAG-1,non neo epithelium
+CAAACGGTCGCACTTT-1,epithelium&submucosa
+CAAACTCGCGACGCCG-1,submucosa
+CAAAGATTATTGGGCC-1,tumor
+CAAATCTCTCACAAGG-1,tumor
+CAAATGTCCTTCCGTG-1,epithelium&submucosa
+CAAATTGGATTATGCC-1,exclude
+CAACCAGTGGCCTACC-1,tumor
+CAACCTACCGAGCAGT-1,stroma_fibroblastic_IC high
+CAACGTGGTGGAGTCT-1,tumor&stroma_IC med to high
+CAACTGCTCATCCGAT-1,stroma_fibroblastic_IC high
+CAAGAGGGCGGAGTAC-1,epithelium&submucosa
+CAAGATATTATAACGT-1,epithelium&submucosa
+CAAGCAACGTCGGAGT-1,stroma_fibroblastic_IC high
+CAAGCGGCACATAATT-1,stroma_fibroblastic_IC high
+CAAGGATCGCATGTTC-1,epithelium&submucosa
+CAAGGCCAGTGGTGCA-1,tumor
+CAAGGTCCTATAGGCT-1,IC aggregregate_submucosa
+CAAGTGTGGTTGCAAA-1,epithelium&submucosa
+CAATACGAGAGTCTGA-1,tumor
+CAATACGCTCTGAGGC-1,exclude
+CAATATTCTTGACCTA-1,submucosa
+CAATGAGGTTCGACTA-1,tumor
+CAATGCGAGAAGTATC-1,stroma_fibroblastic_IC high
+CAATGGATCTCTACCA-1,epithelium&submucosa
+CAATGTGCCAACCCTT-1,tumor
+CAATTAAGGGTGATGA-1,epithelium&submucosa
+CAATTTCGTATAAGGG-1,non neo epithelium
+CACAATGAGCTGCTAT-1,submucosa
+CACACACGCTAACGAG-1,epithelium&submucosa
+CACACAGCTTGCGCTC-1,tumor
+CACACGCGCTGTCTTA-1,epithelium&submucosa
+CACAGCACCCACGGCA-1,epithelium&submucosa
+CACAGGGCCATATAGT-1,non neo epithelium
+CACAGGGCCGTTGTCA-1,exclude
+CACAGTCCCGCTTCGC-1,tumor
+CACAGTTCGCTTCCCA-1,tumor
+CACATATTAGCAGGAT-1,non neo epithelium
+CACATCGTGCACGCGC-1,stroma_fibroblastic_IC high
+CACATCTCACCGACGA-1,stroma_fibroblastic_IC high
+CACATGATTCAGCAAC-1,epithelium&submucosa
+CACATTTCTTGTCAGA-1,epithelium&submucosa
+CACCCAAATCTTATGT-1,non neo epithelium
+CACCCGGTTTGTGACT-1,epithelium&submucosa
+CACCCTAACAAGATCT-1,tumor&stroma_IC med to high
+CACCCTTGGTGAGACC-1,tumor
+CACCGCCAGAAGGTTT-1,non neo epithelium
+CACCGGGCATCACAAG-1,exclude
+CACCGTATCCCATCCG-1,submucosa
+CACCGTTAGGGATCAC-1,epithelium&submucosa
+CACCGTTGCGCGATAT-1,stroma_fibroblastic_IC high
+CACCTTGCGAAACTCG-1,non neo epithelium
+CACCTTGGCGCCTTTG-1,non neo epithelium
+CACGAAAGTTAGTCCC-1,tumor&stroma_IC med to high
+CACGCAGCGAGGCTTT-1,non neo epithelium
+CACGCGGAACTGTTGC-1,epithelium&submucosa
+CACGGGATTGAGGGTT-1,tumor
+CACGTCAATCAATGGA-1,tumor&stroma_IC med to high
+CACGTCGGCAACCTCT-1,non neo epithelium
+CACGTTCGTGCTCTAG-1,epithelium&submucosa
+CACGTTTCGTACACAC-1,epithelium&submucosa
+CACTAAAGTTGCCTAT-1,epithelium&submucosa
+CACTACGGGAGCTGCC-1,stroma_fibroblastic_IC high
+CACTCAAGAGCTATGG-1,epithelium&submucosa
+CACTCCTATGTAAGAT-1,stroma_fibroblastic_IC high
+CACTCGAGCTGAACAA-1,epithelium&submucosa
+CACTCGGTTAGGAGGA-1,tumor
+CACTCTTCTGCTAGCC-1,epithelium&submucosa
+CACTTAATCAGACGGA-1,non neo epithelium
+CAGAACTTAGCCCTCT-1,epithelium&submucosa
+CAGAATAACACACGGA-1,tumor
+CAGACACCGATCGCTG-1,non neo epithelium
+CAGACCTGTAAGTGTT-1,epithelium&submucosa
+CAGACGAACCTGATAC-1,epithelium&submucosa
+CAGAGACGGTCACCCA-1,submucosa
+CAGAGCATGAGCTTGC-1,exclude
+CAGAGGCGATGCATGA-1,submucosa
+CAGATAATGGGCGGGT-1,tumor
+CAGATACTAACATAGT-1,epithelium&submucosa
+CAGATCATTTAAAGTC-1,tumor&stroma_IC med to high
+CAGATCCTGGTTTGAA-1,exclude
+CAGCAGCCCGTTCCTT-1,epithelium&submucosa
+CAGCAGTCCAGACTAT-1,submucosa
+CAGCAGTCTGTGCTGC-1,exclude
+CAGCGATTCCCTTCAA-1,epithelium&submucosa
+CAGCTCACTGAGACAT-1,epithelium&submucosa
+CAGCTCGACAAGTTAA-1,submucosa
+CAGCTGGCGTAACCGT-1,tumor
+CAGCTTAGTAGGTAGC-1,tumor&stroma_IC med to high
+CAGGATATATCGTTGT-1,non neo epithelium
+CAGGCAGTCTTACCAG-1,exclude
+CAGGCCGTTTGGGTGT-1,epithelium&submucosa
+CAGGCGCACGGTGGTC-1,tumor
+CAGGCGCCATGCTAGG-1,epithelium&submucosa
+CAGTACCAGTTTACGT-1,stroma_fibroblastic_IC high
+CAGTAGCCCACGCGGT-1,epithelium&submucosa
+CAGTCGAGGATGCAAT-1,epithelium&submucosa
+CAGTCTGTATACTGGG-1,epithelium&submucosa
+CAGTGAATAAATGACT-1,epithelium&submucosa
+CAGTGTCGGCTGGCCC-1,epithelium&submucosa
+CAGTTCAAATTGACAC-1,non neo epithelium
+CATAACGGACAGTCGT-1,epithelium&submucosa
+CATAAGAAGCTTGGCT-1,stroma_fibroblastic_IC high
+CATACACGGTTCCCAC-1,stroma_fibroblastic_IC high
+CATACCCGTACCCAGT-1,IC aggregregate_submucosa
+CATACGGCGTCTGGGC-1,epithelium&submucosa
+CATACTATGTAATTGT-1,epithelium&submucosa
+CATACTTAGGCAATAC-1,stroma_fibroblastic_IC high
+CATAGAGGAGATACTA-1,exclude
+CATAGCGTTGCCCACC-1,submucosa
+CATAGTCAAATACATA-1,tumor
+CATAGTCCACAAGAAC-1,stroma_fibroblastic_IC high
+CATATAGGTACAGTCA-1,non neo epithelium
+CATATGTCAGGCTACG-1,tumor&stroma_IC med to high
+CATCATTACCCTGAGG-1,submucosa
+CATCCTCTCAAAGATC-1,non neo epithelium
+CATCGGACGGGTTAAT-1,submucosa
+CATCTAGTGAAGGGAA-1,tumor
+CATCTTACACCACCTC-1,epithelium&submucosa
+CATGACTTCGCTGAAT-1,epithelium&submucosa
+CATGAGATGCACTCTC-1,stroma_fibroblastic_IC high
+CATGATGGAAGTTAGC-1,epithelium&submucosa
+CATGCGACCAGTTTAA-1,epithelium&submucosa
+CATGGATTGTCTTCCG-1,epithelium&submucosa
+CATGGGTATGCCTTAT-1,tumor
+CATGGGTCGGGTGTGG-1,non neo epithelium
+CATGGTAAGTAGCGTT-1,epithelium&submucosa
+CATGGTCTAGATACCG-1,non neo epithelium
+CATGGTTTATTAATCA-1,tumor
+CATGTAAGAGACATTT-1,epithelium&submucosa
+CATGTCTCATTTATGG-1,epithelium&submucosa
+CATTACATAGATTGTG-1,tumor
+CATTACGCAGGAAGGG-1,tumor
+CATTATGCTTGTTGTG-1,epithelium&submucosa
+CATTCCCATTCCGTCG-1,tumor
+CATTGCGAAATGGGCG-1,tumor
+CATTGCGGGTCAATTC-1,tumor
+CATTTAGCGGACCATG-1,non neo epithelium
+CATTTGAGTGGTACGT-1,epithelium&submucosa
+CCAAATAACAAGATTC-1,tumor&stroma_IC med to high
+CCAACGATGCACTGAT-1,stroma_fibroblastic_IC high
+CCAACTTGATAGATCC-1,tumor
+CCAAGAAAGTGGGCGA-1,submucosa
+CCAAGCGTAACTCGTA-1,epithelium&submucosa
+CCAATAGTGCCGTCGA-1,epithelium&submucosa
+CCAATGTCACAGCAAG-1,epithelium&submucosa
+CCACAATGTACGTCTT-1,submucosa
+CCACACTGAGATATTA-1,non neo epithelium
+CCACAGTACCCATCCT-1,non neo epithelium
+CCACATACTGCACCCA-1,stroma_fibroblastic_IC high
+CCACCAACTTTACTGT-1,epithelium&submucosa
+CCACCCAAGGAAAGTG-1,epithelium&submucosa
+CCACGAATTTAACCTC-1,epithelium&submucosa
+CCACGGAGCCATAAGA-1,stroma_fibroblastic_IC high
+CCACGGTGCCCGGTAG-1,epithelium&submucosa
+CCACTATCCGGGTCAC-1,tumor
+CCACTGGTGGCTGGTT-1,tumor&stroma_IC med to high
+CCACTGTTTGGATTAA-1,tumor
+CCAGAAAGCAACTCAT-1,epithelium&submucosa
+CCAGATAGTTGAGTGA-1,epithelium&submucosa
+CCAGCCTGGACCAATA-1,epithelium&submucosa
+CCAGCTGATGGTACTT-1,tumor
+CCAGCTTCCGCCCGCA-1,tumor&stroma_IC med to high
+CCAGGCTGGCGTCTGA-1,exclude
+CCAGGGACGTGGCCTC-1,non neo epithelium
+CCAGTAGTCTGATCCA-1,epithelium&submucosa
+CCAGTCTAGACGGCGC-1,non neo epithelium
+CCAGTCTTGTCATAGA-1,stroma_fibroblastic_IC high
+CCATACCTTTACTTGT-1,non neo epithelium
+CCATATGGAAACTATA-1,submucosa
+CCATCGCAGTTAAACT-1,non neo epithelium
+CCATCTCACCAGTGAA-1,epithelium&submucosa
+CCATGCCCTAGATTTC-1,non neo epithelium
+CCATGCCTGTTTAGTA-1,epithelium&submucosa
+CCATGGCCCTTGTACC-1,tumor
+CCATTAGCGATAATCC-1,epithelium&submucosa
+CCATTCCCTGCCCACA-1,stroma_fibroblastic_IC high
+CCATTTCTACCTATTA-1,stroma_fibroblastic_IC high
+CCCAAACATGCTGCTC-1,non neo epithelium
+CCCAACATACGTCGCG-1,stroma_fibroblastic_IC high
+CCCAAGTCATTACACT-1,tumor&stroma_IC med to high
+CCCAATGAGATTTGCA-1,stroma_fibroblastic_IC high
+CCCAATTTCACAACTT-1,stroma_fibroblastic_IC high
+CCCAGAGGAGGGCGTA-1,exclude
+CCCAGGTCTGAAGGCT-1,tumor&stroma_IC med to high
+CCCAGTTAAGGCGCCG-1,epithelium&submucosa
+CCCGAGTTTCTCCGTA-1,tumor
+CCCGCAGCGCGAACTA-1,epithelium&submucosa
+CCCGGTGTATCGGAAT-1,tumor&stroma_IC med to high
+CCCGTAAGTCTAGGCC-1,stroma_fibroblastic_IC high
+CCCGTAGCTGGGAAGA-1,stroma_fibroblastic_IC high
+CCCGTTTCGCAGATGT-1,tumor
+CCCTATGTAGAGCAGA-1,tumor&stroma_IC med to high
+CCCTCCTCGCTCGTAT-1,tumor&stroma_IC med to high
+CCCTGAAATGAGTTGA-1,stroma_fibroblastic_IC high
+CCCTGACTAACAAATT-1,tumor
+CCCTGCGCTACGCATA-1,stroma_fibroblastic_IC high
+CCCTTTAATGGAGTTC-1,tumor
+CCCTTTGACAGGTCTT-1,epithelium&submucosa
+CCGAACCTTCCCGGCC-1,epithelium&submucosa
+CCGACAAAGGGAGTGC-1,tumor
+CCGACAATAGGCCGCC-1,tumor&stroma_IC med to high
+CCGACGGGCATGAGGT-1,tumor
+CCGAGAAGTCGCATAA-1,tumor
+CCGATCTCAACCTTAT-1,epithelium&submucosa
+CCGATTCGAGGGACCC-1,tumor
+CCGCACAAAGACCAAC-1,non neo epithelium
+CCGCACACGAACGTGT-1,tumor
+CCGCACGTGACCTCGG-1,tumor&stroma_IC med to high
+CCGCACTTGCAATGAC-1,tumor
+CCGCATGTGGTACGAT-1,stroma_fibroblastic_IC high
+CCGCCGTTGAGGATAA-1,tumor
+CCGCGATTTGGTAGGT-1,exclude
+CCGCGGAATGCGTCAC-1,epithelium&submucosa
+CCGCGGGTACGAAGAA-1,tumor&stroma_IC med to high
+CCGCGTAGGTAAGGGC-1,tumor
+CCGCTATCAGCACCAG-1,non neo epithelium
+CCGCTCTTCCGAACTA-1,tumor&stroma_IC med to high
+CCGCTTACCTCACTCT-1,submucosa
+CCGCTTGCTGACATGG-1,tumor
+CCGGAGCGTACTTTCT-1,non neo epithelium
+CCGGCACGACCGTTTC-1,stroma_fibroblastic_IC high
+CCGGGCGGTCTCGTCA-1,non neo epithelium
+CCGGGCTGCTCCATAC-1,epithelium&submucosa
+CCGGGTTCGAGGTTAC-1,stroma_fibroblastic_IC high
+CCGGTAATGGCTAGTC-1,tumor&stroma_IC med to high
+CCGGTTTGTAATTGTG-1,IC aggregregate_submucosa
+CCGTAAGTTGGTCCCA-1,submucosa
+CCGTAGGAAATCCCTG-1,non neo epithelium
+CCGTAGGGTTGTTTAC-1,tumor&stroma_IC med to high
+CCGTATCTCGTCGTAG-1,tumor
+CCGTGAGGCATTCATG-1,tumor
+CCGTGGAACGATCCAA-1,tumor
+CCGTGTTAAATTCCAT-1,submucosa
+CCGTTCCGAATCTCGG-1,tumor
+CCTAAATTAACGGTTC-1,epithelium&submucosa
+CCTAAATTGTATCCTA-1,tumor
+CCTAACCCAAACAAGT-1,submucosa
+CCTAACTAAGGCTCTA-1,epithelium&submucosa
+CCTACATTCACAGACG-1,epithelium&submucosa
+CCTACTGCTTACACTT-1,epithelium&submucosa
+CCTAGGCGTAGCGATC-1,non neo epithelium
+CCTATAATGAGTGCCC-1,stroma_fibroblastic_IC high
+CCTATACCGTCCTGTC-1,non neo epithelium
+CCTATATTTGTCCTGG-1,stroma_fibroblastic_IC high
+CCTATGAAGTGGTGCC-1,epithelium&submucosa
+CCTATGGGTTACCGTC-1,non neo epithelium
+CCTATGTCCACTCCAC-1,tumor&stroma_IC med to high
+CCTCACCTGAGGGAGC-1,non neo epithelium
+CCTCACCTTAGCATCG-1,epithelium&submucosa
+CCTCCGACAATTCAAG-1,IC aggregregate_submucosa
+CCTCCTGTTGTGTCGT-1,stroma_fibroblastic_IC high
+CCTCGCGCGATATAGG-1,submucosa
+CCTCGCGCTGTGCGAT-1,submucosa
+CCTCGGACCGGGATAG-1,epithelium&submucosa
+CCTCGGATGCTACCTG-1,exclude
+CCTCTATCGATTAGCA-1,tumor&stroma_IC med to high
+CCTCTCTCCCATCTAG-1,IC aggregregate_submucosa
+CCTCTGTACTATTCTA-1,epithelium&submucosa
+CCTGAACGATATATTC-1,epithelium&submucosa
+CCTGACCACCGATGGT-1,epithelium&submucosa
+CCTGCCCGTTGTCTAG-1,exclude
+CCTGCGTTCTACGCTT-1,tumor&stroma_IC med to high
+CCTGCTATTTGAGAAG-1,epithelium&submucosa
+CCTGGAAACGTTCTGC-1,stroma_fibroblastic_IC high
+CCTGGCTAGACCCGCC-1,epithelium&submucosa
+CCTGGTCGAATGTGGG-1,tumor&stroma_IC med to high
+CCTGTAAGACATGATA-1,epithelium&submucosa
+CCTGTACTCACGCCCA-1,tumor
+CCTGTCACCCGGGCTC-1,epithelium&submucosa
+CCTGTCCCTCACGTTA-1,tumor&stroma_IC med to high
+CCTGTCGCCCGTAAAT-1,epithelium&submucosa
+CCTGTTTGAAGACACG-1,non neo epithelium
+CCTTCAGTTAAAGTGA-1,tumor
+CCTTGACCACTTTATT-1,stroma_fibroblastic_IC high
+CCTTTAAGGGAGCACT-1,epithelium&submucosa
+CCTTTCAATGAAGAAA-1,epithelium&submucosa
+CGAAACGCAATTCATG-1,tumor
+CGAACAGTATGGGCGT-1,epithelium&submucosa
+CGAACCCGCATGCGTC-1,epithelium&submucosa
+CGAAGTTGCTCTGTGT-1,IC aggregregate_submucosa
+CGAATGACGCATAATG-1,tumor&stroma_IC med to high
+CGACAATTTGATCTAA-1,non neo epithelium
+CGACACGCTCCGACAG-1,epithelium&submucosa
+CGACAGTTCGCGTTAT-1,epithelium&submucosa
+CGACTCAGGATGTTAT-1,epithelium&submucosa
+CGACTTTGTATAGCCT-1,epithelium&submucosa
+CGAGACCCTAGAGTGT-1,non neo epithelium
+CGAGACTACTGCTGCT-1,tumor
+CGAGAGATGTGAACCT-1,exclude
+CGAGAGCTTTCACTAC-1,exclude
+CGAGAGGGTAGCCGCG-1,non neo epithelium
+CGAGATTTCGCTCGGG-1,tumor&stroma_IC med to high
+CGAGGAGCTTCCATAT-1,exclude
+CGAGGATCGGGAACGA-1,tumor&stroma_IC med to high
+CGAGGCTAAATATGGC-1,non neo epithelium
+CGAGGGACTGCGGTCG-1,non neo epithelium
+CGAGTACTAAAGAGGA-1,epithelium&submucosa
+CGAGTGAAGGTACCAG-1,tumor
+CGAGTTCTGTCCCACC-1,epithelium&submucosa
+CGAGTTTATCGGACTG-1,epithelium&submucosa
+CGATAATACTCAGGTT-1,tumor
+CGATACCTCGCGGACA-1,epithelium&submucosa
+CGATAGTCGTACTGCA-1,exclude
+CGATCCGACCCAGTGC-1,epithelium&submucosa
+CGATCTGTTGGAGGAC-1,tumor
+CGATGGACCCTACGCC-1,exclude
+CGATTAAATATCTCCT-1,submucosa
+CGATTCGCCTGGCTGC-1,tumor&stroma_IC med to high
+CGCAAACACGAGTTAC-1,epithelium&submucosa
+CGCAATTAGGGTAATA-1,epithelium&submucosa
+CGCACATGTCCACTAC-1,epithelium&submucosa
+CGCACGTGCGCTATCA-1,submucosa
+CGCAGATCTTCACCCG-1,tumor&stroma_IC med to high
+CGCAGGCGATCCAAAC-1,epithelium&submucosa
+CGCATCCATCAGCCAG-1,stroma_fibroblastic_IC high
+CGCATGCCGAATGCGT-1,exclude
+CGCATGGTGCGATGCT-1,epithelium&submucosa
+CGCATTAGCTAATAGG-1,epithelium&submucosa
+CGCCAAGAAGCCGAGT-1,tumor
+CGCCATCCGATTATGA-1,non neo epithelium
+CGCCCAGCACGCCTAG-1,non neo epithelium
+CGCCCAGCGTTTCACG-1,exclude
+CGCCGCCCATGCCTGT-1,epithelium&submucosa
+CGCCGTTCAGCATAGT-1,submucosa
+CGCCTCCCTCCTCTAT-1,epithelium&submucosa
+CGCCTGGCCTACGTAA-1,tumor&stroma_IC med to high
+CGCCTTTAGCATGCTC-1,tumor
+CGCGAAGTGGCATACT-1,tumor
+CGCGACCGCGACAGAT-1,stroma_fibroblastic_IC high
+CGCGAGTCTGCCGGGT-1,tumor
+CGCGCAAATGTCCAGA-1,exclude
+CGCGCATGTTTGATTG-1,epithelium&submucosa
+CGCGGCTCAACTTGAA-1,non neo epithelium
+CGCGGGAATTAGGCAG-1,epithelium&submucosa
+CGCGGTAAGTCTAGCT-1,tumor&stroma_IC med to high
+CGCGTTCATGAAATAC-1,epithelium&submucosa
+CGCTACGGGACATTTA-1,epithelium&submucosa
+CGCTAGAGACCGCTGC-1,epithelium&submucosa
+CGCTATTCTTAGGCTC-1,submucosa
+CGCTCTCCGTAGATTA-1,IC aggregregate_submucosa
+CGCTGGTGACTACCCT-1,submucosa
+CGCTGTGACGCCGCAC-1,epithelium&submucosa
+CGCTGTGTGGATGTTG-1,stroma_fibroblastic_IC high
+CGCTTATTCCCGGTCG-1,tumor&stroma_IC med to high
+CGCTTCGGTCTAAGAC-1,tumor
+CGCTTTCTTGCATTCG-1,non neo epithelium
+CGGAAAGAATCAAACG-1,non neo epithelium
+CGGAACGTAAACATAG-1,non neo epithelium
+CGGAGCAATTTAATCG-1,non neo epithelium
+CGGAGCATGGCGATCC-1,epithelium&submucosa
+CGGAGTTTGAGAGACA-1,stroma_fibroblastic_IC high
+CGGATCCTCAAGGACT-1,tumor&stroma_IC med to high
+CGGCAAACATCGTGCG-1,epithelium&submucosa
+CGGCAATAAGATCGCC-1,stroma_fibroblastic_IC high
+CGGCAGGGTCGGGTTG-1,epithelium&submucosa
+CGGCCACGCACAAAGT-1,epithelium&submucosa
+CGGCCCAACCTGTAGT-1,tumor&stroma_IC med to high
+CGGCCCAGGTATATCC-1,non neo epithelium
+CGGCGCCATCAATCCC-1,submucosa
+CGGCTCTAAAGCTGCA-1,tumor&stroma_IC med to high
+CGGGAATATAGTATAC-1,epithelium&submucosa
+CGGGAATTTATGTAAA-1,epithelium&submucosa
+CGGGAGCTTCAGTGTA-1,epithelium&submucosa
+CGGGCAGCTAAACCGC-1,epithelium&submucosa
+CGGGCCTTCTTTGTAA-1,epithelium&submucosa
+CGGGTGTACCCATTTA-1,epithelium&submucosa
+CGGGTTTGTTAGGGCT-1,stroma_fibroblastic_IC high
+CGGTACTAGAATCAAA-1,epithelium&submucosa
+CGGTAGAGGTGCAGGT-1,epithelium&submucosa
+CGGTCAAGTGGGAACC-1,exclude
+CGGTCCGTCGCAAGCC-1,tumor&stroma_IC med to high
+CGGTGAAGACTAAAGT-1,tumor
+CGGTGCAGATAGAACG-1,stroma_fibroblastic_IC high
+CGGTGCGCGTTGGTCC-1,submucosa
+CGGTTATCCAACAGTG-1,epithelium&submucosa
+CGGTTCAAGTAGGTGT-1,epithelium&submucosa
+CGGTTGACCTGGCATA-1,tumor
+CGTAGAGAGTAATTAT-1,exclude
+CGTATTAAGAGATCTA-1,epithelium&submucosa
+CGTCAAGGCTATAAAT-1,tumor
+CGTCACGTCCATTGGT-1,epithelium&submucosa
+CGTCGCATGTGAGCCA-1,exclude
+CGTCGGATAGTGTTGA-1,epithelium&submucosa
+CGTCGGGTCTAAGCGC-1,tumor
+CGTCGTCCTTCGCGAA-1,tumor&stroma_IC med to high
+CGTGAAGTTAATTCAC-1,epithelium&submucosa
+CGTGACCAGTCCTCTG-1,tumor&stroma_IC med to high
+CGTGCAGACTGGGACA-1,epithelium&submucosa
+CGTGCATTGTCGACGC-1,stroma_fibroblastic_IC high
+CGTGCCCTCCCGAAGA-1,non neo epithelium
+CGTGGAAGCCTCGTAC-1,tumor&stroma_IC med to high
+CGTGGCCGAATATCTA-1,epithelium&submucosa
+CGTGTATGGGAGCTGA-1,tumor
+CGTGTCCCATTCGCGA-1,epithelium&submucosa
+CGTGTCTCGTTACGAC-1,stroma_fibroblastic_IC high
+CGTGTGTTAAACCCTG-1,tumor&stroma_IC med to high
+CGTTAAACTAGTTAGG-1,stroma_fibroblastic_IC high
+CGTTAATGTCCCGACG-1,stroma_fibroblastic_IC high
+CGTTCATGGTGCGCGT-1,tumor
+CGTTCTTCGCACACCT-1,exclude
+CGTTGAATACCGCGCT-1,tumor&stroma_IC med to high
+CGTTGAGCGACCGTCG-1,epithelium&submucosa
+CGTTGTAAGATTGATT-1,stroma_fibroblastic_IC high
+CGTTGTTTCAATTCCC-1,submucosa
+CGTTTCGCTCATTACA-1,epithelium&submucosa
+CGTTTGTGTAGAGGGT-1,submucosa
+CTAAAGAATGCCTACT-1,IC aggregregate_submucosa
+CTAAAGGGAAATAGGA-1,non neo epithelium
+CTAAATCCGGTGTACA-1,stroma_fibroblastic_IC high
+CTAAATCCTATTCCGG-1,epithelium&submucosa
+CTAACCGCGCGCCCGT-1,stroma_fibroblastic_IC high
+CTAACGAAACTTGCTG-1,non neo epithelium
+CTAACTGATAATCGCC-1,submucosa
+CTAACTGGTCCGGTTC-1,epithelium&submucosa
+CTAAGGGAATGATTGG-1,epithelium&submucosa
+CTAATTCTCAGATATT-1,tumor&stroma_IC med to high
+CTACAAGAAATAACCC-1,stroma_fibroblastic_IC high
+CTACACTCGCAGATGG-1,non neo epithelium
+CTACCCTAAGGTCATA-1,epithelium&submucosa
+CTACGACTAGCTATAA-1,tumor
+CTACGCACGGAGTACC-1,epithelium&submucosa
+CTACTATCATAGGTTT-1,tumor
+CTACTATCTTTCAGAG-1,epithelium&submucosa
+CTACTCAAGGTATAGT-1,tumor
+CTACTCTAGGCCCGGC-1,tumor&stroma_IC med to high
+CTACTGCCACCTGACC-1,non neo epithelium
+CTAGATGTGAGTGTAA-1,epithelium&submucosa
+CTAGATTTACGACGGC-1,epithelium&submucosa
+CTAGCATAGTATAATG-1,non neo epithelium
+CTAGCCACAGGCGAGC-1,tumor
+CTAGCCGATGTTATGA-1,epithelium&submucosa
+CTAGGCGCCCTATCAG-1,epithelium&submucosa
+CTAGGTCTGAAGGAAT-1,epithelium&submucosa
+CTAGGTTCGGACGTGA-1,tumor&stroma_IC med to high
+CTAGTAGAAAGGGATT-1,tumor
+CTAGTCACGTCTTAAG-1,epithelium&submucosa
+CTAGTGAAGGACAGGA-1,IC aggregregate_submucosa
+CTAGTTACAACCCGGT-1,epithelium&submucosa
+CTAGTTGGGCCCGGTA-1,non neo epithelium
+CTATAAGAGCCAATCG-1,epithelium&submucosa
+CTATAGGCGTTGATGT-1,tumor
+CTATCGACGAAATACA-1,epithelium&submucosa
+CTATCGCGTAGAGAAC-1,tumor
+CTATCGGGTCTCAACA-1,non neo epithelium
+CTATGCCCGAATGCAA-1,exclude
+CTATGGGAAGCGGAAT-1,submucosa
+CTATGTCACTAGCCCA-1,epithelium&submucosa
+CTATTCATGTGTCCCA-1,exclude
+CTATTTGGTTACGGAT-1,epithelium&submucosa
+CTCAACTAACCCGGAT-1,tumor
+CTCACATTTACTAAAT-1,exclude
+CTCACTGTGATACTTA-1,exclude
+CTCACTTGGCTGGTAA-1,tumor
+CTCAGTCACGACAAAT-1,submucosa
+CTCATGGTAATTTGCG-1,tumor&stroma_IC med to high
+CTCATTGCTCTAACAA-1,tumor&stroma_IC med to high
+CTCCCAATGAGTCGCG-1,tumor&stroma_IC med to high
+CTCCCTCCTTTCGATC-1,tumor
+CTCCGCCCACATGAGG-1,non neo epithelium
+CTCCTCCAGCTCACAC-1,stroma_fibroblastic_IC high
+CTCCTGTTCAAGGCAG-1,tumor&stroma_IC med to high
+CTCCTTTACGCAAGTC-1,tumor
+CTCGAGGTCGAACAGT-1,epithelium&submucosa
+CTCGATATTTGCGAGC-1,epithelium&submucosa
+CTCGCCGAATGTAGGG-1,exclude
+CTCGCTAGGTAAGCGA-1,exclude
+CTCGGTACCACTGCTC-1,submucosa
+CTCGGTTGTCGGCCCT-1,tumor
+CTCGTTTCTAATGTTT-1,non neo epithelium
+CTCTAATGCATTGATC-1,tumor&stroma_IC med to high
+CTCTAGCCCTCGGAAA-1,exclude
+CTCTATTTGGCTGCAG-1,epithelium&submucosa
+CTCTCACAATCGATGA-1,epithelium&submucosa
+CTCTCTAACTGCCTAG-1,exclude
+CTCTGGACGCCTGGTG-1,epithelium&submucosa
+CTCTTCTATTGACTGG-1,epithelium&submucosa
+CTCTTCTGGAAGTTAG-1,tumor
+CTCTTGTCCCGCTTGG-1,non neo epithelium
+CTGAATCCGAGACCTC-1,non neo epithelium
+CTGAATTTATTGCCAG-1,tumor
+CTGACATAGAAATAGA-1,tumor
+CTGACTGCGCAGCTCG-1,epithelium&submucosa
+CTGAGAAAGTTCGGCG-1,tumor
+CTGATAGTGTATCTCA-1,stroma_fibroblastic_IC high
+CTGCAAGCACGTTCCG-1,tumor&stroma_IC med to high
+CTGCACAACTACATAT-1,epithelium&submucosa
+CTGCACCTAGTCCACA-1,tumor
+CTGCACTCCAGTACAG-1,stroma_fibroblastic_IC high
+CTGCAGAGAATCAGAG-1,submucosa
+CTGCCAAGGTTGGAAG-1,epithelium&submucosa
+CTGCCATGCATCACAT-1,non neo epithelium
+CTGCCTTTCTAGTAAA-1,tumor&stroma_IC med to high
+CTGCGGGTGAAATGTT-1,tumor&stroma_IC med to high
+CTGCTGAGGCCACGAA-1,non neo epithelium
+CTGCTGTCTAACGAGC-1,tumor
+CTGCTTGGCGATAGCT-1,submucosa
+CTGCTTTATGTCCGCG-1,exclude
+CTGGAAATGGATGCTT-1,non neo epithelium
+CTGGAAGACACGGTGG-1,submucosa
+CTGGACGCAGTCCGGC-1,tumor
+CTGGATTTACACTTGA-1,non neo epithelium
+CTGGCATCCGAATGAG-1,tumor
+CTGGCGCACAGGTCTG-1,epithelium&submucosa
+CTGGCTGATTCATCCT-1,epithelium&submucosa
+CTGGCTGGTTGTCAGT-1,epithelium&submucosa
+CTGGGATAAATAATGG-1,epithelium&submucosa
+CTGGGATACGCTACCC-1,tumor
+CTGGGCCTGCTATATC-1,tumor
+CTGGGTAGGCAGTTAA-1,non neo epithelium
+CTGGTAAAGACTTACA-1,tumor
+CTGGTAAAGTGTGGGC-1,tumor
+CTGGTAACACATAGAA-1,epithelium&submucosa
+CTGGTAACGAGCTCTT-1,epithelium&submucosa
+CTGGTTTCGAGCAAGA-1,non neo epithelium
+CTGTACTTCTTAGCAT-1,epithelium&submucosa
+CTGTAGCCATCTCACT-1,epithelium&submucosa
+CTGTCAAATGGCTCGG-1,submucosa
+CTGTGCAGGGTAGGTC-1,non neo epithelium
+CTGTGGTCGGGAGATA-1,non neo epithelium
+CTGTTACCCAATCTAG-1,exclude
+CTTACACGGTATTCCA-1,epithelium&submucosa
+CTTAGCCTTCCACATG-1,epithelium&submucosa
+CTTAGTAGGCCTACAG-1,submucosa
+CTTAGTGTAGTAGCAT-1,tumor&stroma_IC med to high
+CTTATAGATGGCTGTT-1,tumor&stroma_IC med to high
+CTTCAACTCCACTTGG-1,tumor&stroma_IC med to high
+CTTCAGTGGTCGCCTA-1,stroma_fibroblastic_IC high
+CTTCATTGTCAGTGGA-1,epithelium&submucosa
+CTTCCGCTCCGTGAAG-1,submucosa
+CTTCGATTGCGCAAGC-1,exclude
+CTTCGGCCAATTGTTT-1,tumor
+CTTCGTAGATAGGTGA-1,epithelium&submucosa
+CTTCTATGTTGAAGTA-1,stroma_fibroblastic_IC high
+CTTCTATTAATGCTAG-1,epithelium&submucosa
+CTTGAGTTAGGGTAAT-1,non neo epithelium
+CTTGATGACCATCCAG-1,tumor
+CTTGCAACCGCCTCCT-1,tumor
+CTTGCCCACCCACGCA-1,tumor
+CTTGCCCAGGCTCTAC-1,submucosa
+CTTGGCCAAGCTGGGA-1,stroma_fibroblastic_IC high
+CTTGTCAACATTCGAG-1,epithelium&submucosa
+CTTGTGCTCACCGATT-1,epithelium&submucosa
+CTTGTTGCTGAGTCAA-1,non neo epithelium
+CTTTAATATTGGTCGA-1,submucosa
+CTTTACCGAATAGTAG-1,epithelium&submucosa
+CTTTAGGAACACTGTT-1,non neo epithelium
+CTTTAGTGCTATTATT-1,exclude
+CTTTCTGTGCGGGCTT-1,non neo epithelium
+CTTTGCATCGCTCTTG-1,non neo epithelium
+CTTTGCTGTCATGGAT-1,stroma_fibroblastic_IC high
+CTTTGGCGCTTTATAC-1,tumor
+CTTTGGCTTTAGTAAA-1,stroma_fibroblastic_IC high
+CTTTGGGATTGTTGCA-1,tumor
+GAAACAGATGACCACC-1,epithelium&submucosa
+GAAACCATGGTGCGCT-1,stroma_fibroblastic_IC high
+GAAACCGAATTACCTT-1,epithelium&submucosa
+GAAACCTATACAAATG-1,stroma_fibroblastic_IC high
+GAAACTCGTGCGATGC-1,tumor
+GAAAGAACAGCGTTAT-1,epithelium&submucosa
+GAAAGCAGTGCACTTT-1,submucosa
+GAAAGCCCTTTGGACC-1,stroma_fibroblastic_IC high
+GAAATATCACCATCAG-1,tumor&stroma_IC med to high
+GAAATGGCGGTGTTAG-1,epithelium&submucosa
+GAAATTGTCTCTATAA-1,non neo epithelium
+GAACAACTGGGATGAA-1,exclude
+GAACAGATTACTAAAT-1,tumor
+GAACCCTCTGTGTTCT-1,tumor&stroma_IC med to high
+GAACCTTTAACGATCC-1,tumor
+GAACGCGGGTCACACG-1,stroma_fibroblastic_IC high
+GAACGTCTCATGGTCG-1,epithelium&submucosa
+GAACGTTAGGAAGACG-1,tumor
+GAAGAAACGATATTGT-1,exclude
+GAAGCCTGCACATTCC-1,stroma_fibroblastic_IC high
+GAAGCGTGAGGAATTT-1,non neo epithelium
+GAAGCTCGGACCCGTC-1,exclude
+GAAGCTTGCTGACCGC-1,stroma_fibroblastic_IC high
+GAAGTCAGTTGCACTA-1,non neo epithelium
+GAAGTCTCCCTAGCGA-1,epithelium&submucosa
+GAAGTGATTTATCGTG-1,epithelium&submucosa
+GAAGTTTCCACTCAAT-1,epithelium&submucosa
+GAATAGACGCGACCCA-1,non neo epithelium
+GAATAGCATTTAGGGT-1,exclude
+GAATAGTGCTCGATTA-1,tumor&stroma_IC med to high
+GAATCGACATGGTCAC-1,epithelium&submucosa
+GAATCTGAACATTCTC-1,non neo epithelium
+GAATGCGAATCGGTTC-1,exclude
+GAATGTGGTCCGGATT-1,epithelium&submucosa
+GAATTATAGTGAAAGG-1,non neo epithelium
+GAATTCACCCGGGTGT-1,non neo epithelium
+GACAAACATATGCAGG-1,submucosa
+GACAAGAGATGAGATT-1,stroma_fibroblastic_IC high
+GACACAAGGGAAGAAA-1,non neo epithelium
+GACACAGCCGGGACTG-1,tumor
+GACACTGAGTTCAGTG-1,epithelium&submucosa
+GACACTGGAACCCGAT-1,tumor
+GACACTTCCAATTACC-1,exclude
+GACAGCCAGACCTGAC-1,epithelium&submucosa
+GACAGGCACACACTAT-1,tumor
+GACATCCGTCGAACTG-1,exclude
+GACATCGATTTATAAC-1,submucosa
+GACCAAACGTTGACTG-1,tumor&stroma_IC med to high
+GACCAGAGCCCTGTAG-1,non neo epithelium
+GACCCAATTATGATAC-1,tumor&stroma_IC med to high
+GACCGACGTGAAAGCA-1,stroma_fibroblastic_IC high
+GACCGACTGAAGCGTC-1,stroma_fibroblastic_IC high
+GACCGCGTCTGACGTG-1,tumor
+GACCGTGCTGACGGTG-1,epithelium&submucosa
+GACCTTCCACGTCTAC-1,exclude
+GACGACGATCCGCGTT-1,submucosa
+GACGAGGCTAATAAAC-1,non neo epithelium
+GACGCCGTAAAGGCTA-1,epithelium&submucosa
+GACGCTTGCTTCTAAA-1,stroma_fibroblastic_IC high
+GACGGGTTGGCCCGTA-1,stroma_fibroblastic_IC high
+GACGGTCAATAGAAGC-1,epithelium&submucosa
+GACGTTCGTAAATACA-1,tumor
+GACTAAGTAGGCTCAC-1,epithelium&submucosa
+GACTACAAAGCGGTGG-1,tumor&stroma_IC med to high
+GACTAGGCCGTTAGGT-1,exclude
+GACTCACCCACGTGAG-1,epithelium&submucosa
+GACTCCCAGAATAAGG-1,tumor
+GACTCGCGGGAATGAC-1,epithelium&submucosa
+GACTGCAAATCGAGCT-1,tumor&stroma_IC med to high
+GACTGCACCAGCCCAG-1,non neo epithelium
+GAGAACGGTTCTGACT-1,tumor
+GAGACTGATGGGTAGA-1,epithelium&submucosa
+GAGACTTCGCGACCGA-1,epithelium&submucosa
+GAGAGGGCGCGAGGTT-1,epithelium&submucosa
+GAGAGGTGCATTCTGG-1,tumor
+GAGATCTGCTTGGCAT-1,epithelium&submucosa
+GAGATCTGTCACTCCG-1,exclude
+GAGATCTTCCATGACA-1,epithelium&submucosa
+GAGATGGGAGTCGACA-1,epithelium&submucosa
+GAGCACCTGTGTCCAG-1,tumor
+GAGCACGGCGCCTCTT-1,stroma_fibroblastic_IC high
+GAGCCAGCTACCTGTG-1,epithelium&submucosa
+GAGCGCAAATACTCCG-1,tumor&stroma_IC med to high
+GAGCGCGCACGAGTAG-1,epithelium&submucosa
+GAGCTAAGGGCATATC-1,non neo epithelium
+GAGCTGTCGTCTCGGA-1,exclude
+GAGGCCCGACTCCGCA-1,tumor&stroma_IC med to high
+GAGGCCTGTTGATACA-1,tumor
+GAGGCTATCAAAGTCG-1,tumor&stroma_IC med to high
+GAGGGCGCAGCTCTGC-1,epithelium&submucosa
+GAGTAAACCGGAAAGT-1,stroma_fibroblastic_IC high
+GAGTATCAAAGTTACA-1,tumor&stroma_IC med to high
+GAGTATGCCCGCCTTG-1,epithelium&submucosa
+GAGTATGCGCGTGCAT-1,exclude
+GAGTCAGACCAGAATC-1,submucosa
+GAGTCCGCTTACCGGA-1,non neo epithelium
+GAGTGTCAACCAGAAA-1,stroma_fibroblastic_IC high
+GAGTGTGCGGTACCCA-1,epithelium&submucosa
+GAGTTGATGGCAATTT-1,tumor&stroma_IC med to high
+GATAACTCGCACTGTG-1,epithelium&submucosa
+GATAGGTAACGTTGAC-1,epithelium&submucosa
+GATATGAGACACTAAC-1,non neo epithelium
+GATATGGATTACGCGG-1,tumor
+GATATTGAGATTGGCG-1,non neo epithelium
+GATCAACATAAAGGGA-1,stroma_fibroblastic_IC high
+GATCATTCCAAACATT-1,epithelium&submucosa
+GATCCCTTTATACTGC-1,non neo epithelium
+GATCCGGGAATTAACA-1,exclude
+GATCCTAAATCGGGAC-1,non neo epithelium
+GATCCTCGACACTGGC-1,stroma_fibroblastic_IC high
+GATCGACACTATCTGA-1,epithelium&submucosa
+GATCGCGGGCTCTCCA-1,epithelium&submucosa
+GATCGCTACCCGATTT-1,epithelium&submucosa
+GATCGGTGGCCATAAC-1,epithelium&submucosa
+GATCGTGACTGATATC-1,exclude
+GATCTCGACGCTGTGG-1,stroma_fibroblastic_IC high
+GATCTGCTATCTAAGG-1,exclude
+GATCTTGGAGGGCATA-1,non neo epithelium
+GATCTTTGCAGGGTAT-1,IC aggregregate_submucosa
+GATGACAAGTAGGGCA-1,tumor
+GATGAGGAACCTTCGG-1,tumor&stroma_IC med to high
+GATGCGTCCTGCATTC-1,non neo epithelium
+GATGCTGTATTTCATC-1,epithelium&submucosa
+GATGTAACGAACCACC-1,tumor
+GATGTTCAATCCACGA-1,epithelium&submucosa
+GATTAACCGAAAGCCC-1,submucosa
+GATTACTGAATTTGGG-1,submucosa
+GATTCCCTTGTCGCAG-1,non neo epithelium
+GATTCGACGGTTCACG-1,non neo epithelium
+GATTGGGAAAGGTTGT-1,exclude
+GCAAACCCTACATTAT-1,epithelium&submucosa
+GCAAACCTTGGCCATA-1,stroma_fibroblastic_IC high
+GCAAACGTCGCCAGGT-1,tumor
+GCAAATATTACGCTTT-1,epithelium&submucosa
+GCAACAGCAGTATGCG-1,submucosa
+GCAACCACGGCCGCGT-1,tumor&stroma_IC med to high
+GCAACGGCTAGTTATG-1,tumor
+GCAAGAATTCCTTGGC-1,epithelium&submucosa
+GCAAGTGCACAGAGAA-1,epithelium&submucosa
+GCACAAACGAGGCGTG-1,tumor
+GCACACACTGGTAGCC-1,non neo epithelium
+GCACACGCCCATGGTC-1,exclude
+GCACGCCTACTTAGAT-1,stroma_fibroblastic_IC high
+GCACGTGGTTTACTTA-1,tumor
+GCAGACCCAGCACGTA-1,epithelium&submucosa
+GCAGATCCATAAGACT-1,epithelium&submucosa
+GCAGATTAGGGATATC-1,epithelium&submucosa
+GCAGCACACAGCCCAG-1,non neo epithelium
+GCAGCCTATATCACAT-1,stroma_fibroblastic_IC high
+GCAGGAACTTAGATCT-1,tumor&stroma_IC med to high
+GCAGGACTATAGAATA-1,IC aggregregate_submucosa
+GCAGTGTGGCTATAGG-1,stroma_fibroblastic_IC high
+GCAGTTCGATCCGAGC-1,tumor
+GCATACGAGGTCTTTA-1,tumor
+GCATAGAGCACTCAGG-1,epithelium&submucosa
+GCATCGGCCGTGTAGG-1,non neo epithelium
+GCATGAGGGACGCGGC-1,epithelium&submucosa
+GCATTCAAGGCAACGC-1,submucosa
+GCATTTCCAAGGCTCC-1,stroma_fibroblastic_IC high
+GCCAACCATTTCCGGA-1,exclude
+GCCAATAGGGCATCTC-1,tumor
+GCCACAATTTAAGGAC-1,epithelium&submucosa
+GCCACTCAGAGCGCGA-1,non neo epithelium
+GCCACTCCTTACGGTA-1,tumor&stroma_IC med to high
+GCCAGGAGTAACCGAT-1,epithelium&submucosa
+GCCATATTGCACACAG-1,epithelium&submucosa
+GCCATCGAGCTGCGTG-1,non neo epithelium
+GCCATCGATGCTGCAT-1,epithelium&submucosa
+GCCCGACTTCTTCCCG-1,tumor&stroma_IC med to high
+GCCCGATCTGTGGTCG-1,epithelium&submucosa
+GCCCGCGCGTAAACGG-1,epithelium&submucosa
+GCCCGTAATACCTTCT-1,exclude
+GCCCTAGCCGTCGCGA-1,tumor&stroma_IC med to high
+GCCGAAATTCCTACGT-1,epithelium&submucosa
+GCCGATTGGCCAAGCT-1,non neo epithelium
+GCCGCACTCCGTTTCA-1,tumor
+GCCGCATTAGTCCGGC-1,tumor&stroma_IC med to high
+GCCGCTTGTGAGAAAC-1,epithelium&submucosa
+GCCGGGTTAGGGTCGC-1,epithelium&submucosa
+GCCTACGTTCTGTGCA-1,exclude
+GCCTATAGTGTCAGGG-1,non neo epithelium
+GCCTCATCTGGAAATA-1,epithelium&submucosa
+GCCTCCGACAATTCAC-1,submucosa
+GCCTCTATACATAGCA-1,tumor
+GCGAAACGATCGGGAG-1,non neo epithelium
+GCGAAACTTAACTGGA-1,epithelium&submucosa
+GCGAAGAATCTGACGG-1,exclude
+GCGAAGCCATACCCGT-1,epithelium&submucosa
+GCGACATGTAAACATC-1,epithelium&submucosa
+GCGACCCAACCATCTG-1,tumor&stroma_IC med to high
+GCGACGATAGTTGTAC-1,submucosa
+GCGAGAGGCCATGTAA-1,exclude
+GCGAGAGTTGCGTCCA-1,non neo epithelium
+GCGAGCGCATGCTCCC-1,epithelium&submucosa
+GCGAGGCCCGAGCAGA-1,epithelium&submucosa
+GCGAGTTCTGCAAAGA-1,epithelium&submucosa
+GCGATTGTTAACGTTA-1,epithelium&submucosa
+GCGCAAATATATTCAA-1,tumor&stroma_IC med to high
+GCGCAAGAGCGCGCTG-1,epithelium&submucosa
+GCGCATCCAGTCAGCA-1,epithelium&submucosa
+GCGCCGTTCCACGATA-1,epithelium&submucosa
+GCGCCTCCCACTCCGA-1,tumor&stroma_IC med to high
+GCGCGTCATTGGTACA-1,stroma_fibroblastic_IC high
+GCGCTAATTGAATAGA-1,epithelium&submucosa
+GCGCTATGCCGAGGCA-1,epithelium&submucosa
+GCGCTGCTTTGCATTT-1,epithelium&submucosa
+GCGCTTAAATAATTGG-1,submucosa
+GCGGACCGCGTTGTGG-1,epithelium&submucosa
+GCGGAGAAACTTCGCA-1,tumor&stroma_IC med to high
+GCGGAGAGGGAGAACG-1,submucosa
+GCGGCAAAGTATTGCC-1,tumor
+GCGGCTCTGACGTACC-1,stroma_fibroblastic_IC high
+GCGGGCGAGCCTTACC-1,epithelium&submucosa
+GCGGTTCCCTATCATG-1,epithelium&submucosa
+GCGTAAATGGCCATAA-1,epithelium&submucosa
+GCGTCGCCAGGGTGAT-1,epithelium&submucosa
+GCGTCTCTGCATTGGG-1,epithelium&submucosa
+GCGTGGTACTGGGTTA-1,non neo epithelium
+GCGTTATATTTGGAAC-1,tumor
+GCTAACTGAAGTCTGA-1,tumor
+GCTAAGTAGTTTCTCT-1,non neo epithelium
+GCTACAATCGAGGATA-1,tumor&stroma_IC med to high
+GCTACAGTACGGACCG-1,exclude
+GCTACGACTTATTGGG-1,epithelium&submucosa
+GCTACTATAGTAGAGT-1,epithelium&submucosa
+GCTAGACCGTCTACTG-1,epithelium&submucosa
+GCTAGAGTAGAGATGT-1,non neo epithelium
+GCTAGCACCTGGGCCA-1,tumor
+GCTAGCTTGAATAGCT-1,epithelium&submucosa
+GCTAGGCACCACGGAG-1,stroma_fibroblastic_IC high
+GCTAGTAGAGCTTGTA-1,epithelium&submucosa
+GCTATACGTCTCGGAC-1,epithelium&submucosa
+GCTATCATACTCATGG-1,stroma_fibroblastic_IC high
+GCTCAATCCGTTTATT-1,epithelium&submucosa
+GCTCAATGTAATACCG-1,exclude
+GCTCCCAGTCGGTCCA-1,stroma_fibroblastic_IC high
+GCTCCGCTCGCTTCAG-1,tumor
+GCTCCTGACATACTGG-1,tumor
+GCTCGCTCATGTCCAA-1,epithelium&submucosa
+GCTCGGAATTTAAAGC-1,submucosa
+GCTCTATGTTACGTGC-1,submucosa
+GCTGAACTCTCCAGGG-1,tumor&stroma_IC med to high
+GCTGAATCTTCCAATC-1,tumor
+GCTGAGGCGTGAGTAT-1,epithelium&submucosa
+GCTGCACGGTTTCTTA-1,epithelium&submucosa
+GCTGCTAAGTAGTCGA-1,epithelium&submucosa
+GCTGCTACTGCGTAGC-1,non neo epithelium
+GCTGCTCTCCGGACAC-1,epithelium&submucosa
+GCTGGCATATTCACCT-1,stroma_fibroblastic_IC high
+GCTGGCGGCGCATGCT-1,epithelium&submucosa
+GCTGTATTACTGGCCC-1,submucosa
+GCTGTTGCTACCGAAC-1,non neo epithelium
+GCTTAATGTAACTAAC-1,non neo epithelium
+GCTTACGTAGTTAGTA-1,stroma_fibroblastic_IC high
+GCTTATGAAGCAGGAA-1,epithelium&submucosa
+GCTTCCGTCCCTAGAC-1,submucosa
+GCTTGGATCGATTAGG-1,submucosa
+GCTTTCAGAGGAGGTG-1,epithelium&submucosa
+GGAAACCTTGTTGAAT-1,exclude
+GGAAACTAAATGGGCC-1,submucosa
+GGAACCGTGTAAATTG-1,non neo epithelium
+GGAACCTTGACTCTGC-1,exclude
+GGAACTTTGGCGATTA-1,tumor
+GGAATGCGCTAGCGTG-1,non neo epithelium
+GGACAACCATGAAGCC-1,tumor
+GGACACAAGTTTACAC-1,tumor&stroma_IC med to high
+GGACCAACAGGATAAC-1,submucosa
+GGACCTCTAGGCCGCC-1,tumor
+GGACTCACAAATTAGG-1,tumor&stroma_IC med to high
+GGAGACGACACCTTTG-1,non neo epithelium
+GGAGCAACATTTCAAG-1,submucosa
+GGAGCACCAAGAACTA-1,epithelium&submucosa
+GGAGGCCGAAGTCGTC-1,tumor&stroma_IC med to high
+GGAGGGCTTGGTTGGC-1,non neo epithelium
+GGAGGGTCAAGTAAGA-1,stroma_fibroblastic_IC high
+GGATCCGGAATATACT-1,epithelium&submucosa
+GGATCTTGACTCAACC-1,tumor
+GGATGAAGATCGCTGA-1,epithelium&submucosa
+GGATGACGCGAGTTTA-1,epithelium&submucosa
+GGATGCTGGCGTTCCT-1,tumor&stroma_IC med to high
+GGATGGCTTGAAGTAT-1,tumor&stroma_IC med to high
+GGATGTCCTTACCGCA-1,epithelium&submucosa
+GGATTGCTGTGACTCC-1,tumor&stroma_IC med to high
+GGATTTCACTTCTATA-1,epithelium&submucosa
+GGCAAAGGCGCCAATA-1,stroma_fibroblastic_IC high
+GGCAAATTACTTTACT-1,epithelium&submucosa
+GGCAAGGCGAAATAGC-1,non neo epithelium
+GGCAATAGTCAATGAG-1,non neo epithelium
+GGCACTCCACTGGGCA-1,epithelium&submucosa
+GGCAGCAAACCTATGC-1,submucosa
+GGCATACAGGTAGCGG-1,IC aggregregate_submucosa
+GGCCCGGAGCATGTCT-1,tumor&stroma_IC med to high
+GGCCCGTATACCATGC-1,tumor
+GGCCCTCACCCACTTA-1,tumor
+GGCCGGCGTCTGCTAT-1,tumor&stroma_IC med to high
+GGCCGTTTGGGTTTCA-1,tumor&stroma_IC med to high
+GGCCTGCTTCTCCCGA-1,stroma_fibroblastic_IC high
+GGCGAAATCTAACTTG-1,epithelium&submucosa
+GGCGCAGGACATCTTC-1,tumor
+GGCGCATGAATTGATG-1,epithelium&submucosa
+GGCGCGGAGATCTTTC-1,tumor&stroma_IC med to high
+GGCGCGTTCGAGTTTA-1,submucosa
+GGCGGAGTAATATTAG-1,epithelium&submucosa
+GGCGGTAGGATCATTG-1,epithelium&submucosa
+GGCGTAGGGAAAGCTG-1,tumor&stroma_IC med to high
+GGCGTCCTATCCGCTG-1,IC aggregregate_submucosa
+GGCTACTATACACTCC-1,stroma_fibroblastic_IC high
+GGCTATTAAGTTGTAT-1,submucosa
+GGCTCCTCCACCTGTT-1,tumor&stroma_IC med to high
+GGCTCGCGTTGAGGTA-1,epithelium&submucosa
+GGCTGAAATAGCAAAG-1,epithelium&submucosa
+GGCTTTCAATAAGGGT-1,stroma_fibroblastic_IC high
+GGGAACGGGAGGTTAG-1,stroma_fibroblastic_IC high
+GGGAAGACGGTCTGTC-1,exclude
+GGGAAGGGCTTTCTCA-1,stroma_fibroblastic_IC high
+GGGAATGAGCCCTCAC-1,exclude
+GGGACAGAGTTACTCC-1,exclude
+GGGACCCGTATATCTT-1,submucosa
+GGGACTGCATAGATAG-1,non neo epithelium
+GGGAGAACTCACAGTA-1,epithelium&submucosa
+GGGAGCGACCGTAGTG-1,exclude
+GGGAGGATGCCCGAAA-1,epithelium&submucosa
+GGGAGTTAATGAGGCG-1,submucosa
+GGGATGGTCGTAACCG-1,epithelium&submucosa
+GGGATTTACCGCACCT-1,epithelium&submucosa
+GGGCAACCGCACGTGC-1,exclude
+GGGCAGAGCAATCGTT-1,non neo epithelium
+GGGCCCGTCTTAAACA-1,epithelium&submucosa
+GGGCCCTACGAAAGGG-1,tumor
+GGGCCGGCCGAAGTAC-1,non neo epithelium
+GGGCGATATGTGTGAA-1,non neo epithelium
+GGGCGGCAAATGAATT-1,non neo epithelium
+GGGCGGGTTCCCTACG-1,non neo epithelium
+GGGCGTCACCACGTAA-1,non neo epithelium
+GGGCGTGGTTTCCCAG-1,tumor
+GGGCTATGATCGATGG-1,epithelium&submucosa
+GGGCTCATCGAACCCA-1,epithelium&submucosa
+GGGCTGCCTAGGGCGA-1,non neo epithelium
+GGGCTGGTTAGTCGCG-1,epithelium&submucosa
+GGGTACTTCATGAACT-1,stroma_fibroblastic_IC high
+GGGTATGTATGCACTT-1,stroma_fibroblastic_IC high
+GGGTCACCGTGACGGT-1,epithelium&submucosa
+GGGTCGTGGCAAGTGT-1,tumor&stroma_IC med to high
+GGGTCTATCGCTTTCC-1,tumor&stroma_IC med to high
+GGGTGACACCTTAACT-1,submucosa
+GGGTGCATATGAAAGC-1,tumor&stroma_IC med to high
+GGGTTAACATTTGAGT-1,submucosa
+GGGTTTAGGATAGGAT-1,epithelium&submucosa
+GGTAACCGGGAGGATA-1,tumor
+GGTACAAACATGCTAT-1,non neo epithelium
+GGTACACCAGATTTAT-1,tumor
+GGTACATCTGGGACGA-1,tumor
+GGTACCATTAAGACGG-1,epithelium&submucosa
+GGTACGTTGCGGCCGG-1,tumor
+GGTAGAAGACCGCCTG-1,epithelium&submucosa
+GGTAGACCGTTGGGCG-1,epithelium&submucosa
+GGTAGTGCTCGCACCA-1,epithelium&submucosa
+GGTATAGTGACACATA-1,tumor&stroma_IC med to high
+GGTATTGCCGAGTTTA-1,non neo epithelium
+GGTCAAGACTACTTCG-1,tumor&stroma_IC med to high
+GGTCAGTGGGTCCCAC-1,submucosa
+GGTCGGATAAACGGCG-1,epithelium&submucosa
+GGTCGGCCAGGAGCTT-1,non neo epithelium
+GGTCGGTCGTCCACAG-1,submucosa
+GGTCGTAAGCTCGCAC-1,stroma_fibroblastic_IC high
+GGTCTCCGTCCAGGTT-1,tumor&stroma_IC med to high
+GGTCTCTGAATGGACT-1,epithelium&submucosa
+GGTCTGAGAATCTGGA-1,epithelium&submucosa
+GGTGAAGTACAGGGAT-1,non neo epithelium
+GGTGATAAGGAGCAGT-1,epithelium&submucosa
+GGTGCTGATCACAAAG-1,stroma_fibroblastic_IC high
+GGTGCTGGTACACATT-1,epithelium&submucosa
+GGTGGACTGCTCTGGC-1,stroma_fibroblastic_IC high
+GGTGGAGGTTGATACG-1,tumor
+GGTTACCACCCTCGGG-1,stroma_fibroblastic_IC high
+GGTTAGCTATATGTCT-1,epithelium&submucosa
+GGTTAGGCTTGGAGAA-1,epithelium&submucosa
+GGTTAGTTACGGCGCC-1,stroma_fibroblastic_IC high
+GGTTCTACTCGTCTGA-1,epithelium&submucosa
+GGTTGTGTAGCCTGGC-1,tumor&stroma_IC med to high
+GGTTTAATTACCATCG-1,stroma_fibroblastic_IC high
+GGTTTAATTGAGCAGG-1,tumor
+GGTTTAGCCTTTCTTG-1,epithelium&submucosa
+GGTTTCAATCGGTCAG-1,epithelium&submucosa
+GGTTTGTGACCTGAGG-1,tumor
+GTAACATCTAAGATAA-1,tumor&stroma_IC med to high
+GTAAGTAACAGTCTGG-1,epithelium&submucosa
+GTAAGTCCACACTCTA-1,tumor
+GTAATAAAGGGCTCCC-1,epithelium&submucosa
+GTAATCTGATTCTTCG-1,epithelium&submucosa
+GTACACTTACCTGAAG-1,epithelium&submucosa
+GTACAGAGGCAAGGGT-1,epithelium&submucosa
+GTACGCTTCATTGCAC-1,epithelium&submucosa
+GTACGTTTGCCCGTCA-1,epithelium&submucosa
+GTACTAAGATTTGGAG-1,epithelium&submucosa
+GTACTCCCTTATCGCT-1,tumor&stroma_IC med to high
+GTACTCCTGGGTATGC-1,submucosa
+GTACTGGAGTTAGACC-1,non neo epithelium
+GTAGAGGGAGACAAGT-1,tumor&stroma_IC med to high
+GTAGCCAAACATGGGA-1,epithelium&submucosa
+GTAGCGGCTATACACT-1,non neo epithelium
+GTAGCTTCCTCTTGTT-1,epithelium&submucosa
+GTAGTCGCGGGAATCA-1,epithelium&submucosa
+GTAGTCTACGATATTG-1,exclude
+GTATCAAACGTTAGCT-1,epithelium&submucosa
+GTATCCTTTGGTAACC-1,tumor&stroma_IC med to high
+GTATCTCAGTCTTGAC-1,exclude
+GTATCTTTCATAACCA-1,submucosa
+GTATGAAATTTCACTC-1,tumor
+GTATGTGGGTCTAGTT-1,epithelium&submucosa
+GTATTCTGAGAAACGA-1,submucosa
+GTATTTAATGGCATAA-1,stroma_fibroblastic_IC high
+GTCAAAGAAGTGGTGT-1,exclude
+GTCAACCAGGCCTATA-1,exclude
+GTCAAGCGGACTCGGG-1,epithelium&submucosa
+GTCAGAATAGTCTATG-1,stroma_fibroblastic_IC high
+GTCATGCACCTCCGTT-1,epithelium&submucosa
+GTCATGCGCGAGGGCT-1,stroma_fibroblastic_IC high
+GTCATGGACATGACTA-1,non neo epithelium
+GTCATTAGAGCGAACG-1,non neo epithelium
+GTCATTGCATTGACCC-1,tumor&stroma_IC med to high
+GTCCATTACTGCTACG-1,epithelium&submucosa
+GTCCCAACGTAAAGTA-1,non neo epithelium
+GTCCCGCGACGTTATG-1,tumor
+GTCCGGACCTGAAATT-1,epithelium&submucosa
+GTCCGGCTGAATTGCG-1,non neo epithelium
+GTCCTACGAATAGTCT-1,epithelium&submucosa
+GTCGATAGGTGACTTT-1,tumor
+GTCGCCGTTGTGTGTT-1,IC aggregregate_submucosa
+GTCGCGTAACCCGTTG-1,exclude
+GTCGGATATCTCAGAC-1,IC aggregregate_submucosa
+GTCGGGAAGCAGAAAC-1,exclude
+GTCGTACCATCTCGGG-1,epithelium&submucosa
+GTCGTACCTACGATTG-1,exclude
+GTCGTGTCTGGTCATC-1,tumor&stroma_IC med to high
+GTCGTTATTCGCTTAT-1,epithelium&submucosa
+GTCTACTCAATTACAA-1,stroma_fibroblastic_IC high
+GTCTAGTGAGCCGCTT-1,stroma_fibroblastic_IC high
+GTCTATCTGAGTTTCT-1,epithelium&submucosa
+GTCTATTGCATGCTCG-1,exclude
+GTCTATTGGTTCCGGT-1,submucosa
+GTCTCAAGGCCCGGCT-1,exclude
+GTCTCGACTAAGTTTG-1,stroma_fibroblastic_IC high
+GTCTGGGCGGTCGAGA-1,epithelium&submucosa
+GTCTTGAGGAGCAGTG-1,tumor
+GTCTTGTAGCTATTCA-1,tumor&stroma_IC med to high
+GTGAAACGGCGCCACC-1,epithelium&submucosa
+GTGAACTCCCATTCGA-1,epithelium&submucosa
+GTGAAGATTTCAAGTG-1,exclude
+GTGAAGCCGTATAGTC-1,tumor
+GTGACAGCTTCCCACT-1,exclude
+GTGACCGCACACTACG-1,epithelium&submucosa
+GTGACGAGGGTGACCC-1,tumor&stroma_IC med to high
+GTGACGCAGGTTTCAT-1,exclude
+GTGACTTCAGTAGTGC-1,non neo epithelium
+GTGAGCGTGCTGCACT-1,tumor
+GTGAGGACACTTAAGG-1,non neo epithelium
+GTGAGTGGTACAACGC-1,epithelium&submucosa
+GTGATCACTAACGCCT-1,non neo epithelium
+GTGATCATAGATCTGC-1,epithelium&submucosa
+GTGATCCTTGTCATGA-1,tumor&stroma_IC med to high
+GTGATTCGCCGCTCAA-1,epithelium&submucosa
+GTGCCATCACACGGTG-1,stroma_fibroblastic_IC high
+GTGCCCGTTCGGATTC-1,non neo epithelium
+GTGCCGCTTCAAAGGT-1,epithelium&submucosa
+GTGCGAAATCGAACAC-1,epithelium&submucosa
+GTGCGACAGGGAGTGT-1,epithelium&submucosa
+GTGCGTGTATATGAGC-1,non neo epithelium
+GTGCTCAAGTACTGTC-1,epithelium&submucosa
+GTGCTTACATCAGCGC-1,tumor
+GTGGACCAACCCGATT-1,stroma_fibroblastic_IC high
+GTGGACGCATTTGTCC-1,stroma_fibroblastic_IC high
+GTGGAGTCGGCGGTTG-1,submucosa
+GTGGCAAACAGCGGCA-1,tumor&stroma_IC med to high
+GTGGCGGTCCCAGCGT-1,tumor&stroma_IC med to high
+GTGGGCTTAGACACAC-1,non neo epithelium
+GTGGTATAGTCTGCCG-1,IC aggregregate_submucosa
+GTGGTGGCCAAGTGAA-1,epithelium&submucosa
+GTGGTTACTTCTTTCG-1,epithelium&submucosa
+GTGGTTTCCGCCTTTC-1,stroma_fibroblastic_IC high
+GTGTACCTTGGCTACG-1,exclude
+GTGTATATCAGCGGGC-1,tumor&stroma_IC med to high
+GTGTCGTATAGCGTTC-1,stroma_fibroblastic_IC high
+GTGTGAATAACTTAGG-1,non neo epithelium
+GTGTTACTATGCGTCC-1,non neo epithelium
+GTTAAAGTAGGACTGG-1,epithelium&submucosa
+GTTAACATCACTTAAA-1,tumor&stroma_IC med to high
+GTTAACTATGTTGTCA-1,stroma_fibroblastic_IC high
+GTTAAGGGTGCGATGT-1,exclude
+GTTAAGTTAGAGTGGG-1,tumor
+GTTAATGTCTATCTTA-1,tumor
+GTTACAATTGGTGACG-1,stroma_fibroblastic_IC high
+GTTACCTACAACTTGC-1,epithelium&submucosa
+GTTACTTTGGGCCTAG-1,non neo epithelium
+GTTAGCCGTAAATCAA-1,tumor&stroma_IC med to high
+GTTATAATACGGTGAA-1,tumor
+GTTATATCAGGAGCCA-1,tumor
+GTTATATTATCTCCCT-1,non neo epithelium
+GTTCACAGGAGTCTAG-1,IC aggregregate_submucosa
+GTTCATCGTTTGGCTG-1,epithelium&submucosa
+GTTCCCGTAAACATAT-1,tumor
+GTTCGCCATAAGTGCC-1,epithelium&submucosa
+GTTCGCTGAGACGTCT-1,tumor&stroma_IC med to high
+GTTCGGAGCACTCAAC-1,tumor&stroma_IC med to high
+GTTCGGATCGGGAACA-1,submucosa
+GTTCGGGCGTACCATT-1,epithelium&submucosa
+GTTCGTCTAAAGAACT-1,epithelium&submucosa
+GTTGAACCGGTTCCAT-1,epithelium&submucosa
+GTTGAGTCCCGCCGGT-1,IC aggregregate_submucosa
+GTTGCACGGAGTTTCG-1,epithelium&submucosa
+GTTGCGCTAACATTAC-1,stroma_fibroblastic_IC high
+GTTGCGGACGGTCAGG-1,tumor&stroma_IC med to high
+GTTGGATTGAGAACAC-1,epithelium&submucosa
+GTTGGATTTGCGTTGG-1,epithelium&submucosa
+GTTGGTCATGCTATCC-1,submucosa
+GTTTACGTTCCATCTG-1,submucosa
+GTTTCAAACGAGTTGT-1,tumor&stroma_IC med to high
+GTTTCATATCGTCGCT-1,tumor
+GTTTCCTGGAGGGTGA-1,non neo epithelium
+GTTTCTGCAGTCTCCC-1,non neo epithelium
+GTTTGACCAAATCCTA-1,epithelium&submucosa
+GTTTGGCCCAAGTTAT-1,epithelium&submucosa
+GTTTGGGCTTGTGAGC-1,submucosa
+GTTTGGGTTTCGCCCG-1,tumor
+GTTTGGTAGGGTCAAC-1,submucosa
+TAAACCCAGGAGGGCA-1,submucosa
+TAAAGACAACCCTTTA-1,tumor
+TAAAGCGGTATTTCCA-1,tumor&stroma_IC med to high
+TAAAGCGTTAGGAGAA-1,epithelium&submucosa
+TAACATACAATGTGGG-1,epithelium&submucosa
+TAACATACACGCGATC-1,tumor&stroma_IC med to high
+TAACCTACCGTCCGAG-1,epithelium&submucosa
+TAACCTAGGGAGTCCA-1,tumor&stroma_IC med to high
+TAACTATTACGCCAAA-1,epithelium&submucosa
+TAACTCATCCGCGCGG-1,epithelium&submucosa
+TAAGCAGGCGACACGC-1,stroma_fibroblastic_IC high
+TAAGGCATAACATCAA-1,epithelium&submucosa
+TAAGGCCCGTCACCCT-1,exclude
+TAAGGCTGAATCCCTC-1,submucosa
+TAAGGGCCTGTCCGAT-1,non neo epithelium
+TAAGGGCTGGGAGAGG-1,stroma_fibroblastic_IC high
+TAAGTAACATCTTGAC-1,submucosa
+TAAGTCGCCGAGTATC-1,tumor&stroma_IC med to high
+TAAGTTGCGACGTAGG-1,epithelium&submucosa
+TAATAGAACAGAGTTA-1,epithelium&submucosa
+TAATAGTGACGACCAG-1,epithelium&submucosa
+TAATCGATCCGTACGT-1,epithelium&submucosa
+TAATTACGTCAGTAGA-1,stroma_fibroblastic_IC high
+TAATTAGGACATCCGT-1,epithelium&submucosa
+TACAACGCACAACTCA-1,non neo epithelium
+TACAAGTCTCGTGCAT-1,stroma_fibroblastic_IC high
+TACACCGTCGTTAGTC-1,tumor
+TACAGAAACGGTGGGC-1,stroma_fibroblastic_IC high
+TACATAGGCATACACC-1,epithelium&submucosa
+TACATTTCTAACGTGC-1,epithelium&submucosa
+TACCAAATAGCCCAGA-1,epithelium&submucosa
+TACCAATAAAGTACCA-1,stroma_fibroblastic_IC high
+TACCAGAAGTAGGTTC-1,epithelium&submucosa
+TACCGCGGACTTGCAG-1,epithelium&submucosa
+TACCGGCTCACTGCCC-1,epithelium&submucosa
+TACCGGTCGTTTCCAT-1,stroma_fibroblastic_IC high
+TACCGTAGGTTAACTA-1,stroma_fibroblastic_IC high
+TACCGTGCCTCGGACC-1,epithelium&submucosa
+TACCTACTCCCAGTAT-1,epithelium&submucosa
+TACCTCAGTTGTCTGT-1,non neo epithelium
+TACCTGCTGCACTGTG-1,tumor&stroma_IC med to high
+TACCTTAAGATTTCCC-1,tumor
+TACGAACACGACTTCA-1,non neo epithelium
+TACGACGCTTGCTGCG-1,submucosa
+TACGACTGCCTCTTAG-1,epithelium&submucosa
+TACGAGAACTTCACGT-1,epithelium&submucosa
+TACGATGTTGATCATC-1,IC aggregregate_submucosa
+TACGCAGTTCTTTCCT-1,epithelium&submucosa
+TACGCCATATTCTAAT-1,epithelium&submucosa
+TACGCCGAGGGTACCC-1,tumor&stroma_IC med to high
+TACGCCTCCATTCCGA-1,submucosa
+TACGCTATAGAAACCT-1,epithelium&submucosa
+TACGCTCGGTATTGGA-1,tumor
+TACGGCATGGACGCTA-1,tumor
+TACGGGATGCTAGCAG-1,epithelium&submucosa
+TACGTAAAGCGGAGTG-1,stroma_fibroblastic_IC high
+TACGTACTAGTGCTGA-1,tumor&stroma_IC med to high
+TACGTTTACCGGCAAT-1,tumor&stroma_IC med to high
+TACTATGGTTCCTCAG-1,submucosa
+TACTCGGCACGCCGGG-1,tumor&stroma_IC med to high
+TACTCTCCGAACAAAT-1,non neo epithelium
+TACTCTTACTTTACTG-1,tumor&stroma_IC med to high
+TACTCTTTCGTCTTCA-1,epithelium&submucosa
+TACTGAACAGATTTAG-1,submucosa
+TACTGCAATCAATTAC-1,epithelium&submucosa
+TACTGGACAGCTCGGC-1,stroma_fibroblastic_IC high
+TACTGTTTCTCTGGTA-1,tumor
+TACTTAAACATGTACA-1,stroma_fibroblastic_IC high
+TACTTGTTAGTAGTCC-1,epithelium&submucosa
+TACTTTACTGAGCCGG-1,epithelium&submucosa
+TACTTTCCGCACGCCA-1,tumor
+TAGAAAGGTGGCGCTA-1,epithelium&submucosa
+TAGAAATTCACGTATA-1,tumor&stroma_IC med to high
+TAGAATAGCCGATGAA-1,stroma_fibroblastic_IC high
+TAGACGAAACGCCAAT-1,exclude
+TAGACGCCCGTACCGG-1,non neo epithelium
+TAGACTACCTAGCGTT-1,epithelium&submucosa
+TAGAGATCATGCAACT-1,tumor
+TAGAGGTTCTACTTGT-1,epithelium&submucosa
+TAGAGTCTAAGCGAAC-1,epithelium&submucosa
+TAGATATGGACTGGAA-1,non neo epithelium
+TAGATGGTTCCTTACT-1,epithelium&submucosa
+TAGATTCCTGGTTATT-1,tumor
+TAGCAGTATGACTAAA-1,tumor
+TAGCCATTTCAAAGTC-1,epithelium&submucosa
+TAGCCGGCGGTCAGCG-1,non neo epithelium
+TAGCGTCCCTCGATTG-1,submucosa
+TAGCGTCCGGTGTGGT-1,IC aggregregate_submucosa
+TAGCGTTGGGTCTTAC-1,epithelium&submucosa
+TAGCTAAGTCCGGGAG-1,epithelium&submucosa
+TAGCTAGAAGGCATGA-1,epithelium&submucosa
+TAGCTAGTGATGATGG-1,stroma_fibroblastic_IC high
+TAGCTCGCCTGATAAC-1,submucosa
+TAGGCATGTTACGCCA-1,epithelium&submucosa
+TAGGCCTATATAGTCT-1,stroma_fibroblastic_IC high
+TAGGCTAAAGTGGCAC-1,tumor
+TAGGGAGCTTGGGATG-1,epithelium&submucosa
+TAGGTCCAAGTAAGGA-1,tumor
+TAGGTCGCCGGAACTG-1,epithelium&submucosa
+TAGGTGACGATAACCT-1,tumor&stroma_IC med to high
+TAGGTGCTCGCCTAGC-1,non neo epithelium
+TAGGTGTTCCACAGAT-1,stroma_fibroblastic_IC high
+TAGGTTCGAGTTCGTC-1,non neo epithelium
+TAGTAGCTTATACCAG-1,tumor
+TAGTCCGCAGAGAATG-1,non neo epithelium
+TAGTCGATCACGGGTT-1,epithelium&submucosa
+TAGTCTAACAACGAGA-1,tumor&stroma_IC med to high
+TAGTCTGTGACGTTGC-1,epithelium&submucosa
+TAGTCTTTCCGAATTG-1,tumor
+TAGTGCCCTCCAGAGT-1,epithelium&submucosa
+TATACACAGACGCCTT-1,non neo epithelium
+TATACCGAGTGCCACA-1,tumor&stroma_IC med to high
+TATACGCGTCATCACT-1,tumor
+TATAGAGTCGCTTGAA-1,stroma_fibroblastic_IC high
+TATAGATGGTCGCAGT-1,epithelium&submucosa
+TATAGGGTACTCATGA-1,stroma_fibroblastic_IC high
+TATATATCGAGAAATG-1,tumor
+TATATCCCTGGGAGGA-1,submucosa
+TATCACCCAACCGACC-1,epithelium&submucosa
+TATCCAATTGGTTATC-1,stroma_fibroblastic_IC high
+TATCCGCACCGTCGGG-1,epithelium&submucosa
+TATCGATCTATGCATA-1,epithelium&submucosa
+TATCTACAGAGGTAAT-1,tumor
+TATCTACCACAGCGGG-1,non neo epithelium
+TATCTAGCCTAAAGGA-1,tumor
+TATCTTGCAATACAAC-1,exclude
+TATGAAGAATTAAGGT-1,tumor&stroma_IC med to high
+TATGAAGACAGGTGCG-1,tumor&stroma_IC med to high
+TATGATCCGGCACGCC-1,tumor
+TATGATCTTCTCTTTA-1,submucosa
+TATGGATGTGCTACGC-1,epithelium&submucosa
+TATGGCCCGGCCTCGC-1,stroma_fibroblastic_IC high
+TATGGGACCGAGCAGG-1,non neo epithelium
+TATGGGTACGTATCGT-1,epithelium&submucosa
+TATGGTCTGAGTAACA-1,epithelium&submucosa
+TATGGTTAGTGGGAGA-1,epithelium&submucosa
+TATGTCTCATTGTGCC-1,epithelium&submucosa
+TATTAACCTGACCGCG-1,non neo epithelium
+TATTACCATCCTGCTT-1,epithelium&submucosa
+TATTATGTTTGCCTGC-1,exclude
+TATTCAATTCTAATCC-1,non neo epithelium
+TATTCCACTCAGCTCG-1,non neo epithelium
+TATTCCGAGCTGTTAT-1,stroma_fibroblastic_IC high
+TATTCCTCCGCCCACT-1,epithelium&submucosa
+TATTCGTGCCAGAATA-1,non neo epithelium
+TATTGACATTTCTGCC-1,tumor&stroma_IC med to high
+TATTTGATTTGCACAG-1,tumor
+TATTTGTTACCCTTTA-1,epithelium&submucosa
+TCAAACTTAGATTGTT-1,epithelium&submucosa
+TCAAATTTGAGACTCA-1,tumor
+TCAACAAAGATAATTC-1,tumor&stroma_IC med to high
+TCAACATAGCGCCCTA-1,stroma_fibroblastic_IC high
+TCAACCATGTTCGGGC-1,epithelium&submucosa
+TCAACGAGGAGACAAA-1,epithelium&submucosa
+TCAACGCAGGAAATAA-1,stroma_fibroblastic_IC high
+TCAACGCGACCGGCAG-1,tumor&stroma_IC med to high
+TCAACTAACGTATAAC-1,tumor
+TCAACTGCAGAGTCAG-1,tumor&stroma_IC med to high
+TCAAGAAATACTAGCT-1,epithelium&submucosa
+TCAAGCGCGGACGGTA-1,tumor&stroma_IC med to high
+TCAAGGTTACTACACC-1,epithelium&submucosa
+TCACAAACCGAGGTAC-1,submucosa
+TCACAGCAAACTCGAA-1,epithelium&submucosa
+TCACAGGAGAATAAGA-1,epithelium&submucosa
+TCACAGGGAATCGCAA-1,epithelium&submucosa
+TCACAGGTTATTGGGC-1,submucosa
+TCACATCTTATCTGAT-1,tumor&stroma_IC med to high
+TCACCCTCTTAAGATT-1,epithelium&submucosa
+TCACCGCTCGGCACTC-1,epithelium&submucosa
+TCACGATGTCCGTGGA-1,tumor
+TCACGCATTGTAGATC-1,non neo epithelium
+TCACGTGCCCGATTCA-1,non neo epithelium
+TCAGAACCTCCACAGG-1,epithelium&submucosa
+TCAGACGCTATAGAAG-1,epithelium&submucosa
+TCAGCAAATGCATCTC-1,non neo epithelium
+TCAGCAGTAGGCCCTG-1,tumor
+TCAGCCAATCCGTAAA-1,tumor
+TCAGGGTGTAACGTAA-1,exclude
+TCAGGTTCTTTGAGAA-1,epithelium&submucosa
+TCAGTGTATACGTCAT-1,tumor&stroma_IC med to high
+TCATCGATGGTCCCAA-1,tumor
+TCATTTAAGTCTCCGA-1,epithelium&submucosa
+TCATTTAGAAGTGTGA-1,stroma_fibroblastic_IC high
+TCCAACTTTAAATTCT-1,non neo epithelium
+TCCAATAAAGGCTACC-1,tumor&stroma_IC med to high
+TCCACAATGGTTTACG-1,stroma_fibroblastic_IC high
+TCCACCTCTAGCCTTT-1,stroma_fibroblastic_IC high
+TCCACTTTATCTAGGT-1,epithelium&submucosa
+TCCAGAGCACCGGTTC-1,exclude
+TCCAGATGTACGCCAA-1,tumor
+TCCAGCGCTATAAGCG-1,tumor&stroma_IC med to high
+TCCAGGCGAGTACGGT-1,epithelium&submucosa
+TCCCAAACAGACAACG-1,tumor&stroma_IC med to high
+TCCCAAAGCCCTAAAT-1,tumor&stroma_IC med to high
+TCCCACTCTCTTCCGG-1,epithelium&submucosa
+TCCCAGCTTTAGTCTG-1,epithelium&submucosa
+TCCCAGGCTTAGCTAA-1,exclude
+TCCCGCGTACTCCTGG-1,non neo epithelium
+TCCCGGGTGTGCTGCT-1,IC aggregregate_submucosa
+TCCCGTCGCGTCATAG-1,tumor
+TCCCGTGTGCAATTTG-1,epithelium&submucosa
+TCCCTAGATCAATAGG-1,tumor
+TCCCTGGCGTATTAAC-1,exclude
+TCCCTGGCTCGCTGGA-1,tumor
+TCCGAACTTGGCTTAC-1,tumor
+TCCGAATGGTCCTGAG-1,tumor
+TCCGATGGTGCGACAT-1,epithelium&submucosa
+TCCGATTACATTGCCG-1,IC aggregregate_submucosa
+TCCGCCTGTCTACAAG-1,tumor
+TCCGCGGCAGCATCTG-1,non neo epithelium
+TCCGCGGCCCAATGAA-1,submucosa
+TCCGCTGTCATCCCGG-1,epithelium&submucosa
+TCCGCTTATCCCATTA-1,epithelium&submucosa
+TCCGGCCTAGCGTACA-1,submucosa
+TCCGGGCTTGACGGGA-1,tumor
+TCCGGTTCGTCCGGTC-1,epithelium&submucosa
+TCCGTTAAGCTAATAT-1,epithelium&submucosa
+TCCGTTTAGCCTTGAA-1,submucosa
+TCCTAAAGATTCAGAC-1,exclude
+TCCTAAATTGGGAAGC-1,stroma_fibroblastic_IC high
+TCCTAACCGTCGGGCA-1,tumor
+TCCTACATCCACGGCC-1,epithelium&submucosa
+TCCTAGCAAAGAAGCT-1,epithelium&submucosa
+TCCTATCATAGGTAAC-1,stroma_fibroblastic_IC high
+TCCTCCTAAGACATTC-1,tumor
+TCCTCGGGCTGGGCTT-1,non neo epithelium
+TCCTCTCCAGTTGTCC-1,tumor&stroma_IC med to high
+TCCTGCGTTGATACTC-1,stroma_fibroblastic_IC high
+TCCTTACGACGGTCCG-1,submucosa
+TCCTTTAAATCCGCTT-1,non neo epithelium
+TCCTTTCTTACGCTTA-1,non neo epithelium
+TCGAAATTTAGGACCA-1,epithelium&submucosa
+TCGAAGAACCGAGCAC-1,epithelium&submucosa
+TCGAATATCCCGCAGG-1,tumor&stroma_IC med to high
+TCGAGACCAACACCGT-1,submucosa
+TCGAGCCAGGCAGGCC-1,tumor&stroma_IC med to high
+TCGAGGGCAACAGACG-1,tumor&stroma_IC med to high
+TCGCAAAGATGCATTT-1,non neo epithelium
+TCGCACCAGGAGGCAG-1,submucosa
+TCGCATAAAGGGCGCA-1,tumor
+TCGCCGAAGTTGCGTC-1,non neo epithelium
+TCGCCGACATATTCGC-1,exclude
+TCGCGTAGCAGTGTCC-1,non neo epithelium
+TCGCGTCCAGAAGGTC-1,tumor
+TCGCTACTGGCTTTGA-1,exclude
+TCGCTCGATATATTCC-1,epithelium&submucosa
+TCGCTCGGCACCAGCG-1,tumor
+TCGCTGGGCGGATTGT-1,non neo epithelium
+TCGCTTTAAACGTTTG-1,non neo epithelium
+TCGGAATGCGCTCTGA-1,tumor&stroma_IC med to high
+TCGGACGCCCAGCCCA-1,submucosa
+TCGGAGAGTATCGGGA-1,tumor&stroma_IC med to high
+TCGGAGTACATGAGTA-1,submucosa
+TCGGCGAACCCAAACC-1,non neo epithelium
+TCGGCGTACTGCACAA-1,tumor
+TCGGCTTGTATCGACG-1,epithelium&submucosa
+TCGGGAACGTGCCTAG-1,submucosa
+TCGGGAGACAGCGTAC-1,tumor&stroma_IC med to high
+TCGGGATTCAAACATA-1,tumor
+TCGGGCCGTCGTGGTA-1,non neo epithelium
+TCGGTCCCGACAATAG-1,exclude
+TCGTAAGACGACATTG-1,epithelium&submucosa
+TCGTATTACCCATTGC-1,tumor
+TCGTCAAGTACGCGCA-1,stroma_fibroblastic_IC high
+TCGTCACACTGTTAGC-1,stroma_fibroblastic_IC high
+TCGTCTTAGGCGTTAA-1,IC aggregregate_submucosa
+TCGTGTACTATGGATG-1,epithelium&submucosa
+TCGTGTATTGGTCACG-1,tumor
+TCGTGTCACGCTGACA-1,tumor&stroma_IC med to high
+TCGTGTTCGACCACAA-1,submucosa
+TCGTTAGGAGTCCCTA-1,epithelium&submucosa
+TCGTTGCTATCCGGTC-1,submucosa
+TCGTTTACGCGACCCT-1,exclude
+TCTAATACTGCCTCAG-1,tumor
+TCTACCCAATAGAGAG-1,submucosa
+TCTACCGTCCACAAGC-1,epithelium&submucosa
+TCTAGCAATCTCCGCC-1,stroma_fibroblastic_IC high
+TCTAGCATGCCCAGAA-1,submucosa
+TCTAGGTGGCGACGCT-1,epithelium&submucosa
+TCTAGTGATATCGTGG-1,non neo epithelium
+TCTAGTTATCAGAAGA-1,epithelium&submucosa
+TCTATAGGTGGGTAAT-1,tumor&stroma_IC med to high
+TCTATGCTATAACGAC-1,tumor
+TCTCATGAGATAGGGT-1,non neo epithelium
+TCTCCACAAGTTGAAT-1,tumor&stroma_IC med to high
+TCTCCCTGGGCAGCGT-1,stroma_fibroblastic_IC high
+TCTCGACGTATCGCCG-1,tumor
+TCTCGAGGAGGTTCGC-1,tumor
+TCTCTCGCCGCACATA-1,tumor&stroma_IC med to high
+TCTGAACTCGTACCCG-1,submucosa
+TCTGAAGCACGTGGTC-1,tumor
+TCTGAATTCCGTACAA-1,epithelium&submucosa
+TCTGACGGGCTAACCC-1,tumor&stroma_IC med to high
+TCTGAGCAATTGACTG-1,tumor
+TCTGATCGGGTGCTAG-1,tumor
+TCTGATGTATTCTGTC-1,submucosa
+TCTGCATACCTTGCTT-1,submucosa
+TCTGCCAGAAACTGCA-1,epithelium&submucosa
+TCTGGGAACCTTTGAA-1,submucosa
+TCTGGGTAGCGCTCAT-1,stroma_fibroblastic_IC high
+TCTGTGCCATCATAGT-1,exclude
+TCTGTTACCCAGCATA-1,submucosa
+TCTTACCGGAACTCGT-1,epithelium&submucosa
+TCTTACTTATGCCTCT-1,epithelium&submucosa
+TCTTAGAGCTCCAATT-1,epithelium&submucosa
+TCTTAGAGTGAACTCT-1,submucosa
+TCTTCCCATGGGCACA-1,epithelium&submucosa
+TCTTCGAATAGACGTT-1,non neo epithelium
+TCTTCGATACCAATAA-1,epithelium&submucosa
+TCTTCGCGGTGAGAGG-1,tumor&stroma_IC med to high
+TCTTCTATAACCCGCC-1,epithelium&submucosa
+TCTTGATGCGTAGCGA-1,epithelium&submucosa
+TCTTTAAGACTATGAA-1,epithelium&submucosa
+TCTTTAGAGTCTAACA-1,tumor
+TCTTTAGCAGGCGAAC-1,tumor
+TCTTTCCTTCGAGATA-1,tumor
+TGAAAGGACCTGACTC-1,epithelium&submucosa
+TGAATACCGACGCGTA-1,tumor
+TGAATGTCAGCCGGCC-1,tumor&stroma_IC med to high
+TGACATCGAGCGGACC-1,submucosa
+TGACCCACGTTAGACA-1,submucosa
+TGACGAATATTTCCCT-1,stroma_fibroblastic_IC high
+TGACGATGCACTAGAA-1,epithelium&submucosa
+TGACTATAATCCTTTC-1,submucosa
+TGAGAGATTTACCACG-1,epithelium&submucosa
+TGAGCCATACAGTCTC-1,submucosa
+TGAGCGGAAAGTGTTC-1,submucosa
+TGAGGAGTGCCAGCTT-1,non neo epithelium
+TGAGTAAATTAGCGTA-1,exclude
+TGAGTGCCTCTTAAAT-1,epithelium&submucosa
+TGAGTGGTCCGTGACG-1,epithelium&submucosa
+TGAGTTAAAGACATTC-1,tumor
+TGATACATTTAGCCGT-1,submucosa
+TGATCAGGGAACTGCT-1,stroma_fibroblastic_IC high
+TGATCCCAGCATTAGT-1,tumor
+TGATCGGTTTGACCCT-1,epithelium&submucosa
+TGATCTCCGGCGCCAG-1,submucosa
+TGATGGCTGTTTCTGA-1,tumor
+TGATGTCAATTAAGTG-1,submucosa
+TGATTCCCGGTTACCT-1,tumor&stroma_IC med to high
+TGATTCGTCTATCACT-1,non neo epithelium
+TGATTCTGTCGCCGGT-1,epithelium&submucosa
+TGATTTATTAGCTGTG-1,stroma_fibroblastic_IC high
+TGCAACCCATCTGCGG-1,stroma_fibroblastic_IC high
+TGCAAGAATGACGTAA-1,epithelium&submucosa
+TGCAATCTAACACGGT-1,stroma_fibroblastic_IC high
+TGCAGAACTATATCGT-1,tumor&stroma_IC med to high
+TGCAGAGTACCGAGCA-1,non neo epithelium
+TGCAGTTTCCTCCCAT-1,non neo epithelium
+TGCATATGTCTGTCAC-1,epithelium&submucosa
+TGCATGTGGTAATCTA-1,epithelium&submucosa
+TGCCAATGGGTACTCT-1,submucosa
+TGCCAGTACGTGGAGA-1,epithelium&submucosa
+TGCCATTACTAAAGAA-1,epithelium&submucosa
+TGCCCGTACCGTTAAA-1,epithelium&submucosa
+TGCCGGATGTACGAGC-1,exclude
+TGCCGTGGATCGTCCT-1,non neo epithelium
+TGCCTAATTGAAGATT-1,exclude
+TGCCTTGGCCAGGCAA-1,IC aggregregate_submucosa
+TGCGACGGCCGAACGT-1,tumor&stroma_IC med to high
+TGCGAGAATATTACCC-1,submucosa
+TGCGCAAAGCATTTGG-1,epithelium&submucosa
+TGCGCCGTTAATAACG-1,tumor
+TGCGCGATTAACGGAG-1,non neo epithelium
+TGCGTAAGAACCTGAT-1,non neo epithelium
+TGCGTACGGCTAATTG-1,exclude
+TGCGTCATGACTGAGC-1,tumor&stroma_IC med to high
+TGCGTTTGTTGACACT-1,non neo epithelium
+TGCTAAGTGTCTATTT-1,epithelium&submucosa
+TGCTCCACAGTTCTTA-1,epithelium&submucosa
+TGCTCGGCGAAACCCA-1,epithelium&submucosa
+TGCTCTTGAGAGTTTG-1,exclude
+TGCTGTTGAAGAACTC-1,epithelium&submucosa
+TGGAACCACTGACACA-1,tumor&stroma_IC med to high
+TGGAAGAAGGGAACGT-1,stroma_fibroblastic_IC high
+TGGAATATCCTTGACC-1,stroma_fibroblastic_IC high
+TGGACCAATCTAAGAT-1,tumor
+TGGACGCAATCCAGCC-1,exclude
+TGGACTGTTCGCTCAA-1,non neo epithelium
+TGGAGTGATGCGATGA-1,non neo epithelium
+TGGCAAACTAAATTAC-1,non neo epithelium
+TGGCAACTCGCGCGCC-1,submucosa
+TGGCAATGGGACGGCG-1,tumor&stroma_IC med to high
+TGGCAGATTACGATCA-1,epithelium&submucosa
+TGGCAGCAGTAATAGT-1,epithelium&submucosa
+TGGCCAAACTGAAGTA-1,epithelium&submucosa
+TGGCCAATTTGGTACT-1,tumor
+TGGCCGTATATTGACC-1,epithelium&submucosa
+TGGCGACTGCTCCAAA-1,non neo epithelium
+TGGCGATCAAGTTATG-1,submucosa
+TGGCTACACTCTACCT-1,tumor
+TGGCTATGTGACATAC-1,tumor&stroma_IC med to high
+TGGGCAATAGTTGGGT-1,submucosa
+TGGGCAGGCCACCGCA-1,tumor
+TGGGCCCATACTAATT-1,epithelium&submucosa
+TGGGTGCACAAGCCAT-1,exclude
+TGGGTGTAATAGATTT-1,tumor
+TGGTAAGCAGGATTGA-1,exclude
+TGGTAGAATATATGGG-1,epithelium&submucosa
+TGGTCCCACGCTACGG-1,epithelium&submucosa
+TGGTCTGTTGGGCGTA-1,stroma_fibroblastic_IC high
+TGGTTAAGGGCGCTGG-1,tumor&stroma_IC med to high
+TGGTTCAACGGGTAAT-1,submucosa
+TGGTTTAAACGTGGGT-1,tumor&stroma_IC med to high
+TGTAATGACCACAATA-1,tumor
+TGTACCTACACGAGGG-1,submucosa
+TGTACGAACAAATCCG-1,non neo epithelium
+TGTAGCCATCCCATTC-1,tumor
+TGTAGGAGAAATTTCC-1,non neo epithelium
+TGTAGTGATCTATAAT-1,IC aggregregate_submucosa
+TGTATAACAGATCCTG-1,epithelium&submucosa
+TGTATGGCGCAGACAG-1,non neo epithelium
+TGTCATTTGTTGGGAA-1,exclude
+TGTCCACGGCTCAACT-1,tumor
+TGTCCGTGGCGCCTTT-1,stroma_fibroblastic_IC high
+TGTCCTAAGTCACCGC-1,stroma_fibroblastic_IC high
+TGTGACTAGAGTTTGC-1,tumor
+TGTGAGACTAGCCCAA-1,non neo epithelium
+TGTGCCGGTGCCGGAA-1,epithelium&submucosa
+TGTGCTTTACGTAAGA-1,stroma_fibroblastic_IC high
+TGTGGCAAAGCGTATG-1,epithelium&submucosa
+TGTGGCTCCCACCAAC-1,tumor
+TGTGTAGTAGCACGTG-1,tumor
+TGTGTTCGTATCCAAG-1,tumor&stroma_IC med to high
+TGTTATTGTATGTGGC-1,non neo epithelium
+TGTTCCGCTTCCATGA-1,epithelium&submucosa
+TGTTCGTATTGCGGTG-1,epithelium&submucosa
+TGTTCTTCCATTGACT-1,epithelium&submucosa
+TGTTGCCGTCGTCCCA-1,tumor
+TGTTGTCAAGAAGTCT-1,non neo epithelium
+TGTTTGAGATCGTCAG-1,tumor&stroma_IC med to high
+TTAAACTCGAATTCAT-1,epithelium&submucosa
+TTAAAGTAAGTCGCCA-1,tumor
+TTAACGAACAAGCAGT-1,tumor
+TTAACTTCAGGTAGGA-1,stroma_fibroblastic_IC high
+TTAAGATAGGATTGAC-1,epithelium&submucosa
+TTAAGCGCCTGACCCA-1,epithelium&submucosa
+TTAAGGCCCGTACTTT-1,tumor&stroma_IC med to high
+TTAAGTATTGTTATCC-1,tumor
+TTAATGTAGACCAGGT-1,submucosa
+TTAATTGCTTTGGGTG-1,exclude
+TTACAACTACGCATCC-1,non neo epithelium
+TTACACGATCTGCGAC-1,tumor&stroma_IC med to high
+TTACAGACCTAAATGA-1,epithelium&submucosa
+TTACATGCCACAACTA-1,epithelium&submucosa
+TTACCATTGATTACCC-1,tumor&stroma_IC med to high
+TTACCCTAGGGATTGG-1,stroma_fibroblastic_IC high
+TTACGGATGGTTCGAG-1,epithelium&submucosa
+TTACTAAAGGACTTTA-1,epithelium&submucosa
+TTACTATCGGCTTCTC-1,stroma_fibroblastic_IC high
+TTACTCCGGCCGGGAA-1,submucosa
+TTACTCTGGTACGTAC-1,tumor
+TTACTGGGATATTTCA-1,submucosa
+TTAGAAGAACATGACT-1,submucosa
+TTAGAATAAGGGTCGG-1,tumor
+TTAGACGAGTCACCTC-1,epithelium&submucosa
+TTAGAGTTTAGAAGGA-1,non neo epithelium
+TTAGCTAATACGATCT-1,exclude
+TTAGCTCTGTAATCCG-1,stroma_fibroblastic_IC high
+TTAGCTGATTTGCCGT-1,epithelium&submucosa
+TTAGGTCATAACCGAC-1,tumor&stroma_IC med to high
+TTAGTAAACCTGCTCT-1,tumor&stroma_IC med to high
+TTAGTAGGGCGGCGGG-1,tumor&stroma_IC med to high
+TTAGTTATTCGTGGCA-1,epithelium&submucosa
+TTAGTTCAAGTGTTCG-1,tumor&stroma_IC med to high
+TTATAGGTAATTGTCT-1,stroma_fibroblastic_IC high
+TTATATACGCTGTCAC-1,non neo epithelium
+TTATATTTGGCAATCC-1,epithelium&submucosa
+TTATCCGGGATCTATA-1,submucosa
+TTATCCTCAAGGAATA-1,tumor
+TTATGAATGAAAGGGA-1,epithelium&submucosa
+TTATGATCTTAACGAA-1,non neo epithelium
+TTATTAGAGCGTGTTC-1,epithelium&submucosa
+TTATTATCTGGAAGGC-1,tumor
+TTCAAAGTCTCTAGCC-1,epithelium&submucosa
+TTCAATACTCTGAATC-1,epithelium&submucosa
+TTCACGAAAGGATCAC-1,epithelium&submucosa
+TTCACTCGAGCACCTA-1,stroma_fibroblastic_IC high
+TTCAGCCCTGGTCCAC-1,epithelium&submucosa
+TTCAGCTGGCGTGCCC-1,non neo epithelium
+TTCAGGCGTCAAAGCC-1,exclude
+TTCCAATCAGAGCTAG-1,submucosa
+TTCCAATCTGGCTATC-1,submucosa
+TTCCACACAGATTTGA-1,epithelium&submucosa
+TTCCAGACGAGATTTA-1,stroma_fibroblastic_IC high
+TTCCATCGACAGCGTG-1,tumor
+TTCCGCAGAGAAATAT-1,exclude
+TTCCGCGTGAGGCGAT-1,epithelium&submucosa
+TTCCGGCCTTGAGGCT-1,submucosa
+TTCCGGTATCTGTGTC-1,tumor&stroma_IC med to high
+TTCCGGTTACCCACTT-1,submucosa
+TTCCTCGGACTAACCA-1,epithelium&submucosa
+TTCCTCTGCCCGAATA-1,tumor
+TTCGACAGAGCCCGTG-1,epithelium&submucosa
+TTCGACGGGAAGGGCG-1,epithelium&submucosa
+TTCGCACTCGCGTGCT-1,non neo epithelium
+TTCGCACTGTACGACA-1,stroma_fibroblastic_IC high
+TTCGCGCGCCATACGA-1,stroma_fibroblastic_IC high
+TTCGCTAGGAAGTTGT-1,stroma_fibroblastic_IC high
+TTCGGGACTAATCGCG-1,epithelium&submucosa
+TTCGGGCGCTAGTCTT-1,stroma_fibroblastic_IC high
+TTCGGGTTGCCACGGG-1,tumor
+TTCGGTGGAGACGCCC-1,tumor&stroma_IC med to high
+TTCGTACTCCAGAACG-1,tumor
+TTCGTTCAACGAAGTT-1,stroma_fibroblastic_IC high
+TTCTAACCGAAGCTTA-1,non neo epithelium
+TTCTAGAAAGTCTTAT-1,tumor
+TTCTGACCGGGCTCAA-1,epithelium&submucosa
+TTCTGCCGCGCCTAGA-1,submucosa
+TTCTGCGAGCGCCCTT-1,tumor
+TTCTGCGGGTTAGCGG-1,non neo epithelium
+TTCTGCTAGACTCCAA-1,epithelium&submucosa
+TTCTTATCCGCTGGGT-1,non neo epithelium
+TTCTTGAGCCGCGCTA-1,non neo epithelium
+TTCTTGCTAGCATCTC-1,epithelium&submucosa
+TTCTTGGACGATCTGC-1,stroma_fibroblastic_IC high
+TTCTTGGAGTAATGAG-1,non neo epithelium
+TTCTTTGGTCGCGACG-1,tumor
+TTGAACGACGTGCTGA-1,stroma_fibroblastic_IC high
+TTGAAGAATTCCCAGG-1,non neo epithelium
+TTGAATATGGACTTTC-1,submucosa
+TTGAATTCACGTGAGG-1,epithelium&submucosa
+TTGACAGGAGCTCCCG-1,epithelium&submucosa
+TTGACATGAACGTGGA-1,tumor&stroma_IC med to high
+TTGACCAGGAACAACT-1,tumor
+TTGACCGTGTTAATGA-1,epithelium&submucosa
+TTGACGCTCCATGAGC-1,epithelium&submucosa
+TTGACTACCATATGGT-1,epithelium&submucosa
+TTGACTATTGTCCGGC-1,non neo epithelium
+TTGAGAAGTTTAGCAT-1,stroma_fibroblastic_IC high
+TTGAGAGTACTGCTAA-1,submucosa
+TTGAGCAGCCCACGGT-1,tumor
+TTGAGCGCCACGTGAT-1,tumor&stroma_IC med to high
+TTGAGTCCCGCTGCTG-1,tumor&stroma_IC med to high
+TTGATAGTCAATACAT-1,tumor
+TTGATCTAACTTTGTC-1,epithelium&submucosa
+TTGATGTGTAGTCCCG-1,epithelium&submucosa
+TTGATTAGCTGTTTCT-1,non neo epithelium
+TTGCACAATTCAGAAA-1,non neo epithelium
+TTGCATGCTGATCACG-1,tumor&stroma_IC med to high
+TTGCCAAGCAGAACCC-1,tumor
+TTGCCATAGCCCGCTC-1,tumor
+TTGCCCTGATCACGGG-1,IC aggregregate_submucosa
+TTGCCGCTTTCTAGTA-1,exclude
+TTGCCTTCTCGCCGGG-1,tumor
+TTGCGCTTGATCAATA-1,tumor
+TTGCGGCATCAGAAAG-1,epithelium&submucosa
+TTGCGTCGGCCAACCG-1,epithelium&submucosa
+TTGCGTGTGTAGGCAT-1,exclude
+TTGCTCATAGTACGTG-1,stroma_fibroblastic_IC high
+TTGCTGATCATGTTCG-1,epithelium&submucosa
+TTGGAAGAATACAGTC-1,tumor&stroma_IC med to high
+TTGGACATGTGGCTTA-1,tumor
+TTGGACCATCTGGCAA-1,submucosa
+TTGGACCTATAACAGT-1,tumor
+TTGGATATCGTCTACG-1,epithelium&submucosa
+TTGGCTCAATATGTGT-1,exclude
+TTGGGACACTGCCCGC-1,non neo epithelium
+TTGGGACGTAAGAGTT-1,tumor&stroma_IC med to high
+TTGGGCGGCGGTTGCC-1,non neo epithelium
+TTGGTATGGCTTGTGT-1,tumor
+TTGGTCACACTCGTAA-1,non neo epithelium
+TTGGTTGCGGTGCGCG-1,tumor&stroma_IC med to high
+TTGTAAGGACCTAAGT-1,stroma_fibroblastic_IC high
+TTGTAAGGCCAGTTGG-1,epithelium&submucosa
+TTGTAATCCGTACTCG-1,non neo epithelium
+TTGTGAACCTAATCCG-1,submucosa
+TTGTGCAGCCACGTCA-1,tumor&stroma_IC med to high
+TTGTGGTAGGAGGGAT-1,tumor&stroma_IC med to high
+TTGTGGTGGTACTAAG-1,tumor&stroma_IC med to high
+TTGTGTATGCCACCAA-1,submucosa
+TTGTGTTTCCCGAAAG-1,epithelium&submucosa
+TTGTTCAGTGTGCTAC-1,epithelium&submucosa
+TTGTTGTGTGTCAAGA-1,non neo epithelium
+TTGTTTCACATCCAGG-1,stroma_fibroblastic_IC high
+TTGTTTCATTAGTCTA-1,tumor&stroma_IC med to high
+TTGTTTCCATACAACT-1,stroma_fibroblastic_IC high

@@ -6,29 +6,33 @@ import torch
 import pickle
 import os
 
-from TiRank.Model import setup_seed
+import sys
+sys.path.append("/home/lenislin/Experiment/projects/TiRankv2/github/TiRank")
+
+from TiRank.Model import setup_seed, initial_model_para
 from TiRank.LoadData import *
 from TiRank.SCSTpreprocess import *
 from TiRank.GPextractor import GenePairExtractor
 from TiRank.Dataloader import view_clinical_variables, choose_clinical_variable, generate_val, PackData
-from TiRank.TrainPre import initial_model_para, tune_hyperparameters, Predict
+from TiRank.TrainPre import tune_hyperparameters, Predict
 from TiRank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
+from TiRank.Visualization import plot_score_umap, plot_label_distribution_among_conditions
 
 setup_seed(619)
 
 ## 1. Load data
 # 1.1 selecting a path to save the results
-savePath = "./web_test"
+savePath = "./SC_Respones_SKCM"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 if not os.path.exists(savePath_1):
     os.makedirs(savePath_1, exist_ok=True)
 
-dataPath = "/home/lenislin/Experiment/data/scRankv2/data/ExampleData/SKCM_SC_Res/"
+dataPath = "./ExampleData/SC_Res_SKCM/"
 
 # 1.2 load clinical data
 path_to_bulk_cli = os.path.os.path.join(dataPath, "Liu2019_meta.csv")
 bulkClinical = load_bulk_clinical(path_to_bulk_cli)
-view_dataframe(bulkClinical) 
+view_dataframe(bulkClinical)
 
 # 1.3 load bulk expression profile
 path_to_bulk_exp = os.path.join(dataPath, "Liu2019_exp.csv")
@@ -47,7 +51,7 @@ view_dataframe(st_exp_df)  ## if user try to view the data
 
 ## 2. Preprocessing
 # 2.1 selecting a path to save the results
-savePath = "./web_test"
+savePath = "./SC_Respones_SKCM"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 savePath_2 = os.path.join(savePath, "2_preprocessing")
 
@@ -65,9 +69,9 @@ infer_mode = "Cell"  ## optional parameter
 scAnndata = FilteringAnndata(
     scAnndata,
     max_count=35000,
-    min_count=5000,
+    min_count=3,
     MT_propor=10,
-    min_cell=10,
+    min_cell=1,
     imgPath=savePath_2,
 )  ## optional parameters: max_count, min_count, MT_propor, min_cell
 scAnndata = Normalization(scAnndata)
@@ -116,7 +120,7 @@ GPextractor.save_data()
 
 ## 3. Analysis
 # 3.1 TiRank
-savePath = "./web_test"
+savePath = "./SC_Respones_SKCM"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 savePath_2 = os.path.join(savePath, "2_preprocessing")
 savePath_3 = os.path.join(savePath, "3_Analysis")
@@ -154,7 +158,7 @@ tune_hyperparameters(
     ## Parameters Path
     savePath=savePath,
     device=device,
-    n_trials=10,
+    n_trials=5,
 )  ## optional parameters: n_trials
 
 # 3.1.3 Inference
@@ -162,6 +166,8 @@ Predict(savePath=savePath, mode=mode, do_reject=True, tolerance=0.05, reject_mod
 
 # 3.1.4 Visualization
 plot_score_distribution(savePath)  # Display the prob score distribution
+plot_score_umap(savePath,infer_mode)
+plot_label_distribution_among_conditions(savePath,group="leiden_clusters")
 
 # 3.2 DEGs and Pathway enrichment
 fc_threshold = 2
@@ -185,3 +191,4 @@ DEG_volcano(
 # refer to https://maayanlab.cloud/Enrichr/#libraries
 
 Pathway_Enrichment(savePath, database=["GO_Biological_Process_2023"])
+

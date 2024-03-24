@@ -52,10 +52,10 @@ def choose_clinical_variable(savePath, bulkClinical, mode, var_1, var_2 = None):
         bulkClinical = bulkClinical.loc[:,[Time_col,Status_col]]
 
         if type(bulkClinical.iloc[1,0] == type("a")):
-            raise(TypeError("Chosen Time Variable in "+mode+" Mode was not numeric."))
+            bulkClinical[var_1] = pd.to_numeric(bulkClinical[var_1], errors='coerce')
         
         if type(bulkClinical.iloc[1,1] == type("a")):
-            raise(TypeError("Chosen Status Variable in "+mode+" Mode was not numeric."))
+            bulkClinical[var_2] = pd.to_numeric(bulkClinical[var_2], errors='coerce')
 
     elif mode == "Bionomial":
         Variable_col = var_1

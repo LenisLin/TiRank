@@ -20,7 +20,7 @@ from Dataloader import transform_test_exp
 # Training
 
 
-def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, pre_patho_labels=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, patholabels=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.train()
 
@@ -57,10 +57,10 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
             B = adj_B[idx, :][:, idx]
             B = B.to(device)
 
-        if pre_patho_labels is not None:
+        if patholabels is not None:
             # Convert the tensor idx to numpy for indexing pandas series
             idx_np = idx.cpu().numpy()
-            pre_patho = pre_patho_labels.iloc[idx_np].values
+            pre_patho = patholabels.iloc[idx_np].values
             # Specify dtype if necessary
             pre_patho = torch.tensor(pre_patho, dtype=torch.uint8)
             pre_patho = pre_patho.to(device)
@@ -141,7 +141,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
 # Validate
 
 
-def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, pre_patho_labels=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, patholabels=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.eval()  # Set the model to evaluation mode
 
@@ -174,9 +174,9 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Ce
                 B = adj_B[idx, :][:, idx]
                 B = B.to(device)
 
-            if pre_patho_labels is not None:
+            if patholabels is not None:
                 idx_np = idx.cpu().numpy()
-                pre_patho = pre_patho_labels.iloc[idx_np].values
+                pre_patho = patholabels.iloc[idx_np].values
                 pre_patho = torch.tensor(pre_patho, dtype=torch.uint8)
                 pre_patho = pre_patho.to(device)
 
@@ -448,12 +448,12 @@ def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
 
 def objective(trial,
               n_features, nhead, nhid1,
-              nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
-              train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, adj_B, pre_patho_labels, device, infer_mode, model_save_path):
+              nhid2, n_output, nlayers, n_pred, n_patho, dropout, mode, encoder_type,
+              train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, adj_B, patholabels, device, infer_mode, model_save_path):
 
     print(f"Initiate model in trail {trial.number} with mode: {mode}, infer mode: {infer_mode} encoder type: {encoder_type} on device: {device}.")
     model = TiRank(n_features=n_features, nhead=nhead, nhid1=nhid1, nhid2=nhid2, n_output=n_output,
-                   nlayers=nlayers, n_pred=n_pred, dropout=dropout, mode=mode, encoder_type=encoder_type)
+                   nlayers=nlayers, n_pred=n_pred, n_patho=n_patho,dropout=dropout, mode=mode, encoder_type=encoder_type)
     model = model.to(device)
 
     # Define hyperparameters with trial object
@@ -488,7 +488,7 @@ def objective(trial,
             model=model,
             dataloader_A=train_loader_Bulk, dataloader_B=train_loader_SC,
             mode=mode, infer_mode=infer_mode,
-            adj_A=adj_A,adj_B = adj_B, pre_patho_labels = pre_patho_labels,
+            adj_A=adj_A,adj_B = adj_B, patholabels = patholabels,
             optimizer=optimizer, alphas=alphas, device=device)
 
         train_loss_dcit["Epoch_"+str(epoch+1)] = train_loss_dcit_epoch
@@ -501,7 +501,7 @@ def objective(trial,
             model=model,
             dataloader_A=val_loader_Bulk, dataloader_B=train_loader_SC,
             mode=mode, infer_mode=infer_mode,
-            adj_A=adj_A,adj_B = adj_B, pre_patho_labels = pre_patho_labels,
+            adj_A=adj_A,adj_B = adj_B, patholabels = patholabels,
             alphas=[1, 0.1, 1, 0], device=device)
 
 
@@ -529,7 +529,6 @@ def tune_hyperparameters(
     n_trials=50,  # Number of optimization trials
 ):
     
-
     savePath_3 = os.path.join(savePath,"3_Analysis")
     savePath_data2train = os.path.join(savePath_3,"data2train")
 
@@ -580,7 +579,7 @@ def tune_hyperparameters(
     study = optuna.create_study(direction='minimize')
     study.optimize(lambda trial: objective(trial,
                                            n_features, nhead, nhid1,
-                                           nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
+                                           nhid2, n_output, nlayers, n_pred, n_patho, dropout, mode, encoder_type,
                                            train_loader_Bulk, val_loader_Bulk, train_loader_SC, 
                                            adj_A ,adj_B, patholabels, device, infer_mode, model_save_path), n_trials=n_trials)
     
