@@ -1,16 +1,72 @@
-import sys
-import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+
 import torch
+import timm
 import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.transforms import functional as F
-from torch.utils.data import Dataset, DataLoader
+
+import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from itertools import repeat
+import collections.abc
+import os
 
-from ctran import ctranspath
+def _ntuple(n):
+    def parse(x):
+        if isinstance(x, collections.abc.Iterable):
+            return x
+        return tuple(repeat(x, n))
+    return parse
+
+class ConvStem(nn.Module):
+
+    def __init__(self, img_size=224, patch_size=4, in_chans=3, embed_dim=768, norm_layer=None, flatten=True):
+        super().__init__()
+
+        assert patch_size == 4
+        assert embed_dim % 8 == 0
+
+        to_2tuple = _ntuple(2)
+
+        img_size = to_2tuple(img_size)
+        patch_size = to_2tuple(patch_size)
+        self.img_size = img_size
+        self.patch_size = patch_size
+        self.grid_size = (img_size[0] // patch_size[0], img_size[1] // patch_size[1])
+        self.num_patches = self.grid_size[0] * self.grid_size[1]
+        self.flatten = flatten
+
+
+        stem = []
+        input_dim, output_dim = 3, embed_dim // 8
+        for l in range(2):
+            stem.append(nn.Conv2d(input_dim, output_dim, kernel_size=3, stride=2, padding=1, bias=False))
+            stem.append(nn.BatchNorm2d(output_dim))
+            stem.append(nn.ReLU(inplace=True))
+            input_dim = output_dim
+            output_dim *= 2
+        stem.append(nn.Conv2d(input_dim, embed_dim, kernel_size=1))
+        self.proj = nn.Sequential(*stem)
+
+        self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
+
+    def forward(self, x):
+        B, C, H, W = x.shape
+        assert H == self.img_size[0] and W == self.img_size[1], \
+            f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
+        x = self.proj(x)
+        if self.flatten:
+            x = x.flatten(2).transpose(1, 2)  # BCHW -> BNC
+        x = self.norm(x)
+        return x
+
+def ctranspath():
+    model = timm.create_model('swin_tiny_patch4_window7_224', embed_layer=ConvStem, pretrained=False)
+    return model
 
 def scale_coordinate(data):
     """Convert imagecol and imagerow into high-resolution coordinates."""
@@ -120,7 +176,7 @@ def plot_patho_class_heatmap(data, save_path):
     
     # Display the plot
     plt.gca().invert_yaxis()  # Invert y-axis for typical image display
-    plt.savefig(save_path)
+    plt.savefig(os.path.join(save_path, 'patho_class_heatmap.png'))
     return None
 
 def GetPathoClass(adata, pretrain_path, n_components = 50, n_clusters = 6, plot_classes = True, image_save_path = None):

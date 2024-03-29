@@ -5,7 +5,6 @@ import random, pickle, os
 
 import torch
 from torch.utils.data import Dataset, DataLoader
-from sklearn.model_selection import train_test_split
 
 def view_clinical_variables(savePath):
     savePath_1 = os.path.join(savePath,"1_loaddata")
@@ -19,29 +18,6 @@ def view_clinical_variables(savePath):
 
     return bulkClinical
 
-def assign_binary_values(df, column_name):
-    # transfer into dataframe
-    df = pd.DataFrame(df)
-
-    # Ensure the column exists in the DataFrame
-    if column_name not in df.columns:
-        raise ValueError(f"Column '{column_name}' not found in DataFrame.")
-
-    # Step 1: Identify the unique categories in the specified column
-    unique_categories = df[column_name].unique().tolist()
-    
-    # Safety check: Ensure there are only two unique categories
-    if len(unique_categories) != 2:
-        raise ValueError("The column does not contain exactly two unique categories.")
-    
-    # Step 2: Assign numerical values to these categories
-    category_to_number = {unique_categories[0]: 0, unique_categories[1]: 1}
-    
-    # Convert the specified column in the DataFrame based on the detected categories
-    df[column_name] = df[column_name].map(category_to_number)
-    
-    return df, category_to_number
-
 def choose_clinical_variable(savePath, bulkClinical, mode, var_1, var_2 = None):
     savePath_2 = os.path.join(savePath,"2_preprocessing")
 
@@ -51,28 +27,9 @@ def choose_clinical_variable(savePath, bulkClinical, mode, var_1, var_2 = None):
         Status_col = var_2
         bulkClinical = bulkClinical.loc[:,[Time_col,Status_col]]
 
-        if type(bulkClinical.iloc[1,0] == type("a")):
-            bulkClinical[var_1] = pd.to_numeric(bulkClinical[var_1], errors='coerce')
-        
-        if type(bulkClinical.iloc[1,1] == type("a")):
-            bulkClinical[var_2] = pd.to_numeric(bulkClinical[var_2], errors='coerce')
-
-    elif mode == "Bionomial":
+    elif mode == "Classification" or "Regression":
         Variable_col = var_1
         bulkClinical = bulkClinical.loc[:,Variable_col]
-
-        ## convert character into binary numeric vector
-        converted_df, correspondence = assign_binary_values(bulkClinical,Variable_col)
-        print("Correspondence:", correspondence)
-
-        bulkClinical = converted_df
-
-    elif mode == "Regression":
-        Variable_col = var_1
-        bulkClinical = bulkClinical.loc[:,Variable_col]
-
-        if type(bulkClinical.iloc[1,0] == type("a")):
-            raise(TypeError("Chosen Variable in "+mode+" Mode was not numeric."))
 
     else:
         raise(TypeError("Unexpected Mode had been selected."))
@@ -112,7 +69,7 @@ def generate_val(savePath, validation_proportion=0.15, mode =  None):
     mask = ~combined.index.isin(combined_val.index)
     combined_train = combined[mask]
 
-    if mode == "Bionomial":
+    if mode == "Classification":
         # Separate the training and validation sets back into bulkExp and bulkClinical
         bulkExp_train = combined_train.iloc[:, :-1].T
         bulkClinical_train = combined_train.iloc[:, -1]
@@ -128,6 +85,14 @@ def generate_val(savePath, validation_proportion=0.15, mode =  None):
         bulkExp_val = combined_val.iloc[:, :-2].T
         bulkClinical_val = combined_val.iloc[:, -2:]       
 
+    elif mode == "Regression":
+        # Separate the training and validation sets back into bulkExp and bulkClinical
+        bulkExp_train = combined_train.iloc[:, :-1].T
+        bulkClinical_train = combined_train.iloc[:, -1]
+
+        bulkExp_val = combined_val.iloc[:, :-1].T
+        bulkClinical_val = combined_val.iloc[:, -1]
+        
     ## save
     savePath_splitData = os.path.join(savePath_2,"split_data")
     if not os.path.exists(savePath_splitData):
@@ -165,7 +130,7 @@ class BulkDataset(Dataset):
             self.t = torch.tensor(df_cli.iloc[:,0].values, dtype=torch.float32)
             self.e = torch.tensor(df_cli.iloc[:,1].values, dtype=torch.float32)
 
-        elif mode == 'Bionomial':
+        elif mode == 'Classification':
             self.Xa = torch.tensor(df_Xa.values, dtype=torch.float32)
 
             # Handle 'Bionomial' type: df_cli is expected to be a Series/1D array with group labels
@@ -256,7 +221,7 @@ def PackData(savePath, mode, infer_mode, batch_size = 1024):
     val_loader_Bulk = DataLoader(val_dataset_Bulk, batch_size=batch_size, shuffle=False)
 
 
-    if infer_mode == "Spot":
+    if infer_mode == "ST":
         adj_A = torch.from_numpy(similarity_df.values)
         adj_B = None
         patholabels = scAnndata.obs["patho_class"]
@@ -264,7 +229,7 @@ def PackData(savePath, mode, infer_mode, batch_size = 1024):
         train_dataset_SC = STDataset(sc_gene_pairs_mat)
         train_loader_SC = DataLoader(train_dataset_SC, batch_size=batch_size, shuffle=True)
 
-    elif infer_mode == "Cell":
+    elif infer_mode == "SC":
         adj_A = torch.from_numpy(similarity_df.values)
         adj_B = None
         patholabels = None
