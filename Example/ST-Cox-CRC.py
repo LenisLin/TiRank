@@ -139,7 +139,7 @@ if not os.path.exists(savePath_3):
 # 3.1.1 Dataloader
 mode = "Cox"  ## how to let this variable continuous in the analysis ?
 infer_mode = "Spot"  ## optional parameter
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu" 
 
 PackData(savePath, mode=mode, infer_mode=infer_mode, batch_size=1024)
 
@@ -155,7 +155,6 @@ initial_model_para(
     n_output=32,
     nlayers=3,
     n_pred=1,
-    n_patho = 6,
     dropout=0.5,
     mode=mode,
     encoder_type=encoder_type,

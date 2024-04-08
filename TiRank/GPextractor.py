@@ -8,17 +8,16 @@ from lifelines import CoxPHFitter
 from scipy.stats import pearsonr, ttest_ind
 from statsmodels.stats.multitest import multipletests
 
-from Dataloader import transform_test_exp
+from .Dataloader import transform_test_exp
 
 
 class GenePairExtractor():
-    def __init__(self, savePath, analysis_mode, top_var_genes=500, top_gene_pairs=2000, p_value_threshold=None, padj_value_threshold=None, max_cutoff=0.8, min_cutoff=0.2):
+    def __init__(self, savePath, analysis_mode, top_var_genes=500, top_gene_pairs=2000, p_value_threshold=None, max_cutoff=0.8, min_cutoff=0.2):
         self.savePath = savePath
         self.analysis_mode = analysis_mode
         self.top_var_genes = top_var_genes
         self.top_gene_pairs = top_gene_pairs
         self.p_value_threshold = p_value_threshold
-        self.padj_value_threshold = padj_value_threshold
         self.max_cutoff = max_cutoff
         self.min_cutoff = min_cutoff
 
@@ -102,7 +101,7 @@ class GenePairExtractor():
         print(f"Get candidate genes done.")
 
         # Obtain the list of candidate genes
-        if self.analysis_mode == "Bionomial":
+        if self.analysis_mode == "Classification":
             regulated_genes_r, regulated_genes_p = self.calculate_binomial_gene_pairs()
             print(f"There are {len(regulated_genes_r)} genes up-regulated in Group 0 and {len(regulated_genes_p)} genes up-regulated in Group 1.")
 
@@ -181,16 +180,10 @@ class GenePairExtractor():
         DEGs = DEGs.dropna()
 
         # Adjust p-values for multiple testing
-        DEGs['adj.P.Val'] = multipletests(DEGs['P.Value'], method='fdr_bh')[1]
+        # DEGs['adj.P.Val'] = multipletests(DEGs['P.Value'], method='fdr_bh')[1]
 
         # Filter significant genes
-        if (self.p_value_threshold is None) and (self.padj_value_threshold is not None):
-            DEGs = DEGs[DEGs['adj.P.Val'] < self.padj_value_threshold]
-        elif (self.p_value_threshold is not None) and (self.padj_value_threshold is None):
-            DEGs = DEGs[DEGs['P.Value'] < self.p_value_threshold]
-        else:
-            raise ValueError(
-                "The significant value threshold was not defined.")
+        DEGs = DEGs[DEGs['P.Value'] < self.p_value_threshold]
 
         # Separate up- and down-regulated genes
         regulated_genes_in_g0 = DEGs[DEGs['t'] > 0]['gene'].tolist()
@@ -203,10 +196,16 @@ class GenePairExtractor():
         survival_results = pd.DataFrame(columns=["gene", "HR", "p_value"])
         for i in range(self.bulk_expression.shape[0]):
             exp_gene = self.bulk_expression.iloc[i, :].astype(float)
+
             clinical_temp = pd.concat([self.clinical_data, exp_gene], axis=1)
             cph = CoxPHFitter()
-            cph.fit(
-                clinical_temp, duration_col=self.clinical_data.columns[0], event_col=self.clinical_data.columns[1])
+
+            try:
+              cph.fit(clinical_temp, duration_col=self.clinical_data.columns[0], event_col=self.clinical_data.columns[1])
+            except Exception:
+              continue
+              
+              
             hr = cph.summary["exp(coef)"].values[0]
             p_value = cph.summary["p"].values[0]
             survival_results = survival_results.append(
@@ -216,19 +215,11 @@ class GenePairExtractor():
         survival_results["HR"] = survival_results["HR"].astype(float)
         survival_results["p_value"] = survival_results["p_value"].astype(float)
 
-        survival_results['adj.P.Val'] = multipletests(
-            survival_results['p_value'], method='fdr_bh')[1]
+        #survival_results['adj.P.Val'] = multipletests(survival_results['p_value'], method='fdr_bh')[1]
 
         # Filter significant genes
-        if (self.p_value_threshold is None) and (self.padj_value_threshold is not None):
-            survival_results = survival_results[survival_results['adj.P.Val']
-                                                < self.padj_value_threshold]
-        elif (self.p_value_threshold is not None) and (self.padj_value_threshold is None):
-            survival_results = survival_results[survival_results['p_value']
-                                                < self.p_value_threshold]
-        else:
-            raise ValueError(
-                "The significant value threshold was not defined.")
+        survival_results = survival_results[survival_results['p_value'] < self.p_value_threshold]
+
 
         # Construct gene pairs for HR>1 and HR<1 separately
         regulated_genes_r = survival_results[survival_results['HR'] > 1]['gene']
@@ -257,21 +248,12 @@ class GenePairExtractor():
         correlation_results["pvalue"] = correlation_results["pvalue"].astype(
             float)
 
-        correlation_results['adj.P.Val'] = multipletests(
-            correlation_results['pvalue'], method='fdr_bh')[1]
+        #correlation_results['adj.P.Val'] = multipletests(
+        #    correlation_results['pvalue'], method='fdr_bh')[1]
 
         # Filter significant genes
-        if (self.p_value_threshold is None) and (self.padj_value_threshold is not None):
-            correlation_results = correlation_results[correlation_results['adj.P.Val']
-                                                      < self.padj_value_threshold]
+        correlation_results = correlation_results[correlation_results['pvalue'] < self.p_value_threshold]
 
-        elif (self.p_value_threshold is not None) and (self.padj_value_threshold is None):
-            correlation_results = correlation_results[correlation_results['pvalue']
-                                                      < self.p_value_threshold]
-
-        else:
-            raise ValueError(
-                "The significant value threshold was not defined.")
 
         # Define gene pairs based on whether correlation is >0 or <0
         positive_correlation_genes = correlation_results[correlation_results['correlation'] > 0]['gene']

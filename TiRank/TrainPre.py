@@ -12,15 +12,15 @@ import numpy as np
 import scipy.stats as stats
 from sklearn.mixture import GaussianMixture
 
-from Loss import *
-from Model import *
-from Visualization import plot_loss
-from Dataloader import transform_test_exp
+from .Loss import *
+from .Model import TiRankModel
+from .Visualization import plot_loss
+from .Dataloader import transform_test_exp
 
 # Training
 
 
-def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, patholabels=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC", adj_A=None, adj_B=None, pre_patho_labels=None, optimizer=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.train()
 
@@ -39,7 +39,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
         t = t.to(device)
         e = e.to(device)
 
-    if mode in ['Bionomial', 'Regression']:
+    if mode in ['Classification', 'Regression']:
         (X_a, label) = next(iter(dataloader_A))
         X_a = X_a.to(device)
         label = label.to(device)
@@ -57,10 +57,10 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
             B = adj_B[idx, :][:, idx]
             B = B.to(device)
 
-        if patholabels is not None:
+        if pre_patho_labels is not None:
             # Convert the tensor idx to numpy for indexing pandas series
             idx_np = idx.cpu().numpy()
-            pre_patho = patholabels.iloc[idx_np].values
+            pre_patho = pre_patho_labels.iloc[idx_np].values
             # Specify dtype if necessary
             pre_patho = torch.tensor(pre_patho, dtype=torch.uint8)
             pre_patho = pre_patho.to(device)
@@ -78,13 +78,13 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
         if mode == 'Cox':
             bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
-        elif mode == 'Bionomial':
+        elif mode == 'Classification':
             bulk_loss_ = CrossEntropy_loss(risk_scores_a, label)
 
         elif mode == 'Regression':
             bulk_loss_ = MSE_loss(risk_scores_a, label)
 
-        if infer_mode == 'Cell':
+        if infer_mode == 'SC':
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
 
             # total loss
@@ -94,7 +94,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
             
             pathoLloss = torch.tensor(0)
 
-        elif infer_mode == 'Spot' and adj_B is not None:
+        elif infer_mode == 'ST' and adj_B is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
             cosine_loss_spatial_ = cosine_loss(embeddings_b, B)
 
@@ -105,7 +105,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
                 cosine_loss_exp_ * alphas[2] + \
                 cosine_loss_spatial_ * alphas[3]
 
-        elif infer_mode == 'Spot' and pre_patho is not None:
+        elif infer_mode == 'ST' and pre_patho is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
             pathoLloss = CrossEntropy_loss(pred_patho, pre_patho)
 
@@ -130,8 +130,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
         patho_loss_all += pathoLloss.item()
 
     loss_dict["all_loss_"] = total_loss_all / len(dataloader_B)
-    loss_dict["regularization_loss_"] = regularization_loss_all / \
-        len(dataloader_B)
+    loss_dict["regularization_loss_"] = regularization_loss_all / len(dataloader_B)
     loss_dict["bulk_loss_"] = bulk_loss_all / len(dataloader_B)
     loss_dict["cosine_loss_"] = cosine_loss_all / len(dataloader_B)
     loss_dict["patho_loss_all"] = patho_loss_all / len(dataloader_B)
@@ -141,7 +140,7 @@ def Train_one_epoch(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="C
 # Validate
 
 
-def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Cell", adj_A=None, adj_B=None, patholabels=None, alphas=[1, 1, 1, 1], device="cpu"):
+def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC", adj_A=None, adj_B=None, pre_patho_labels=None, alphas=[1, 1, 1, 1], device="cpu"):
 
     model.eval()  # Set the model to evaluation mode
 
@@ -156,7 +155,7 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Ce
             t = t.to(device)
             e = e.to(device)
 
-        if mode in ['Bionomial', 'Regression']:
+        if mode in ['Classification', 'Regression']:
             (X_a, label) = next(iter_A)
             X_a = X_a.to(device)
             label = label.to(device)
@@ -174,9 +173,9 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Ce
                 B = adj_B[idx, :][:, idx]
                 B = B.to(device)
 
-            if patholabels is not None:
+            if pre_patho_labels is not None:
                 idx_np = idx.cpu().numpy()
-                pre_patho = patholabels.iloc[idx_np].values
+                pre_patho = pre_patho_labels.iloc[idx_np].values
                 pre_patho = torch.tensor(pre_patho, dtype=torch.uint8)
                 pre_patho = pre_patho.to(device)
 
@@ -192,19 +191,19 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Ce
             if mode == 'Cox':
                 bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
-            elif mode == 'Bionomial':
+            elif mode == 'Classification':
                 bulk_loss_ = CrossEntropy_loss(risk_scores_a, label)
 
             elif mode == 'Regression':
                 bulk_loss_ = MSE_loss(risk_scores_a, label)
 
-            if infer_mode == 'Cell':
+            if infer_mode == 'SC':
                 cosine_loss_exp_ = cosine_loss(embeddings_b, A)
 
                 # total loss
                 total_loss = bulk_loss_ * alphas[0] + cosine_loss_exp_ * alphas[1]
 
-            elif infer_mode == 'Spot' and adj_B is not None:
+            elif infer_mode == 'ST' and adj_B is not None:
                 cosine_loss_exp_ = cosine_loss(embeddings_b, A)
                 cosine_loss_spatial_ = cosine_loss(embeddings_b, B)
 
@@ -214,7 +213,7 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="Ce
                     cosine_loss_exp_ * alphas[1] + \
                     cosine_loss_spatial_ * alphas[2]
 
-            elif infer_mode == 'Spot' and pre_patho is not None:
+            elif infer_mode == 'ST' and pre_patho is not None:
                 cosine_loss_exp_ = cosine_loss(embeddings_b, A)
                 pathoLloss = CrossEntropy_loss(pred_patho, pre_patho)
 
@@ -448,12 +447,12 @@ def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
 
 def objective(trial,
               n_features, nhead, nhid1,
-              nhid2, n_output, nlayers, n_pred, n_patho, dropout, mode, encoder_type,
-              train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, adj_B, patholabels, device, infer_mode, model_save_path):
+              nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
+              train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, adj_B, pre_patho_labels, device, infer_mode, model_save_path):
 
     print(f"Initiate model in trail {trial.number} with mode: {mode}, infer mode: {infer_mode} encoder type: {encoder_type} on device: {device}.")
-    model = TiRank(n_features=n_features, nhead=nhead, nhid1=nhid1, nhid2=nhid2, n_output=n_output,
-                   nlayers=nlayers, n_pred=n_pred, n_patho=n_patho,dropout=dropout, mode=mode, encoder_type=encoder_type)
+    model = TiRankModel(n_features=n_features, nhead=nhead, nhid1=nhid1, nhid2=nhid2, n_output=n_output,
+                   nlayers=nlayers, n_pred=n_pred, dropout=dropout, mode=mode, encoder_type=encoder_type)
     model = model.to(device)
 
     # Define hyperparameters with trial object
@@ -488,7 +487,7 @@ def objective(trial,
             model=model,
             dataloader_A=train_loader_Bulk, dataloader_B=train_loader_SC,
             mode=mode, infer_mode=infer_mode,
-            adj_A=adj_A,adj_B = adj_B, patholabels = patholabels,
+            adj_A=adj_A,adj_B = adj_B, pre_patho_labels = pre_patho_labels,
             optimizer=optimizer, alphas=alphas, device=device)
 
         train_loss_dcit["Epoch_"+str(epoch+1)] = train_loss_dcit_epoch
@@ -501,7 +500,7 @@ def objective(trial,
             model=model,
             dataloader_A=val_loader_Bulk, dataloader_B=train_loader_SC,
             mode=mode, infer_mode=infer_mode,
-            adj_A=adj_A,adj_B = adj_B, patholabels = patholabels,
+            adj_A=adj_A,adj_B = adj_B, pre_patho_labels = pre_patho_labels,
             alphas=[1, 0.1, 1, 0], device=device)
 
 
@@ -529,6 +528,7 @@ def tune_hyperparameters(
     n_trials=50,  # Number of optimization trials
 ):
     
+
     savePath_3 = os.path.join(savePath,"3_Analysis")
     savePath_data2train = os.path.join(savePath_3,"data2train")
 
@@ -566,7 +566,6 @@ def tune_hyperparameters(
     n_output = model_para.get('n_output', 10)
     nlayers = model_para.get('nlayers', 2)
     n_pred = model_para.get('n_pred', 1)
-    n_patho = model_para.get('n_patho', 0)
     dropout = model_para.get('dropout', 0.5)
     mode = model_para.get('mode', 'Cox')
     infer_mode = model_para.get('infer_mode', 'Cell')
@@ -579,7 +578,7 @@ def tune_hyperparameters(
     study = optuna.create_study(direction='minimize')
     study.optimize(lambda trial: objective(trial,
                                            n_features, nhead, nhid1,
-                                           nhid2, n_output, nlayers, n_pred, n_patho, dropout, mode, encoder_type,
+                                           nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
                                            train_loader_Bulk, val_loader_Bulk, train_loader_SC, 
                                            adj_A ,adj_B, patholabels, device, infer_mode, model_save_path), n_trials=n_trials)
     
@@ -623,15 +622,14 @@ def get_best_model(savePath):
     n_output = model_para.get('n_output', 10)
     nlayers = model_para.get('nlayers', 2)
     n_pred = model_para.get('n_pred', 1)
-    n_patho = model_para.get('n_patho', 0)
     dropout = model_para.get('dropout', 0.5)
     mode = model_para.get('mode', 'Cox')
     encoder_type = model_para.get('encoder_type', 'MLP')
     model_save_path = model_para.get('model_save_path', './checkpoints/')
 
 
-    model = TiRank(n_features=n_features, nhead=nhead, nhid1=nhid1,
-                nhid2=nhid2, n_output=n_output, nlayers=nlayers, n_pred=n_pred, n_patho=n_patho,dropout=dropout, mode=mode, encoder_type=encoder_type)
+    model = TiRankModel(n_features=n_features, nhead=nhead, nhid1=nhid1,
+                nhid2=nhid2, n_output=n_output, nlayers=nlayers, n_pred=n_pred, dropout=dropout, mode=mode, encoder_type=encoder_type)
     model.load_state_dict(torch.load(filename))
     model = model.to("cpu")
 
@@ -696,7 +694,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
         pred_bulk = pred_bulk.detach().numpy().reshape(-1, 1)
         pred_sc = pred_sc.detach().numpy().reshape(-1, 1)
 
-    elif mode == "Bionomial":
+    elif mode == "Classification":
         pred_sc = pred_sc[:, 1].detach().numpy().reshape(-1, 1)
         pred_bulk = pred_bulk[:, 1].detach().numpy().reshape(-1, 1)
 
@@ -709,7 +707,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
 
     if do_reject:
         if reject_mode == "GMM":
-            if mode in ["Cox", "Bionomial"]:
+            if mode in ["Cox", "Classification"]:
                 reject_mask = Reject_With_GMM_Bio(pred_bulk, pred_sc,
                                                   tolerance=tolerance, min_components=3, max_components=15)
             if mode == "Regression":
@@ -717,7 +715,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
                     pred_bulk, pred_sc, tolerance=tolerance)
 
         elif reject_mode == "Strict":
-            if mode in ["Cox", "Bionomial"]:
+            if mode in ["Cox", "Classification"]:
                 reject_mask = Reject_With_StrictNumber(
                     pred_bulk, pred_sc, tolerance=tolerance)
 
@@ -764,11 +762,11 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
     scAnndata.obs["Reject"] = saveDF_sc.iloc[:, 0]
     scAnndata.obs["Rank_Score"] = saveDF_sc.iloc[:, 1]
 
-    if mode in ["Cox", "Bionomial"]:
+    if mode in ["Cox", "Classification"]:
         temp = scAnndata.obs["Rank_Score"] * (1 - scAnndata.obs["Reject"])
         scAnndata.obs["Rank_Label"] = [
             "Background" if i == 0 else
-            "Rank-" if 0 < i < 0.5 else
+            "Rank-" if 0 <= i < 0.5 else
             "Rank+"
             for i in temp
         ]

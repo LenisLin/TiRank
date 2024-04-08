@@ -77,7 +77,7 @@ def model_predict(model, data_tensor, mode):
     if mode == "Cox":
         pred_prob = prob_scores.detach().numpy().reshape(-1, 1)
 
-    elif mode == "Bionomial":
+    elif mode == "Classification":
         pred_label = (
             torch.max(prob_scores, dim=1).indices.detach().numpy().reshape(-1, 1)
         )
@@ -155,7 +155,7 @@ def plot_score_umap(savePath, infer_mode):
         "Background": "lightgrey",
     }
 
-    if infer_mode == "Cell":
+    if infer_mode == "SC":
         f = open(os.path.join(savePath_2, "scAnndata.pkl"), "rb")
         scAnndata = pickle.load(f)
         f.close()
@@ -187,7 +187,7 @@ def plot_score_umap(savePath, infer_mode):
         plt.show()
         plt.close()
 
-    elif infer_mode == "Spot":
+    elif infer_mode == "ST":
         f = open(os.path.join(savePath_2, "scAnndata.pkl"), "rb")
         scAnndata = pickle.load(f)
         f.close()
@@ -438,7 +438,7 @@ def DEG_volcano(
         (result["LogFoldChange"] <= -log2FC)
         & (result["Pvalue_adj"] <= Pvalue_threshold)
     ].nsmallest(top_n, "LogFoldChange")
-    for index, row in top_down.iterrows():
+    for _, row in top_down.iterrows():
         ax.annotate(
             row.name,
             (row["LogFoldChange"], row["-lg10Qvalue"]),
@@ -654,7 +654,7 @@ def evaluate_on_test_data(model, test_set, data_path, save_path, bulk_gene_pairs
         test_exp_tensor_bulk = create_tensor(test_bulk_exp_gene_pairs_mat)
 
         test_pred_label, _ = model_predict(
-            model, test_exp_tensor_bulk, mode="Bionomial"
+            model, test_exp_tensor_bulk, mode="Classification"
         )
         test_bulk_clinical["TiRank_Label"] = test_pred_label.flatten()
         test_bulk_clinical.to_csv(
