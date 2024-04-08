@@ -1,8 +1,6 @@
 # loss function
 import torch
 import torch.nn as nn
-import numpy as np
-
 
 def regularization_loss(feature_weights):
     """
