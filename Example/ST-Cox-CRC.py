@@ -7,14 +7,14 @@ import pickle
 import os
 
 import sys
-sys.path.append("/home/lenislin/Experiment/projects/TiRankv2/github/TiRank")
+sys.path.append("/home/lenislin/Experiment/projects/TiRankv2/github/TiRank_jinsheng/TiRank")
 
 from TiRank.Model import setup_seed, initial_model_para
 from TiRank.LoadData import *
 from TiRank.SCSTpreprocess import *
 from TiRank.Imageprocessing import GetPathoClass
 from TiRank.GPextractor import GenePairExtractor
-from TiRank.Dataloader import view_clinical_variables, choose_clinical_variable, generate_val, PackData
+from TiRank.Dataloader import generate_val, PackData
 from TiRank.TrainPre import tune_hyperparameters, Predict
 from TiRank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
 from TiRank.Visualization import plot_score_umap, plot_label_distribution_among_conditions
@@ -29,7 +29,7 @@ if not os.path.exists(savePath_1):
     os.makedirs(savePath_1, exist_ok=True)
 
 # 1.2 load clinical data
-dataPath = "./ExampleData/ST_Prog_CRC/"
+dataPath = "/home/lenislin/mnt_16T/ProjectData/TiRank/data/ExampleData/CRC_ST_Prog/"
 path_to_bulk_cli = os.path.join(dataPath, "GSE39582_clinical_os.csv")
 bulkClinical = load_bulk_clinical(path_to_bulk_cli)
 view_dataframe(bulkClinical)  ## if user try to view the data
@@ -63,7 +63,7 @@ scAnndata = pickle.load(f)
 f.close()
 
 # 2.3 Preprocessing on sc/st data
-infer_mode = "Spot"  ## optional parameter
+infer_mode = "ST"  ## optional parameter
 
 scAnndata = FilteringAnndata(
     scAnndata,
@@ -96,14 +96,14 @@ f.close()
 # 2.4 clinical column selection and bulk data split
 mode = "Cox"
 
-bulkClinical = view_clinical_variables(savePath)
-choose_clinical_variable(
-    savePath,
-    bulkClinical=bulkClinical,
-    mode=mode,
-    var_1="Overall_time",
-    var_2="Overall_event",
-)
+# bulkClinical = view_clinical_variables(savePath)
+# choose_clinical_variable(
+#     savePath,
+#     bulkClinical=bulkClinical,
+#     mode=mode,
+#     var_1="Overall_time",
+#     var_2="Overall_event",
+# )
 
 # data split
 generate_val(
@@ -117,7 +117,6 @@ GPextractor = GenePairExtractor(
     top_var_genes=2000,
     top_gene_pairs=1000,
     p_value_threshold=0.05,
-    padj_value_threshold=None,
     max_cutoff=0.8,
     min_cutoff=-0.8,
 )  ## optinal parameter: top_var_genes, top_gene_pairs, padj_value_threshold, padj_value_threshold
@@ -138,7 +137,7 @@ if not os.path.exists(savePath_3):
 
 # 3.1.1 Dataloader
 mode = "Cox"  ## how to let this variable continuous in the analysis ?
-infer_mode = "Spot"  ## optional parameter
+infer_mode = "ST"  ## optional parameter
 device = "cuda" if torch.cuda.is_available() else "cpu" 
 
 PackData(savePath, mode=mode, infer_mode=infer_mode, batch_size=1024)

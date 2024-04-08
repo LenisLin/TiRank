@@ -447,12 +447,12 @@ def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
 
 def objective(trial,
               n_features, nhead, nhid1,
-              nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
+              nhid2, n_output, nlayers, n_pred, dropout, n_patho, mode, encoder_type,
               train_loader_Bulk, val_loader_Bulk, train_loader_SC, adj_A, adj_B, pre_patho_labels, device, infer_mode, model_save_path):
 
     print(f"Initiate model in trail {trial.number} with mode: {mode}, infer mode: {infer_mode} encoder type: {encoder_type} on device: {device}.")
     model = TiRankModel(n_features=n_features, nhead=nhead, nhid1=nhid1, nhid2=nhid2, n_output=n_output,
-                   nlayers=nlayers, n_pred=n_pred, dropout=dropout, mode=mode, encoder_type=encoder_type)
+                   nlayers=nlayers, n_pred=n_pred, dropout=dropout, n_patho = n_patho, mode=mode, encoder_type=encoder_type)
     model = model.to(device)
 
     # Define hyperparameters with trial object
@@ -550,7 +550,7 @@ def tune_hyperparameters(
     adj_B = pickle.load(f)
     f.close()
     f = open(os.path.join(savePath_data2train, 'patholabels.pkl'), 'rb')
-    patholabels = pickle.load(f)
+    pre_patho_labels = pickle.load(f)
     f.close()
 
     # Initial model parameters
@@ -567,6 +567,7 @@ def tune_hyperparameters(
     nlayers = model_para.get('nlayers', 2)
     n_pred = model_para.get('n_pred', 1)
     dropout = model_para.get('dropout', 0.5)
+    n_patho = model_para.get('n_patho', 0)
     mode = model_para.get('mode', 'Cox')
     infer_mode = model_para.get('infer_mode', 'Cell')
     encoder_type = model_para.get('encoder_type', 'MLP')
@@ -578,9 +579,9 @@ def tune_hyperparameters(
     study = optuna.create_study(direction='minimize')
     study.optimize(lambda trial: objective(trial,
                                            n_features, nhead, nhid1,
-                                           nhid2, n_output, nlayers, n_pred, dropout, mode, encoder_type,
+                                           nhid2, n_output, nlayers, n_pred, dropout, n_patho, mode, encoder_type,
                                            train_loader_Bulk, val_loader_Bulk, train_loader_SC, 
-                                           adj_A ,adj_B, patholabels, device, infer_mode, model_save_path), n_trials=n_trials)
+                                           adj_A ,adj_B, pre_patho_labels, device, infer_mode, model_save_path), n_trials=n_trials)
     
     # save the best hyperparameters
     best_params = study.best_trial.params
@@ -623,13 +624,14 @@ def get_best_model(savePath):
     nlayers = model_para.get('nlayers', 2)
     n_pred = model_para.get('n_pred', 1)
     dropout = model_para.get('dropout', 0.5)
+    n_patho = model_para.get('n_patho', 0)
     mode = model_para.get('mode', 'Cox')
     encoder_type = model_para.get('encoder_type', 'MLP')
     model_save_path = model_para.get('model_save_path', './checkpoints/')
 
 
     model = TiRankModel(n_features=n_features, nhead=nhead, nhid1=nhid1,
-                nhid2=nhid2, n_output=n_output, nlayers=nlayers, n_pred=n_pred, dropout=dropout, mode=mode, encoder_type=encoder_type)
+                nhid2=nhid2, n_output=n_output, nlayers=nlayers, n_pred=n_pred, dropout=dropout, n_patho=n_patho, mode=mode, encoder_type=encoder_type)
     model.load_state_dict(torch.load(filename))
     model = model.to("cpu")
 
@@ -658,7 +660,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
     bulkExp = pickle.load(f)
     f.close()
 
-    f = open(os.path.join(savePath_2, 'bulk_clinical.pkl'), 'rb')
+    f = open(os.path.join(savePath_1, 'bulk_clinical.pkl'), 'rb')
     bulkClinical = pickle.load(f)
     f.close()
 

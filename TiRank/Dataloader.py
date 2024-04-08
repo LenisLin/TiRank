@@ -6,17 +6,17 @@ import random, pickle, os
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-def view_clinical_variables(savePath):
-    savePath_1 = os.path.join(savePath,"1_loaddata")
+# def view_clinical_variables(savePath):
+#     savePath_1 = os.path.join(savePath,"1_loaddata")
 
-    # Load data
-    f = open(os.path.join(savePath_1, 'bulk_clinical.pkl'), 'rb')
-    bulkClinical = pickle.load(f)
-    f.close()
+#     # Load data
+#     f = open(os.path.join(savePath_1, 'bulk_clinical.pkl'), 'rb')
+#     bulkClinical = pickle.load(f)
+#     f.close()
 
-    print(bulkClinical.columns)
+#     print(bulkClinical.columns)
 
-    return bulkClinical
+#     return bulkClinical
 
 # def assign_binary_values(df, column_name):
 #     # transfer into dataframe
@@ -42,27 +42,27 @@ def view_clinical_variables(savePath):
 #     return df, category_to_number
 
 # def choose_clinical_variable(savePath, bulkClinical, mode, var_1, var_2 = None):
-def choose_clinical_variable(savePath, bulkClinical):
-    savePath_2 = os.path.join(savePath,"2_preprocessing")
+# def choose_clinical_variable(savePath, bulkClinical):
+#     savePath_2 = os.path.join(savePath,"2_preprocessing")
 
-    # # selecting mode
-    # if mode == "Cox":
-    #     Time_col = var_1
-    #     Status_col = var_2
-    # elif mode == "Classification" or "Regression":
+#     # selecting mode
+#     if mode == "Cox":
+#         Time_col = var_1
+#         Status_col = var_2
+#     elif mode == "Classification" or "Regression":
 
-    # elif mode == "Regression":
-    #     Variable_col = var_1
-    #     bulkClinical = bulkClinical.loc[:,Variable_col]
+#     elif mode == "Regression":
+#         Variable_col = var_1
+#         bulkClinical = bulkClinical.loc[:,Variable_col]
 
-    # else:
-    #     raise(TypeError("Unexpected Mode had been selected."))
+#     else:
+#         raise(TypeError("Unexpected Mode had been selected."))
 
-    with open(os.path.join(savePath_2, 'bulk_clinical.pkl'), 'wb') as f:
-        pickle.dump(bulkClinical, f)
-    f.close()
+#     with open(os.path.join(savePath_2, 'bulk_clinical.pkl'), 'wb') as f:
+#         pickle.dump(bulkClinical, f)
+#     f.close()
 
-    return None
+#     return None
 
 def generate_val(savePath, validation_proportion=0.15, mode =  None):
     savePath_1 = os.path.join(savePath,"1_loaddata")
@@ -72,7 +72,7 @@ def generate_val(savePath, validation_proportion=0.15, mode =  None):
     bulkExp = pickle.load(f)
     f.close()
     
-    f = open(os.path.join(savePath_2, 'bulk_clinical.pkl'), 'rb')
+    f = open(os.path.join(savePath_1, 'bulk_clinical.pkl'), 'rb')
     bulkClinical = pickle.load(f)
     f.close()
 
@@ -91,6 +91,8 @@ def generate_val(savePath, validation_proportion=0.15, mode =  None):
 
     combined_val = combined.iloc[validx,]
     mask = ~combined.index.isin(combined_val.index)
+    combined_train = combined[mask]
+
     if mode == "Classification":
     # if mode == "Bionomial":
         # Separate the training and validation sets back into bulkExp and bulkClinical
@@ -151,6 +153,7 @@ class BulkDataset(Dataset):
 
             # Handle 'Cox' type: df_cli is expected to be a DataFrame with columns ['t', 'e']
             self.t = torch.tensor(df_cli.iloc[:,0].values, dtype=torch.float32)
+            self.e = torch.tensor(df_cli.iloc[:,1].values, dtype=torch.float32)
 
         # elif mode == 'Bionomial':
         elif mode == 'Classification':
