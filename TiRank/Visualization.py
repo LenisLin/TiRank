@@ -12,7 +12,7 @@ import gseapy as gp
 
 from scipy.stats import mannwhitneyu
 from sklearn.metrics import confusion_matrix
-from Dataloader import transform_test_exp
+from .Dataloader import transform_test_exp
 
 # Data Preparation
 
