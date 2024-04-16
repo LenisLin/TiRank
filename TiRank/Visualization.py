@@ -710,7 +710,6 @@ def create_comparison_density_plot(data1, label1, data2, label2, ax, title):
     ax.set_title(title)
     ax.legend()
 
-
 def plot_genepair(df, data_type, savePath=None):
     """
     Plots a heatmap with hierarchical clustering applied to rows and columns.
