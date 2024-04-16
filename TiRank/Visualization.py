@@ -11,8 +11,9 @@ import pandas as pd
 import gseapy as gp
 
 from scipy.stats import mannwhitneyu
+from scipy.cluster.hierarchy import linkage, dendrogram
 from sklearn.metrics import confusion_matrix
-from Dataloader import transform_test_exp
+from .Dataloader import transform_test_exp
 
 # Data Preparation
 
@@ -403,8 +404,7 @@ def DEG_volcano(
         result.loc[result["Pvalue"] > Pvalue_threshold, "group"] = "lightgrey"
 
     result.loc[
-        (result["LogFoldChange"] < log2FC)
-        & (result["LogFoldChange"] > -(log2FC)),
+        (result["LogFoldChange"] < log2FC) & (result["LogFoldChange"] > -(log2FC)),
         "group",
     ] = "lightgrey"
 
@@ -510,7 +510,7 @@ def Pathway_Enrichment(savePath, database="KEGG_2016"):
         no_plot=True,
         cutoff=0.5,  # test dataset, use lower value from range(0,1)
     )
-    
+
     allenr = gp.enrichr(
         gene_list=allgenes,
         gene_sets=database,
@@ -519,7 +519,7 @@ def Pathway_Enrichment(savePath, database="KEGG_2016"):
         no_plot=True,
         cutoff=0.5,  # test dataset, use lower value from range(0,1)
     )
-    
+
     database_name = "_".join(database)
 
     ## up regulated
@@ -529,9 +529,9 @@ def Pathway_Enrichment(savePath, database="KEGG_2016"):
         )
     else:
         gp.plot.dotplot(
-            upenr.results, 
+            upenr.results,
             column="P-value",
-            title="Up regulated genes enrich in " + database_name
+            title="Up regulated genes enrich in " + database_name,
         )
         plt.savefig(
             os.path.join(
@@ -554,9 +554,9 @@ def Pathway_Enrichment(savePath, database="KEGG_2016"):
         )
     else:
         gp.plot.dotplot(
-            downenr.results, 
+            downenr.results,
             column="P-value",
-            title="Down regulated genes enrich in " + database_name
+            title="Down regulated genes enrich in " + database_name,
         )
         plt.savefig(
             os.path.join(
@@ -572,16 +572,12 @@ def Pathway_Enrichment(savePath, database="KEGG_2016"):
 
     ## all genes
     if np.min(allenr.results["P-value"]) > 0.05:
-        print(
-            "All differential do not enrich in any pathway of "
-            + database_name
-            + "!"
-        )
+        print("All differential do not enrich in any pathway of " + database_name + "!")
     else:
         gp.plot.dotplot(
-            allenr.results,             
+            allenr.results,
             column="P-value",
-            title="All differential genes enrich in " + database_name
+            title="All differential genes enrich in " + database_name,
         )
         plt.savefig(
             os.path.join(
@@ -594,7 +590,6 @@ def Pathway_Enrichment(savePath, database="KEGG_2016"):
             pad_inches=1,
         )
         plt.close()
-    
 
     upenr.results.to_csv(
         os.path.join(
@@ -714,3 +709,68 @@ def create_comparison_density_plot(data1, label1, data2, label2, ax, title):
     sns.kdeplot(data2, shade=True, linewidth=3, label=label2, ax=ax)
     ax.set_title(title)
     ax.legend()
+
+
+def plot_genepair(df, data_type, savePath=None):
+    """
+    Plots a heatmap with hierarchical clustering applied to rows and columns.
+
+    Parameters:
+    - df : pandas.DataFrame
+        DataFrame with binary values (e.g., 1 and -1).
+    - method : str, optional
+        The linkage algorithm to use for clustering (e.g., 'average', 'single', 'complete').
+    - metric : str, optional
+        The distance metric to use (e.g., 'euclidean', 'cityblock').
+    - cmap : str, optional
+        The colormap used to plot the heatmap. Default is 'coolwarm'.
+    - figsize : tuple, optional
+        Figure size as (width, height) in inches. Default is (10, 8).
+
+    Returns:
+    - None
+    """
+
+    savePath_2 = os.path.join(savePath, "2_preprocessing")
+
+    ## difine the figure
+    figsize = (15, 12)
+    cmap = "coolwarm"
+
+    ## define cluster
+    method = "average"
+    metric = "euclidean"
+
+    nrow, ncol = df.shape
+
+    if nrow > ncol:
+        n_size = ncol
+        sampled_df = df.sample(n=n_size, random_state=42)
+    else:
+        sampled_df = df
+
+    # Generate the linkage matrices
+    row_clusters = linkage(sampled_df, method=method, metric=metric)
+    col_clusters = linkage(sampled_df.T, method=method, metric=metric)
+
+    # Create the row and column dendrogram orders
+    row_dendr = dendrogram(row_clusters, no_plot=True)
+    col_dendr = dendrogram(col_clusters, no_plot=True)
+
+    # Reorder the dataframe according to the dendrograms
+    df_clustered = sampled_df.iloc[row_dendr["leaves"], col_dendr["leaves"]]
+
+    # Plotting
+    plt.figure(figsize=figsize)
+    sns.heatmap(
+        df_clustered, cmap=cmap, annot=False
+    )  # Turn off tick labels if not meaningful
+    plt.title("Clustered Heatmap of Gene Pairs")
+    plt.savefig(
+        os.path.join(savePath_2, data_type + " gene pair heatmap.png"),
+        bbox_inches="tight",
+        pad_inches=0.1
+    )
+    plt.close()
+
+    return None

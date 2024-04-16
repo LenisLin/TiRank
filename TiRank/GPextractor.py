@@ -2,17 +2,27 @@
 
 import numpy as np
 import pandas as pd
-import os,pickle
+import os, pickle
 
 from lifelines import CoxPHFitter
 from scipy.stats import pearsonr, ttest_ind
 from statsmodels.stats.multitest import multipletests
 
 from .Dataloader import transform_test_exp
+from .Visualization import plot_genepair
 
 
-class GenePairExtractor():
-    def __init__(self, savePath, analysis_mode, top_var_genes=500, top_gene_pairs=2000, p_value_threshold=None, max_cutoff=0.8, min_cutoff=0.2):
+class GenePairExtractor:
+    def __init__(
+        self,
+        savePath,
+        analysis_mode,
+        top_var_genes=500,
+        top_gene_pairs=2000,
+        p_value_threshold=None,
+        max_cutoff=0.8,
+        min_cutoff=0.2,
+    ):
         self.savePath = savePath
         self.analysis_mode = analysis_mode
         self.top_var_genes = top_var_genes
@@ -23,19 +33,19 @@ class GenePairExtractor():
 
     def load_data(self):
         print(f"Starting load data for gene pair transformation.")
-        savePath_2 = os.path.join(self.savePath,"2_preprocessing")
-        savePath_splitData = os.path.join(savePath_2,"split_data")
+        savePath_2 = os.path.join(self.savePath, "2_preprocessing")
+        savePath_splitData = os.path.join(savePath_2, "split_data")
 
         ## bulk
-        f = open(os.path.join(savePath_splitData, 'bulkExp_train.pkl'), 'rb')
+        f = open(os.path.join(savePath_splitData, "bulkExp_train.pkl"), "rb")
         self.bulk_expression = pickle.load(f)
         f.close()
-        f = open(os.path.join(savePath_splitData, 'bulkClinical_train.pkl'), 'rb')
+        f = open(os.path.join(savePath_splitData, "bulkClinical_train.pkl"), "rb")
         self.clinical_data = pickle.load(f)
         f.close()
 
         ## sc
-        f = open(os.path.join(savePath_2, 'scAnndata.pkl'), 'rb')
+        f = open(os.path.join(savePath_2, "scAnndata.pkl"), "rb")
         scAnndata = pickle.load(f)
         f.close()
 
@@ -49,31 +59,37 @@ class GenePairExtractor():
         self.single_cell_expression = scExp
 
         return None
-    
+
     def save_data(self):
         print(f"Starting save gene pair matrices.")
-        savePath_2 = os.path.join(self.savePath,"2_preprocessing")
-        savePath_splitData = os.path.join(savePath_2,"split_data")
+        savePath_2 = os.path.join(self.savePath, "2_preprocessing")
+        savePath_splitData = os.path.join(savePath_2, "split_data")
 
         ## Load val bulk
-        f = open(os.path.join(savePath_splitData, 'bulkExp_val.pkl'), 'rb')
+        f = open(os.path.join(savePath_splitData, "bulkExp_val.pkl"), "rb")
         bulkExp_val = pickle.load(f)
         f.close()
 
         train_bulk_gene_pairs_mat = pd.DataFrame(self.bulk_gene_pairs_mat.T)
-        val_bulkExp_gene_pairs_mat = transform_test_exp(train_exp = train_bulk_gene_pairs_mat,test_exp = bulkExp_val)
+        val_bulkExp_gene_pairs_mat = transform_test_exp(
+            train_exp=train_bulk_gene_pairs_mat, test_exp=bulkExp_val
+        )
         sc_gene_pairs_mat = pd.DataFrame(self.single_cell_gene_pairs_mat.T)
 
-        with open(os.path.join(savePath_2, 'train_bulk_gene_pairs_mat.pkl'), 'wb') as f:
-            pickle.dump(train_bulk_gene_pairs_mat, f) ## training bulk gene pair matrix
+        with open(os.path.join(savePath_2, "train_bulk_gene_pairs_mat.pkl"), "wb") as f:
+            pickle.dump(train_bulk_gene_pairs_mat, f)  ## training bulk gene pair matrix
         f.close()
 
-        with open(os.path.join(savePath_2, 'val_bulkExp_gene_pairs_mat.pkl'), 'wb') as f:
-            pickle.dump(val_bulkExp_gene_pairs_mat, f) ## validating bulk gene pair matrix
+        with open(
+            os.path.join(savePath_2, "val_bulkExp_gene_pairs_mat.pkl"), "wb"
+        ) as f:
+            pickle.dump(
+                val_bulkExp_gene_pairs_mat, f
+            )  ## validating bulk gene pair matrix
         f.close()
 
-        with open(os.path.join(savePath_2, 'sc_gene_pairs_mat.pkl'), 'wb') as f:
-            pickle.dump(sc_gene_pairs_mat, f) ## single cell gene pair matrix
+        with open(os.path.join(savePath_2, "sc_gene_pairs_mat.pkl"), "wb") as f:
+            pickle.dump(sc_gene_pairs_mat, f)  ## single cell gene pair matrix
         f.close()
         print(f"Save gene pair matrices done.")
 
@@ -84,59 +100,78 @@ class GenePairExtractor():
 
         # Find the intersection of genes in bulk and single-cell datasets
         intersect_genes = np.intersect1d(
-            self.single_cell_expression.index, self.bulk_expression.index)
-        intersect_single_cell_expression = self.single_cell_expression.loc[intersect_genes]
+            self.single_cell_expression.index, self.bulk_expression.index
+        )
+        intersect_single_cell_expression = self.single_cell_expression.loc[
+            intersect_genes
+        ]
 
         # Sort genes by variance in the single-cell dataset
         gene_variances = np.var(intersect_single_cell_expression, axis=1)
         sorted_genes = gene_variances.sort_values(ascending=False)
 
         # Select the top variable genes
-        top_variable_genes = sorted_genes[:self.top_var_genes].index.tolist()
+        top_variable_genes = sorted_genes[: self.top_var_genes].index.tolist()
 
         # Extract the candidate genes
-        self.bulk_expression, self.single_cell_expression = self.extract_candidate_genes(
-            top_variable_genes)
+        self.bulk_expression, self.single_cell_expression = (
+            self.extract_candidate_genes(top_variable_genes)
+        )
 
         print(f"Get candidate genes done.")
 
         # Obtain the list of candidate genes
         if self.analysis_mode == "Classification":
             regulated_genes_r, regulated_genes_p = self.calculate_binomial_gene_pairs()
-            print(f"There are {len(regulated_genes_r)} genes up-regulated in Group 0 and {len(regulated_genes_p)} genes up-regulated in Group 1.")
+            print(
+                f"There are {len(regulated_genes_r)} genes up-regulated in Group 0 and {len(regulated_genes_p)} genes up-regulated in Group 1."
+            )
 
         elif self.analysis_mode == "Cox":
             regulated_genes_r, regulated_genes_p = self.calculate_survival_gene_pairs()
-            print(f"There are {len(regulated_genes_r)} Risk genes and {len(regulated_genes_p)} Protective genes.")
+            print(
+                f"There are {len(regulated_genes_r)} Risk genes and {len(regulated_genes_p)} Protective genes."
+            )
 
         elif self.analysis_mode == "Regression":
-            regulated_genes_r, regulated_genes_p = self.calculate_regression_gene_pairs()
-            print(f"There are {len(regulated_genes_r)} positive-associated genes and {len(regulated_genes_p)} negative-associated genes.")
+            regulated_genes_r, regulated_genes_p = (
+                self.calculate_regression_gene_pairs()
+            )
+            print(
+                f"There are {len(regulated_genes_r)} positive-associated genes and {len(regulated_genes_p)} negative-associated genes."
+            )
 
         else:
             raise ValueError(f"Unsupported mode: {self.analysis_mode}")
 
         if (len(regulated_genes_r) == 0) or (len(regulated_genes_p) == 0):
             raise ValueError(
-                "A set of genes is empty. Try increasing the 'top_var_genes' value or loosening the 'p.value' threshold.")
+                "A set of genes is empty. Try increasing the 'top_var_genes' value or loosening the 'p.value' threshold."
+            )
 
         print(f"Get candidate gene pairs done.")
 
         # Transform the bulk gene pairs
         bulk_gene_pairs = self.transform_bulk_gene_pairs(
-            regulated_genes_r, regulated_genes_p)
+            regulated_genes_r, regulated_genes_p
+        )
         # Filter the gene pairs
         bulk_gene_pairs_mat = self.filter_gene_pairs(bulk_gene_pairs)
 
         # Transform the single-cell gene pairs
         single_cell_gene_pairs_mat = self.transform_single_cell_gene_pairs(
-            bulk_gene_pairs_mat)
+            bulk_gene_pairs_mat
+        )
 
         print(f"Profile transformation done.")
 
         # Return the bulk and single-cell gene pairs
         self.bulk_gene_pairs_mat = bulk_gene_pairs_mat
         self.single_cell_gene_pairs_mat = single_cell_gene_pairs_mat
+
+        # Visualize the gene pair
+        plot_genepair(self.bulk_gene_pairs_mat, "bulk", self.savePath)
+        plot_genepair(self.single_cell_gene_pairs_mat, "sc", self.savePath)
 
         return None
 
@@ -146,8 +181,7 @@ class GenePairExtractor():
         bulk_gene_subset = self.bulk_expression.loc[gene_names, :]
 
         # Remove rows in bulk dataset where all entries are 0
-        bulk_gene_subset = bulk_gene_subset.loc[(
-            bulk_gene_subset != 0).any(axis=1)]
+        bulk_gene_subset = bulk_gene_subset.loc[(bulk_gene_subset != 0).any(axis=1)]
         gene_names = bulk_gene_subset.index.tolist()
         single_cell_gene_subset = single_cell_gene_subset.loc[gene_names]
 
@@ -169,12 +203,14 @@ class GenePairExtractor():
             p_values.append(p_value)
 
         # Store the results in a DataFrame
-        DEGs = pd.DataFrame({
-            'AveExpr': self.bulk_expression.mean(axis=1),
-            't': t_stats,
-            'P.Value': p_values,
-            'gene': self.bulk_expression.index
-        })
+        DEGs = pd.DataFrame(
+            {
+                "AveExpr": self.bulk_expression.mean(axis=1),
+                "t": t_stats,
+                "P.Value": p_values,
+                "gene": self.bulk_expression.index,
+            }
+        )
 
         # Drop the row which p_values is NULL
         DEGs = DEGs.dropna()
@@ -183,11 +219,11 @@ class GenePairExtractor():
         # DEGs['adj.P.Val'] = multipletests(DEGs['P.Value'], method='fdr_bh')[1]
 
         # Filter significant genes
-        DEGs = DEGs[DEGs['P.Value'] < self.p_value_threshold]
+        DEGs = DEGs[DEGs["P.Value"] < self.p_value_threshold]
 
         # Separate up- and down-regulated genes
-        regulated_genes_in_g0 = DEGs[DEGs['t'] > 0]['gene'].tolist()
-        regulated_genes_in_g1 = DEGs[DEGs['t'] < 0]['gene'].tolist()
+        regulated_genes_in_g0 = DEGs[DEGs["t"] > 0]["gene"].tolist()
+        regulated_genes_in_g1 = DEGs[DEGs["t"] < 0]["gene"].tolist()
 
         return regulated_genes_in_g0, regulated_genes_in_g1
 
@@ -201,63 +237,83 @@ class GenePairExtractor():
             cph = CoxPHFitter()
 
             try:
-              cph.fit(clinical_temp, duration_col=self.clinical_data.columns[0], event_col=self.clinical_data.columns[1])
+                cph.fit(
+                    clinical_temp,
+                    duration_col=self.clinical_data.columns[0],
+                    event_col=self.clinical_data.columns[1],
+                )
             except Exception:
-              continue
-              
-              
+                continue
+
             hr = cph.summary["exp(coef)"].values[0]
             p_value = cph.summary["p"].values[0]
             survival_results = survival_results.append(
-                {"gene": self.bulk_expression.index[i], "HR": hr, "p_value": p_value}, ignore_index=True)
+                {"gene": self.bulk_expression.index[i], "HR": hr, "p_value": p_value},
+                ignore_index=True,
+            )
 
         survival_results = survival_results.dropna()
         survival_results["HR"] = survival_results["HR"].astype(float)
         survival_results["p_value"] = survival_results["p_value"].astype(float)
 
-        #survival_results['adj.P.Val'] = multipletests(survival_results['p_value'], method='fdr_bh')[1]
+        # survival_results['adj.P.Val'] = multipletests(survival_results['p_value'], method='fdr_bh')[1]
 
         # Filter significant genes
-        survival_results = survival_results[survival_results['p_value'] < self.p_value_threshold]
-
+        survival_results = survival_results[
+            survival_results["p_value"] < self.p_value_threshold
+        ]
 
         # Construct gene pairs for HR>1 and HR<1 separately
-        regulated_genes_r = survival_results[survival_results['HR'] > 1]['gene']
-        regulated_genes_p = survival_results[survival_results['HR'] < 1]['gene']
+        regulated_genes_r = survival_results[survival_results["HR"] > 1]["gene"]
+        regulated_genes_p = survival_results[survival_results["HR"] < 1]["gene"]
 
         return regulated_genes_r, regulated_genes_p
 
     def calculate_regression_gene_pairs(self):
         # Bulk dataset Pearson correlation. Define gene pairs based on correlation coefficient and p-value
-        correlation_results = pd.DataFrame(
-            columns=["gene", "correlation", "pvalue"])
+        correlation_results = pd.DataFrame(columns=["gene", "correlation", "pvalue"])
         for i in range(self.bulk_expression.shape[0]):
             exp_gene = self.bulk_expression.iloc[i, :].astype(float)
-            correlation, pvalue = pearsonr(
-                exp_gene, self.clinical_data.iloc[:, 0])
+            correlation, pvalue = pearsonr(exp_gene, self.clinical_data.iloc[:, 0])
 
-            correlation_results = pd.concat([
-                correlation_results,pd.Series({"gene": self.bulk_expression.index[i], 
-                "correlation": correlation, 
-                "pvalue": pvalue}).to_frame().T], axis=0, ignore_index=True)
-
+            correlation_results = pd.concat(
+                [
+                    correlation_results,
+                    pd.Series(
+                        {
+                            "gene": self.bulk_expression.index[i],
+                            "correlation": correlation,
+                            "pvalue": pvalue,
+                        }
+                    )
+                    .to_frame()
+                    .T,
+                ],
+                axis=0,
+                ignore_index=True,
+            )
 
         correlation_results = correlation_results.dropna()
         correlation_results["correlation"] = correlation_results["correlation"].astype(
-            float)
-        correlation_results["pvalue"] = correlation_results["pvalue"].astype(
-            float)
+            float
+        )
+        correlation_results["pvalue"] = correlation_results["pvalue"].astype(float)
 
-        #correlation_results['adj.P.Val'] = multipletests(
+        # correlation_results['adj.P.Val'] = multipletests(
         #    correlation_results['pvalue'], method='fdr_bh')[1]
 
         # Filter significant genes
-        correlation_results = correlation_results[correlation_results['pvalue'] < self.p_value_threshold]
-
+        correlation_results = correlation_results[
+            correlation_results["pvalue"] < self.p_value_threshold
+        ]
 
         # Define gene pairs based on whether correlation is >0 or <0
-        positive_correlation_genes = correlation_results[correlation_results['correlation'] > 0]['gene']
-        negative_correlation_genes = correlation_results[correlation_results['correlation'] < 0]['gene']
+        positive_correlation_genes = correlation_results[
+            correlation_results["correlation"] > 0
+        ]["gene"]
+        negative_correlation_genes = correlation_results[
+            correlation_results["correlation"] < 0
+        ]["gene"]
 
         return positive_correlation_genes, negative_correlation_genes
 
@@ -274,23 +330,24 @@ class GenePairExtractor():
         # Create result DataFrame
         row_names = [f"{i}__{j}" for i in genes_r for j in genes_p]
         result_df = pd.DataFrame(
-            result_values, index=row_names, columns=self.bulk_expression.columns)
+            result_values, index=row_names, columns=self.bulk_expression.columns
+        )
 
         return result_df
 
     def filter_gene_pairs(self, bulk_GPMat):
         # Filter results of gene pair construction. max_cutoff and min_cutoff define the upper and lower proportions
-        bulk_GPMat = bulk_GPMat[(np.sum(bulk_GPMat, axis=1) < self.max_cutoff * bulk_GPMat.shape[1]) &
-                                (np.sum(bulk_GPMat, axis=1) > self.min_cutoff * bulk_GPMat.shape[1])]
+        bulk_GPMat = bulk_GPMat[
+            (np.sum(bulk_GPMat, axis=1) < self.max_cutoff * bulk_GPMat.shape[1])
+            & (np.sum(bulk_GPMat, axis=1) > self.min_cutoff * bulk_GPMat.shape[1])
+        ]
 
         if bulk_GPMat.shape[0] >= self.top_gene_pairs:
             # Compute variance of gene pairs and sort
             gene_pair_variances = np.var(bulk_GPMat, axis=1)
-            sorted_gene_pairs = gene_pair_variances.sort_values(
-                ascending=False)
+            sorted_gene_pairs = gene_pair_variances.sort_values(ascending=False)
             # Select top variable gene pairs
-            top_var_gene_pairs = sorted_gene_pairs[:self.top_gene_pairs].index.tolist(
-            )
+            top_var_gene_pairs = sorted_gene_pairs[: self.top_gene_pairs].index.tolist()
             bulk_GPMat = bulk_GPMat.loc[top_var_gene_pairs]
 
         return bulk_GPMat
@@ -309,7 +366,8 @@ class GenePairExtractor():
 
         # Create result DataFrame
         result_df = pd.DataFrame(
-            result, index=bulk_GPMat.index, columns=self.single_cell_expression.columns)
+            result, index=bulk_GPMat.index, columns=self.single_cell_expression.columns
+        )
 
         return result_df
 
