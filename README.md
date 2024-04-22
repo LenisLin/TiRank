@@ -102,3 +102,45 @@ In TiRank, six key hyperparameters influence the results. The first three are cr
 * ```n_epochs```:n_epochs is the number of training epochs in TiRank.
 
 * ```lr```:The learning rate (lr) controls the step size of model training during each iteration of parameter updates. A lower learning rate corresponds to more gradual updates, resulting in slower convergence over each epoch. Conversely, a higher learning rate might cause the model to oscillate around the optimal solution, potentially preventing the attainment of the best results.
+
+### TiRank Web
+In order to use TiRank's web pages, you need to go to the Web folder first.
+```bash
+cd ./Web
+```
+Everything you do next should be done in this directory.
+Next you need to do the following steps:
+1. Create the data folder
+```bash
+mkdir data
+```
+2. Create an ExampleData folder inside the data floder and download the sample data from https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE
+```bash
+cd data
+```
+```bash
+mkdir ExampleData
+```
+```bash
+cd ../
+```
+You need to make sure your file directory structure is as follows:
+```bash
+Web/
+├── assets/
+├── components/
+├── img/
+├── layout/
+├── data/
+│ ├── ExampleData
+│ │ ├── CRC_ST_Prog/
+│ │ └── SKCM_SC_Res/
+├── tiRankWeb/
+└── app.py
+```
+3. You can now run your web application.
+```bash
+python app.py
+```
+More tutorials on the Web can be found in the "Tutorials" section of the web page.
+
