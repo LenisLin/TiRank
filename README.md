@@ -9,7 +9,7 @@ TiRank can be installed through multiple methods. We recommend creating a new co
 #### Method 1: Online pip Installation
 1. Set up a new conda environment:
    ```bash
-   conda create -n TiRank python=3.9.7 -y
+   conda create -n TiRank python=3.9 -y
    conda activate TiRank
    ```
 2. Navigate to the TiRank directory:
@@ -28,18 +28,7 @@ TiRank can be installed through multiple methods. We recommend creating a new co
      ```
 5. Download the pre-trained [CTransPath](https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view) model weights.
 
-#### Method 2: Local conda Installation
-1. Clone the TiRank repository:
-   ```bash
-   git clone git@github.com:LenisLin/TiRank.git
-   ```
-2. Modify the `TiRank.yml` environment file. Replace the "prefix" at the bottom of this file with your path to the conda environment files.
-3. Create the environment from the `TiRank.yml` file:
-   ```bash
-   conda env create -f TiRank.yml
-   ```
-
-#### Method 3: Docker Installation (Highly Recommended)
+#### Method 2: Docker Installation
 _(Instructions to be provided)_
 
 ---
