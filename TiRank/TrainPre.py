@@ -727,7 +727,7 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
             raise ValueError(f"Unsupported Rejcetion Mode: {reject_mode}")
 
     else:
-        reject_mask = np.zeros_like()
+        reject_mask = np.zeros_like(pred_sc)
 
     saveDF_sc = pd.DataFrame(data=np.concatenate(
         (reject_mask, pred_sc, embeddings_sc), axis=1), index=sc_GPmat.index)
