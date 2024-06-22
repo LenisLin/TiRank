@@ -32,7 +32,7 @@ from tirankWeb.Visualization import plot_score_distribution_, deg_analysis_, deg
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
 app.title = 'TiRank'
-app._favicon = './Tirank_white.png'
+app._favicon = 'Tirank_white.png'
 
 bg_color = "#333333"
 font_color = "#F3F6FA"
@@ -689,17 +689,21 @@ def confirm_sc(scsd_v, n_clicks):
 )
 def update_preprocess_res(bt1, bt2, bt3, is_log, is_norm,
                           mode, cox_time, cox_status, reg_val, class_val, tvg, pvt, tgp):
+    global mode_global
     triggered_id = ctx.triggered_id
     print(triggered_id)
     if triggered_id == 'preprocess-perform':
         preprocess(is_log, is_norm)
     elif triggered_id == 'datasplit-perform' and mode == 1:
+        mode_global = 'Cox'
         cox_data_split(cox_time, cox_status)
         gen_pair_transformation(mode, tvg, pvt, tgp)
     elif triggered_id == 'datasplit-perform' and mode == 2:
+        mode_global = 'Regression'
         regression_data_split(reg_val)
         gen_pair_transformation(mode, tvg, pvt, tgp)
     elif triggered_id == 'datasplit-perform' and mode == 3:
+        mode_global = 'Classification'
         class_data_split(class_val)
         gen_pair_transformation(mode, tvg, pvt, tgp)
     elif triggered_id == 'preprocess-res-radioitems' and bt3 == 'bulk_gene_pair_heatmap':
@@ -788,14 +792,11 @@ def preprocess(is_log, is_norm):
         print('[preprocessing] do filtering...')
         scAnndata = FilteringAnndata_(scAnndata, max_count=35000, min_count=5000, MT_propor=10,
                                       min_cell=10, imgPath='./img/')
-    if is_norm == 1:
-        print('[preprocessing] do norm...')
-        scAnndata = Normalization(scAnndata)
-    if is_log == 1:
-        print('[preprocessing] do log...')
-        scAnndata = Logtransformation(scAnndata)
 
-    print('[preprocessing] do cluster...')
+    scAnndata = Normalization(scAnndata)
+
+    scAnndata = Logtransformation(scAnndata)
+
     scAnndata = clustering_(scAnndata, infer_mode=infer_model, savePath='./img/')
 
     compute_similarity_(savePath='./data/', ann_data=scAnndata, calculate_distance=False)
@@ -808,7 +809,7 @@ def preprocess(is_log, is_norm):
             adata=scAnndata,
             pretrain_path=pretrain_path,
             n_clusters=n_patho_cluster,
-            image_save_path=os.path.join('./assets', "patho_label.png")
+            image_save_path=os.path.join('./assets')
         )
 
     with open('./data/scAnndata.pkl', 'wb') as f:
@@ -982,16 +983,6 @@ def train(device, advanced, nhead, n_output, nhid2, nhid1, nlayers, dropout, n_t
 
     encoder_type = 'MLP'
 
-    class_f = open('./data/data2train/patholabels.pkl', 'rb')
-    class_info = pickle.load(class_f)
-    class_f.close()
-    value_list = []
-
-    for k, v in dict(class_info).items():
-        value_list.append(v)
-
-    class_num = len(set(value_list))
-
     if n_clicks == 1:
         if advanced is None:
             nhead_ = 2,
@@ -1025,14 +1016,14 @@ def train(device, advanced, nhead, n_output, nhid2, nhid1, nlayers, dropout, n_t
             if n_trails is not None:
                 n_trails_ = n_trails
             else:
-                n_trails_ = 1
+                n_trails_ = 5
             if dropout is not None:
                 dropout_ = dropout
             else:
                 dropout_ = 0.5
 
         initial_model_para_(save_path=url_, nhead=nhead_, nhid1=nhid1_, nhid2=nhid2_, n_output=n_output_,
-                            nlayers=nlayers_, n_pred=1, n_patho=class_num, dropout=dropout_, mode=mode_global,
+                            nlayers=nlayers_, n_pred=1, dropout=dropout_, mode=mode_global,
                             encoder_type=encoder_type, infer_mode=infer_mode)
         tune_hyperparameters_(
             # Parameters Path
@@ -1069,7 +1060,7 @@ def predict(reject, advanced, tolerance, reject_mode, n_clicks):
 
         plot_score_distribution_('./data/')
         plot_score_umap_('./data/', infer_mode_global)
-        plot_label_distribution_among_conditions_('./data/', group="leiden_clusters")
+        # plot_label_distribution_among_conditions_('./data/', group="leiden_clusters")
 
     return 0, tirank_pred_score_distribution()
 

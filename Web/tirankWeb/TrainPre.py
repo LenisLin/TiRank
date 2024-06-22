@@ -157,7 +157,7 @@ def Validate_model(model, dataloader_A, dataloader_B, mode='Cox', infer_mode="SC
             t = t.to(device)
             e = e.to(device)
 
-        if mode in ['Bionomial', 'Classification']:
+        if mode in ['Regression', 'Classification']:
             (X_a, label) = next(iter_A)
             X_a = X_a.to(device)
             label = label.to(device)
@@ -690,7 +690,7 @@ def predict_(save_path, mode, do_reject=True, tolerance=0.05, reject_mode="GMM")
         pred_bulk = pred_bulk.detach().numpy().reshape(-1, 1)
         pred_sc = pred_sc.detach().numpy().reshape(-1, 1)
 
-    elif mode == "Bionomial":
+    elif mode == "Classification":
         pred_sc = pred_sc[:, 1].detach().numpy().reshape(-1, 1)
         pred_bulk = pred_bulk[:, 1].detach().numpy().reshape(-1, 1)
 
@@ -703,7 +703,7 @@ def predict_(save_path, mode, do_reject=True, tolerance=0.05, reject_mode="GMM")
 
     if do_reject:
         if reject_mode == "GMM":
-            if mode in ["Cox", "Bionomial"]:
+            if mode in ["Cox", "Classification"]:
                 reject_mask = Reject_With_GMM_Bio(pred_bulk, pred_sc,
                                                   tolerance=tolerance, min_components=3, max_components=15)
             if mode == "Regression":
@@ -711,7 +711,7 @@ def predict_(save_path, mode, do_reject=True, tolerance=0.05, reject_mode="GMM")
                     pred_bulk, pred_sc, tolerance=tolerance)
 
         elif reject_mode == "Strict":
-            if mode in ["Cox", "Bionomial"]:
+            if mode in ["Cox", "Classification"]:
                 reject_mask = Reject_With_StrictNumber(
                     pred_bulk, pred_sc, tolerance=tolerance)
 
@@ -721,7 +721,7 @@ def predict_(save_path, mode, do_reject=True, tolerance=0.05, reject_mode="GMM")
             raise ValueError(f"Unsupported Rejcetion Mode: {reject_mode}")
 
     else:
-        reject_mask = np.zeros_like()
+        reject_mask = np.zeros_like(pred_sc)
 
     saveDF_sc = pd.DataFrame(data=np.concatenate(
         (reject_mask, pred_sc, embeddings_sc), axis=1), index=sc_GPmat.index)
@@ -758,7 +758,7 @@ def predict_(save_path, mode, do_reject=True, tolerance=0.05, reject_mode="GMM")
     scAnndata.obs["Reject"] = saveDF_sc.iloc[:, 0]
     scAnndata.obs["Rank_Score"] = saveDF_sc.iloc[:, 1]
 
-    if mode in ["Cox", "Bionomial"]:
+    if mode in ["Cox", "Classification"]:
         temp = scAnndata.obs["Rank_Score"] * (1 - scAnndata.obs["Reject"])
         scAnndata.obs["Rank_Label"] = [
             "Background" if i == 0 else

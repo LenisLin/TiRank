@@ -14,8 +14,8 @@ from scipy.stats import zscore
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler, TomekLinks
 
-def merge_datasets(bulkClinical_1, bulkClinical_2, bulkExp_1, bulkExp_2):
 
+def merge_datasets(bulkClinical_1, bulkClinical_2, bulkExp_1, bulkExp_2):
     genes1 = {x for x in bulkExp_1.index.values}
     genes2 = {x for x in bulkExp_2.index.values}
     intersectGenes = genes1.intersection(genes2)
@@ -68,8 +68,8 @@ def is_imbalanced(bulkClinical, threshold):
 
 
 def perform_sampling_on_RNAseq(savePath, mode="SMOTE", threshold=0.5):
-    savePath_2 = os.path.join(savePath,"2_preprocessing")
-    savePath_splitData = os.path.join(savePath_2,"split_data")
+    savePath_2 = os.path.join(savePath, "2_preprocessing")
+    savePath_splitData = os.path.join(savePath_2, "split_data")
 
     ## load
     f = open(os.path.join(savePath_splitData, 'bulkExp_train.pkl'), 'rb')
@@ -78,7 +78,7 @@ def perform_sampling_on_RNAseq(savePath, mode="SMOTE", threshold=0.5):
     f = open(os.path.join(savePath_splitData, 'bulkClinical_train.pkl'), 'rb')
     bulkClinical = pickle.load(f)
     f.close()
-    
+
     # Ensure classes are imbalanced before any action
     if not is_imbalanced(bulkClinical, threshold):
         print("Classes are balanced!")
@@ -106,16 +106,17 @@ def perform_sampling_on_RNAseq(savePath, mode="SMOTE", threshold=0.5):
         X_res.T, columns=samples_order, index=bulkExp.index)
     bulkClinical_resampled = pd.DataFrame(
         y_res, index=samples_order, columns=bulkClinical.columns)
-    
+
     ## save
     with open(os.path.join(savePath_splitData, 'bulkExp_train.pkl'), 'wb') as f:
-        pickle.dump(pd.DataFrame(bulkExp_resampled), f) ## training bulk clinical info matrix
+        pickle.dump(pd.DataFrame(bulkExp_resampled), f)  ## training bulk clinical info matrix
     f.close()
     with open(os.path.join(savePath_splitData, 'bulkClinical_train.pkl'), 'wb') as f:
-        pickle.dump(pd.DataFrame(bulkClinical_resampled), f) ## training bulk clinical info matrix
+        pickle.dump(pd.DataFrame(bulkClinical_resampled), f)  ## training bulk clinical info matrix
     f.close()
 
     return None
+
 
 # Perform standard workflow on ST or SC
 
@@ -126,8 +127,9 @@ def FilteringAnndata(adata, max_count=35000, min_count=5000, MT_propor=10, min_c
     sc.pp.calculate_qc_metrics(adata, qc_vars=["mt"], inplace=True)
 
     # Plot
-    sc.pl.violin(adata, ['n_genes_by_counts', 'total_counts', 'pct_counts_mt'],jitter=0.4, multi_panel=True,show=False)
-    plt.savefig(os.path.join(imgPath,"qc_violins.png"))
+    sc.pl.violin(adata, ['n_genes_by_counts', 'total_counts', 'pct_counts_mt'], jitter=0.4, multi_panel=True,
+                 show=False)
+    plt.savefig(os.path.join(imgPath, "qc_violins.png"))
     plt.close()
 
     # Filtering
@@ -135,22 +137,28 @@ def FilteringAnndata(adata, max_count=35000, min_count=5000, MT_propor=10, min_c
     sc.pp.filter_cells(adata, max_counts=max_count)
     adata = adata[adata.obs["pct_counts_mt"] < MT_propor]
     sc.pp.filter_genes(adata, min_cells=min_cell)
-
-    return adata
-
-
-# Normalization
-def Normalization(adata):
-    sc.pp.normalize_total(adata, target_sum=1e4, inplace = True)
-    return adata
-
-# log-transformation
-def Logtransformation(adata):
+    # normalize
+    sc.pp.normalize_total(adata, target_sum=1e4, inplace=True)
+    # log
     sc.pp.log1p(adata)
+
     return adata
 
-def Clustering(ann_data,infer_mode, savePath):
-    savePath_2 = os.path.join(savePath,"2_preprocessing")
+
+# # Normalization
+# def Normalization(adata):
+#     sc.pp.normalize_total(adata, target_sum=1e4, inplace=True)
+#     return adata
+#
+#
+# # log-transformation
+# def Logtransformation(adata):
+#     sc.pp.log1p(adata)
+#     return adata
+
+
+def Clustering(ann_data, infer_mode, savePath):
+    savePath_2 = os.path.join(savePath, "2_preprocessing")
     if ('connectivities' in ann_data.obsp) and ('leiden' in ann_data.uns):
         sc.tl.leiden(ann_data, key_added="leiden_clusters")
 
@@ -166,22 +174,23 @@ def Clustering(ann_data,infer_mode, savePath):
         sc.tl.leiden(ann_data, key_added="leiden_clusters")
 
     if infer_mode == "SC":
-        sc.pl.umap(ann_data, color=['leiden_clusters'],show = False)
-        plt.savefig(os.path.join(savePath_2,"leiden cluster.png"))
+        sc.pl.umap(ann_data, color=['leiden_clusters'], show=False)
+        plt.savefig(os.path.join(savePath_2, "leiden cluster.png"))
 
     if infer_mode == "ST":
         fig, axs = plt.subplots(1, 2, figsize=(8, 4))  # Create a 1x2 grid for the plots
-        sc.pl.spatial(ann_data, img_key="hires", color=["leiden_clusters"],show = False,ax=axs[0])
-        sc.pl.umap(ann_data, color=["leiden_clusters"],show = False, ax=axs[1])
+        sc.pl.spatial(ann_data, img_key="hires", color=["leiden_clusters"], show=False, ax=axs[0])
+        sc.pl.umap(ann_data, color=["leiden_clusters"], show=False, ax=axs[1])
         plt.tight_layout()  # Ensure proper spacing between the two plots
-        plt.savefig(os.path.join(savePath_2,"leiden cluster.png"))
+        plt.savefig(os.path.join(savePath_2, "leiden cluster.png"))
         plt.close()
-        
+
     return ann_data
+
 
 # This function computes the cell similarity network for single-cell or spatial transcriptomics data.
 def compute_similarity(savePath, ann_data, calculate_distance=False):
-    savePath_2 = os.path.join(savePath,"2_preprocessing")
+    savePath_2 = os.path.join(savePath, "2_preprocessing")
 
     # data_path refers to the output directory from the Space Ranger.
     # perform_normalization indicates whether the input data needs to be normalized.
@@ -198,7 +207,7 @@ def compute_similarity(savePath, ann_data, calculate_distance=False):
         euclidean_distances = cdist(
             spatial_positions, spatial_positions, metric='euclidean')
 
-    # Create an adjacency matrix initialized with zeros
+        # Create an adjacency matrix initialized with zeros
         adjacency_matrix = np.zeros_like(euclidean_distances, dtype=int)
 
         # For each spot, mark the six closest spots as neighbors

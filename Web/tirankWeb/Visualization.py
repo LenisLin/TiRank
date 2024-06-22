@@ -269,7 +269,7 @@ def plot_score_umap_(save_path, infer_mode):
         "Background": "lightgrey",
     }
 
-    if infer_mode == "Cell":
+    if infer_mode == "SC":
         f = open(os.path.join(save_path, "scAnndata.pkl"), "rb")
         scAnndata = pickle.load(f)
         f.close()
@@ -300,7 +300,7 @@ def plot_score_umap_(save_path, infer_mode):
         )
         plt.close()
 
-    elif infer_mode == "Spot":
+    elif infer_mode == "ST":
         f = open(os.path.join(save_path, "scAnndata.pkl"), "rb")
         scAnndata = pickle.load(f)
         f.close()
