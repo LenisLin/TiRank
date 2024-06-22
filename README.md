@@ -131,5 +131,7 @@ Web/
 ```bash
 python app.py
 ```
+**Note:** If you encounter any issues with image loading, make sure that the root directory when you run the program is under the Web folder.</br>
+
 More tutorials on the Web can be found in the "Tutorials" section of the web page.
 
