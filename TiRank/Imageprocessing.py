@@ -72,6 +72,10 @@ def scale_coordinate(data):
     """Convert imagecol and imagerow into high-resolution coordinates."""
     library_id = list(data.uns["spatial"].keys())[0]
     scale = data.uns["spatial"][library_id]["scalefactors"]["tissue_hires_scalef"]
+
+    if type(scale) != type(0.001):
+        scale = float(scale)
+
     if type(data.obsm["spatial"][1,1]) == type('a'):
         data.obsm["spatial"] = data.obsm["spatial"].astype("float")
     image_coordinates = data.obsm["spatial"] * scale
@@ -84,13 +88,14 @@ def crop_images(data, crop_size=25):
     data = scale_coordinate(data)
     library_id = list(data.uns["spatial"].keys())[0]
     image_data = data.uns["spatial"][library_id]["images"]["hires"]
+    # img = Image.fromarray(image_data)
     img = Image.fromarray((image_data * 255).astype(np.uint8))
     
     cropped_images = [
         img.crop((col - crop_size, row - crop_size, col + crop_size, row + crop_size))
         for row, col in zip(data.obs["imagerow"], data.obs["imagecol"])
     ]
-    return np.stack([np.array(tile) for tile in cropped_images])
+    return np.stack([np.array(tile) / 255 for tile in cropped_images])
 
 class ImageDataset(Dataset):
     def __init__(self, images_array, transform=None):
@@ -176,7 +181,7 @@ def plot_patho_class_heatmap(data, save_path):
     
     # Display the plot
     plt.gca().invert_yaxis()  # Invert y-axis for typical image display
-    plt.savefig(os.path.join(save_path, 'patho_class_heatmap.png'))
+    plt.savefig(save_path,bbox_inches ="tight", pad_inches = 1)
     return None
 
 def GetPathoClass(adata, pretrain_path, n_components = 50, n_clusters = 6, plot_classes = True, image_save_path = None):

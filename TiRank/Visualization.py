@@ -2,6 +2,7 @@ import torch
 import os
 import pickle
 import math
+import json
 
 import seaborn as sns
 import scanpy as sc
@@ -307,6 +308,99 @@ def plot_label_distribution_among_conditions(savePath, group):
         bbox_inches="tight",
         pad_inches=1,
     )
+    plt.show()
+    plt.close()
+
+    # Plot the spatial map
+
+    return None
+
+# Spatial Hub map (For ST only)
+def plot_STmap(savePath,group):
+    ## DataPath
+    savePath_2 = os.path.join(savePath, "2_preprocessing")
+    savePath_3 = os.path.join(savePath, "3_Analysis")
+
+    ## Load Predict Data
+    sc_PredDF = pd.read_csv(
+        os.path.join(savePath_3, "spot_predict_score.csv"), index_col=0
+    )
+
+    if group not in sc_PredDF.columns:
+        raise ValueError("Invalid grouping condition selected")
+
+    ## Load p-cluster results
+    with open(os.path.join(savePath_3,f"{group}_category_dict.json"), 'r') as file:
+        categories_ = json.load(file)
+
+    ## Assign new label
+    new_RankLabel = []
+    cluster_label = sc_PredDF[group].tolist()
+    for i in range(len(cluster_label)):
+        if cluster_label[i] in categories_["Rank+"]:
+            new_RankLabel.append("Rank+")
+        elif cluster_label[i] in categories_["Rank-"]:
+            new_RankLabel.append("Rank-")
+        else:
+            new_RankLabel.append("Background")
+    sc_PredDF["new_Rank_Label"] = new_RankLabel
+    sc_PredDF["new_Rank_Label"] = sc_PredDF["new_Rank_Label"].astype('category')
+
+    ## Load scAnndata
+    f = open(os.path.join(savePath_2, "scAnndata.pkl"), "rb")
+    scAnndata = pickle.load(f)
+    f.close()
+    scAnndata.obs = sc_PredDF
+
+    ## Color bar
+    label_color_map = {
+            "Rank+": "#DE6E66",
+            "Rank-": "#5096DE",
+            "Background": "lightgrey",
+    }
+    
+    # Plot and save
+    fig, axs = plt.subplots(1, 3, figsize=(18, 6))  # Adjust figsize as needed
+
+    ## Plot 1: Category Labels Without the HE Image
+    sc.pl.spatial(
+    scAnndata,
+    color=group,        # Your categorical column
+    img_key=None,       # No background image
+    alpha_img=0.0,      # No background image opacity
+    #spot_size=5,      # Adjust spot size
+    show=False,         # Do not display immediately
+    #frameon=False,
+    ax=axs[0]           # Plot on the first subplot
+    )
+    ## Plot 2: Only the HE Image
+    sc.pl.spatial(
+        scAnndata,
+        img_key='hires',    # Your image key (e.g., 'hires' or 'lowres')
+        color=None,         # No data overlay
+        alpha_img=1.0,      # Full opacity
+        spot_size=0,        # No spots plotted
+        show=False,         # Do not display immediately
+        ax=axs[1]           # Plot on the second subplot
+    )
+
+    ## Plot 3: HE Image with Category Labels
+    sc.pl.spatial(
+        scAnndata,
+        color="new_Rank_Label",        # Your categorical column
+        img_key='hires',    # Your image key
+        alpha_img=0.25,      # Full opacity for background image
+        #spot_size=5,      # Adjust spot size
+        palette=label_color_map,
+        show=False,         # Do not display immediately
+        ax=axs[2]           # Plot on the third subplot
+    )
+    plt.tight_layout()
+    plt.savefig(
+            os.path.join(savePath_3, "Spatial of TiRank Hubs.png"),
+            bbox_inches="tight",
+            pad_inches=1,
+        )
     plt.show()
     plt.close()
 
