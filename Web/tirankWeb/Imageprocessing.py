@@ -72,13 +72,14 @@ def crop_images(data, crop_size=25):
     data = scale_coordinate(data)
     library_id = list(data.uns["spatial"].keys())[0]
     image_data = data.uns["spatial"][library_id]["images"]["hires"]
+    # img = Image.fromarray(image_data)
     img = Image.fromarray((image_data * 255).astype(np.uint8))
-
+    
     cropped_images = [
         img.crop((col - crop_size, row - crop_size, col + crop_size, row + crop_size))
         for row, col in zip(data.obs["imagerow"], data.obs["imagecol"])
     ]
-    return np.stack([np.array(tile) for tile in cropped_images])
+    return np.stack([np.array(tile) / 255 for tile in cropped_images])
 
 
 class ImageDataset(Dataset):
