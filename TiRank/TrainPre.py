@@ -1035,7 +1035,7 @@ def Pcluster(savePath, clusterColName, perm_n=1001):
                 extreme_count = sum(
                     1 for x in permuted_counts[label][key] if observed > x
                 )
-                p_values[label][key] = extreme_count / perm_n
+                p_values[label][key] = 1 - extreme_count / perm_n
 
     # transpose the DataFrame to get labels as rows
     df_p_values = pd.DataFrame(p_values).T
