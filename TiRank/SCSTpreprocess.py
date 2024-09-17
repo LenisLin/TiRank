@@ -171,6 +171,9 @@ def Clustering(ann_data,infer_mode, savePath):
 
     if infer_mode == "ST":
         fig, axs = plt.subplots(1, 2, figsize=(8, 4))  # Create a 1x2 grid for the plots
+
+        ann_data.obsm["spatial"] = np.array(ann_data.obsm["spatial"],dtype = float)
+        
         sc.pl.spatial(ann_data, img_key="hires", color=["leiden_clusters"],show = False,ax=axs[0])
         sc.pl.umap(ann_data, color=["leiden_clusters"],show = False, ax=axs[1])
         plt.tight_layout()  # Ensure proper spacing between the two plots
