@@ -303,7 +303,7 @@ if (T) {
         }
 
         ## Reassign Region category
-        seurat_object$Patho_anno_merge <- df[match(seurat_object$Patho_anno, df$Original), "Merge"]
+        seurat_object$Patho_anno_merge <- merged_categories_df[match(seurat_object$Patho_anno, merged_categories_df$Original), "Merge"]
 
         ## Plot HE Image with Annotation
         p1 <- SpatialDimPlot(seurat_object, group.by = "Patho_anno_merge", cols = region_colors, image.alpha = 0.5, label = FALSE, label.size = 15, pt.size.factor = 2)
