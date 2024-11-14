@@ -32,7 +32,7 @@ from tirankWeb.Visualization import plot_score_distribution_, deg_analysis_, deg
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
 app.title = 'TiRank'
-app._favicon = 'Tirank_white.png'
+app._favicon = 'TiRank_white.png'
 
 bg_color = "#333333"
 font_color = "#F3F6FA"
