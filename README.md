@@ -7,6 +7,8 @@ TiRank is a comprehensive tool for integrating and analyzing RNA-seq and scRNA-s
 
 ## Table of Contents
 
+- [Quickstart tutorials](#Quickstart tutorials)
+- [Model input](#Model input:)
 - [Features](#features)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
