@@ -34,7 +34,7 @@ TiRank is a comprehensive tool for integrating and analyzing RNA-seq and scRNA-s
 
 - Spatial transcriptome data or single-cell data that we want to characterize.
 - Bulk transcriptomics data: Expression profiles and pre-processed clinical information files. The format of the pre-processed clinical information file should align with our sample data.
-  You can download the sample data from [Google Drive](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
+  You can download the sample data from [Google Drive](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE).
 
 ---
   
