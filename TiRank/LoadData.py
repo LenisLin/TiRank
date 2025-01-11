@@ -61,7 +61,7 @@ def load_sc_data(path_to_sc_h5ead, savePath):
     return scAnndata
 
 
-## load single cell expression data
+## load spatial transcriptomics expression data
 def load_st_data(path_to_st_floder, savePath):
     savePath_1 = os.path.join(savePath,"1_loaddata")
 
