@@ -22,6 +22,21 @@ TiRank is a comprehensive tool for integrating and analyzing RNA-seq and scRNA-s
 
 ---
 
+## Quickstart tutorials
+
+- [1. Example for integrate single-cell RNA-seq data of melanoma and response information.](Example/SC-Response-SKCM.py)
+- [2. Example for integrate spatial transcriptomics (ST) and bulk transcriptomics data to identify phenotype-associated spots and determine significant clusters.](Example/ST-Cox-CRC.py)
+- [3. A comprehensive downstream analysis of the spatial transcriptome: We present a series of downstream analyses based on TiRank results, demonstrating that TiRank can facilitate the identification and characterization of spatial structures associated with specific clinical phenotypes in spatial transcriptome studies.](Downstream/CRC)
+
+---
+
+## Model input:
+
+- Spatial transcriptome data or single-cell data that we want to characterize.
+- Bulk transcriptomics data: Expression profiles and pre-processed clinical information files. The format of the pre-processed clinical information file should align with our sample data.
+
+---
+  
 ## Features
 
 - **Integration of Bulk and Single-cell Data**: Seamlessly integrates bulk RNA-seq data with single-cell or spatial transcriptomics data.
