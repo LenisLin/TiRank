@@ -106,9 +106,17 @@ _(Instructions to be provided)_
    mkdir data
    ```
 
-      - Inside the `data` directory, create an `ExampleData` folder and download the sample data:
+      - (Optional, for Spatial Transcriptomics)Inside the `data` directory, create an `pretrainModel` folder and download the pre-trained model weights:
       ```bash
       cd data
+      mkdir pretrainModel
+      ```
+
+      Download the pre-trained [CTransPath](https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view) model weights into the `pretrainModel` directory.
+
+      - Inside the `data` directory, create an `ExampleData` folder and download the sample data:
+      ```bash
+      cd ../
       mkdir ExampleData
       ```
 
@@ -116,6 +124,7 @@ _(Instructions to be provided)_
 
       - Return to the `Web` directory:
       ```bash
+      cd ../
       cd ../
       ```
 
