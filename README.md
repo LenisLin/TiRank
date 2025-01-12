@@ -101,7 +101,6 @@ _(Instructions to be provided)_
    cd TiRank/Web
    ```
    - Set up data directories:
-      - Create a `data` directory:
    ```bash
    mkdir data
    ```
@@ -136,6 +135,8 @@ _(Instructions to be provided)_
    ├── img/
    ├── layout/
    ├── data/
+   │ ├── pretrainModel
+   │ │ ├── ctranspath.pth
    │ ├── ExampleData
    │ │ ├── CRC_ST_Prog/
    │ │ └── SKCM_SC_Res/
