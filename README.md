@@ -136,11 +136,29 @@ TiRank supports multiple installation methods. It is recommended to create a ded
    docker run -p 8050:8050 lenislin/tirank_v1:latest /bin/bash
    ```
 
-4. **Persistent Data Storage**:
+4. **Verify Container Execution**:
+
+   After running the above command, you should be inside the container's terminal. Verify the setup by checking the TiRank version:
+
+   ```bash
+   conda activate TiRank
+   
+   python -c "import TiRank; print(TiRank.__version__)"
+   ```
+
+5. **Persistent Data Storage**:
    - Mount a local directory to retain data:
 
    ```bash
    docker run -it -v /path/to/local/data:/container/data lenislin/tirank_v1:latest /bin/bash
+   ```
+
+6. **Stop and Remove the Docker Container**:
+   - Use the following commands to manage containers:
+
+   ```bash
+   docker stop <container_id>
+   docker rm <container_id>
    ```
 
 ### Method 3: Interactive Web Tool
@@ -157,12 +175,35 @@ TiRank supports multiple installation methods. It is recommended to create a ded
      - [Pretrained Models](https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view)
      - [Example Data](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
 
-2. **Run the Application**:
-   - Execute the following command to launch the web interface:
+2. **Set Up Directory Structure**:
 
+   Ensure the following directory structure is maintained:
+
+   ```
+   Web/
+   ├── assets/
+   ├── components/
+   ├── img/
+   ├── layout/
+   ├── data/
+   │   ├── pretrainModel/
+   │   │   └── ctranspath.pth
+   │   ├── ExampleData/
+   │   │   ├── CRC_ST_Prog/
+   │   │   └── SKCM_SC_Res/
+   ├── tiRankWeb/
+   └── app.py
+   ```
+
+3. **Run the Web Application**:
+
+   - Execute the following command:
      ```bash
      python app.py
      ```
+
+4. **Access the Web Interface**:
+   - Open a web browser and navigate to `http://localhost:8050` to access the TiRank GUI.
 
 ---
 
@@ -226,3 +267,4 @@ For assistance, please visit the [TiRank GitHub Issues page](https://github.com/
 ## License
 
 TiRank is distributed under the MIT License.
+
