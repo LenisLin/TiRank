@@ -1,0 +1,11 @@
+bulk_name,"sc_name	",data_name
+CCLE_Gefitinib,GSE112274,Data1
+GDSC_Gefitinib,GSE112274,Data2
+CCLE_Docetaxel,GSE140440,Data3
+CCLE_Docetaxel,GSE140440,Data4
+CCLE_Erlotinib,GSE149383_Dropseq,Data5
+GDSC_Erlotinib,GSE149383_Dropseq,Data6
+CCLE_Erlotinib,GSE149383_10x,Data7
+GDSC_Erlotinib,GSE149383_10x,Data8
+CCLE_Cisplatin,GSE117872_Metastatic,Data9
+GDSC_Cisplatin,GSE117872_Metastatic,Data10
