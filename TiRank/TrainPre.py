@@ -33,6 +33,7 @@ def Train_one_epoch(
     optimizer=None,
     alphas=[1, 1, 1, 1],
     device="cpu",
+    epoch=0
 ):
 
     model.train()
@@ -43,6 +44,7 @@ def Train_one_epoch(
     bulk_loss_all = 0.0
     cosine_loss_all = 0.0
     patho_loss_all = 0.0  # Added for patho loss
+    proto_loss_all = 0.0
     loss_dict = {}
 
     ## DataLoader Bulk
@@ -91,8 +93,14 @@ def Train_one_epoch(
         if mode == "Cox":
             bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
+            #lambda_proto = min(0.1 * (epoch / 10), 0.1) if epoch > 150 else 0
+            #proto_loss = prototype_loss(embeddings_b, bulk_embeddings, e) # Prototype loss
+
         elif mode == "Classification":
             bulk_loss_ = CrossEntropy_loss(risk_scores_a, label)
+
+            #lambda_proto = min(0.1 * (epoch / 10), 0.1) if epoch > 150 else 0
+            #proto_loss = prototype_loss(embeddings_b, bulk_embeddings, label) # Prototype loss
 
         elif mode == "Regression":
             bulk_loss_ = MSE_loss(risk_scores_a, label)
@@ -139,20 +147,24 @@ def Train_one_epoch(
             )
 
         # Backward pass and optimization
+        #total_loss = other_loss + lambda_proto * proto_loss
         total_loss.backward()
         optimizer.step()
 
+        #total_loss_all += other_loss.item() + proto_loss.item()
         total_loss_all += total_loss.item()
         regularization_loss_all += regularization_loss_.item()
         bulk_loss_all += bulk_loss_.item()
         cosine_loss_all += cosine_loss_exp_.item()
         patho_loss_all += pathoLloss.item()
+        # proto_loss_all += proto_loss.item()
 
     loss_dict["all_loss_"] = total_loss_all / len(dataloader_B)
     loss_dict["regularization_loss_"] = regularization_loss_all / len(dataloader_B)
     loss_dict["bulk_loss_"] = bulk_loss_all / len(dataloader_B)
     loss_dict["cosine_loss_"] = cosine_loss_all / len(dataloader_B)
     loss_dict["patho_loss_all"] = patho_loss_all / len(dataloader_B)
+    # loss_dict["proto_loss_all"] = proto_loss_all / len(dataloader_B)
 
     return loss_dict
 
@@ -169,7 +181,7 @@ def Validate_model(
     adj_A=None,
     adj_B=None,
     pre_patho_labels=None,
-    alphas=[1, 1, 1, 1],
+    alphas=[1, 1, 1],
     device="cpu",
 ):
 
@@ -527,19 +539,20 @@ def objective(
         encoder_type=encoder_type,
     )
     model = model.to(device)
+    model.apply(model.init_weights)
 
     # Define hyperparameters with trial object
-    lr_choices = [1e-2, 6e-3, 3e-3, 1e-3, 6e-4, 3e-4, 1e-4, 1e-5, 1e-6]
+    lr_choices = [2e-3,1e-3, 8e-4, 6e-4, 4e-4, 2e-4, 1e-4]
     lr = trial.suggest_categorical("lr", lr_choices)
 
-    n_epochs_choices = [300, 350, 400, 450, 500]
+    n_epochs_choices = [500,525,550,575,600]
     n_epochs = trial.suggest_categorical("n_epochs", n_epochs_choices)
 
     # Define alpha values as specific choices
-    alpha_0_choices = [0.1, 0.06, 0.03, 0.01, 0.005]
-    alpha_1_choices = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-    alpha_2_choices = [1e-1, 5e-2, 1e-2, 5e-3, 1e-3]
-    alpha_3_choices = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+    alpha_0_choices = [1]
+    alpha_1_choices = [1, 0.95, 0.9, 1.05, 1.1, 1.15, 1.2, 0.9, 0.85]
+    alpha_2_choices = [1e-1, 0.95e-1, 0.9e-1, 1.05e-1, 1.1e-1, 1.15e-1, 1.2e-1, 0.9e-1, 0.85e-1]
+    alpha_3_choices = [1e-1, 0.95e-1, 0.9e-1, 1.05e-1, 1.1e-1, 1.15e-1, 1.2e-1, 0.9e-1, 0.85e-1]
 
     # Suggest categorical choices for each alpha
     alphas = [
@@ -550,7 +563,7 @@ def objective(
     ]
 
     optimizer = Adam(model.parameters(), lr=lr)
-    scheduler = StepLR(optimizer, step_size=20, gamma=0.9)
+    scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
     train_loss_dcit = dict()
 
     for epoch in range(n_epochs):
@@ -585,7 +598,7 @@ def objective(
             adj_A=adj_A,
             adj_B=adj_B,
             pre_patho_labels=pre_patho_labels,
-            alphas=[1, 0.1, 1, 0],
+            alphas=[1, 0.001, 0.01],
             device=device,
         )
 

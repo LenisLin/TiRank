@@ -39,7 +39,7 @@ mode = "Classification"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Number of repeats
-repeatTimes = 2
+repeatTimes = 10
 
 def process_dataset(idx, dataset_name, save_path, data_path, mode, infer_mode, device):
     """Process a single dataset."""
@@ -133,7 +133,7 @@ def process_dataset(idx, dataset_name, save_path, data_path, mode, infer_mode, d
             infer_mode=infer_mode,
         )
 
-        tune_hyperparameters(savePath=save_path, device=device, n_trials=5)
+        tune_hyperparameters(savePath=save_path, device=device, n_trials=2)
         Predict_(savePath=save_path, mode=mode, do_reject=True, tolerance=0.05, reject_mode="GMM", suffix=encoder_type)
 
     # Ablation study
@@ -159,7 +159,7 @@ def process_dataset(idx, dataset_name, save_path, data_path, mode, infer_mode, d
         tune_hyperparameters_withAb(
             savePath=save_path,
             device=device,
-            n_trials=5,
+            n_trials=2,
             ablation_index=ablation_index
         )
         Predict_(savePath=save_path, mode=mode, do_reject=True, tolerance=0.05, reject_mode="GMM", suffix=suffix)

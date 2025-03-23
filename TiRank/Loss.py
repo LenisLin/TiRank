@@ -50,33 +50,35 @@ def cox_loss(pred, t, e, margin=0.1):
     return loss
 
 
-def cosine_loss(embeddings, A):
+def cosine_loss(embeddings, A, weight_connected=1.0, weight_unconnected=0.1):
     """
-    Calculates the cosine similarity loss between embeddings.
+    Compute cosine similarity loss with balanced weighting for sparse adjacency matrix A.
 
     Args:
-        embeddings (Tensor): Input tensor containing embeddings
-        A (Tensor): Original matrix to compare against
+        embeddings (Tensor): Embeddings, shape [n_cells, embedding_dim]
+        A (Tensor): Sparse adjacency matrix, shape [n_cells, n_cells]
+        weight_connected (float): Weight for connected pairs (A = 1)
+        weight_unconnected (float): Weight for unconnected pairs (A = 0)
 
     Returns:
-        Tensor: Cosine loss, scalar
+        Tensor: Weighted cosine loss
     """
     embeddings = embeddings.to(A.device)
+    # Compute cosine similarity matrix B
     B = torch.mm(embeddings, embeddings.T)
-
-    # Calculate magnitudes of embeddings
     magnitudes = torch.norm(embeddings, dim=1, keepdim=True)
-    B /= magnitudes
-    B /= magnitudes.T
+    B = B / (magnitudes * magnitudes.T)
+    B = B - torch.eye(B.shape[0], device=B.device)  # Zero out diagonal
 
-    B = B - torch.eye(B.shape[0]).to(B.device)
+    # Scale A to match B’s range
+    A_scaled = 2 * A - 1
 
-    # Compute the difference between original matrix and embedding space matrix
-    matrix_diff = B - A
+    # Weight matrix for balancing
+    weights = A * weight_connected + (1 - A) * weight_unconnected
 
-    cosine_loss = torch.mean(torch.abs(matrix_diff))
-
-    return cosine_loss
+    # Weighted loss
+    loss = torch.mean(weights * torch.abs(B - A_scaled))
+    return loss
 
 # def gaussian_kernel(a, b):
 #     """
@@ -130,8 +132,11 @@ def CrossEntropy_loss(y_pred, y_true):
         Tensor: Cross entropy loss, scalar
     """
 
-    loss_fn = nn.CrossEntropyLoss()
-    loss = loss_fn(y_pred, y_true)
+    # loss_fn = nn.CrossEntropyLoss()
+    # loss = loss_fn(y_pred, y_true)
+
+    loss_fn = nn.NLLLoss()
+    loss = loss_fn(torch.log(y_pred), y_true)
 
     return loss
 
@@ -151,4 +156,29 @@ def MSE_loss(y_pred, y_true):
     loss_fn = nn.MSELoss()
     loss = loss_fn(y_pred, y_true)
 
+    return loss
+
+def prototype_loss(cell_embeddings, bulk_embeddings, bulk_labels, threshold=0.1, margin=1.0):
+    # Compute prototypes from bulk RNA-seq data using class indices
+    rank_plus_proto = bulk_embeddings[bulk_labels == 0].mean(dim=0)  # 0 for 'Rank+'
+    rank_minus_proto = bulk_embeddings[bulk_labels == 1].mean(dim=0)  # 1 for 'Rank-'
+    
+    # Compute distances for single-cell embeddings to both prototypes
+    dist_to_plus = torch.norm(cell_embeddings - rank_plus_proto, dim=1)
+    dist_to_minus = torch.norm(cell_embeddings - rank_minus_proto, dim=1)
+    
+    # Confidence: difference in distances
+    confidence = torch.abs(dist_to_plus - dist_to_minus)
+    mask = (confidence > threshold).float()  # Only use confident cells
+    
+    # Pseudo-labels for single-cell data: 0 if closer to Rank+, 1 if closer to Rank-
+    pseudo_labels = (dist_to_plus < dist_to_minus).long()
+    
+    # Contrastive distances
+    correct_dist = torch.where(pseudo_labels == 0, dist_to_plus, dist_to_minus)
+    incorrect_dist = torch.where(pseudo_labels == 0, dist_to_minus, dist_to_plus)
+    
+    # Contrastive loss: minimize correct_dist, maximize incorrect_dist up to margin
+    loss = torch.mean(mask * (correct_dist + torch.relu(margin - incorrect_dist)))
+    
     return loss
