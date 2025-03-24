@@ -121,7 +121,7 @@ for i in range(repeatTimes):
         savePath=savePath,
         analysis_mode=mode,
         top_var_genes=1500,
-        top_gene_pairs=350,
+        top_gene_pairs=200,
         p_value_threshold=0.05,
         max_cutoff=0.8,
         min_cutoff=-0.8,

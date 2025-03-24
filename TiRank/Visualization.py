@@ -25,7 +25,7 @@ def create_tensor(data_matrix):
 
 
 # Plot loss function
-def plot_loss(train_loss_dict, alphas, savePath="./loss_on_epoch.png"):
+def plot_loss(train_loss_dict, savePath="./loss_on_epoch.png"):
     """
     Plots the change in different types of loss values across epochs.
 

@@ -115,7 +115,8 @@ for (inte_ in iterations) {
     for (setting in settings) {
       ## Read the file
       model_data <- read.csv(file.path(resultPath_2, setting$file), row.names = 1)
-      
+      model_data <- read.csv("/home/lenislin/Experiment/projects/TiRankv2/github/TiRank/intera_0/Data4/3_Analysis/spot_predict_score_MLP_1.csv", row.names = 1)
+
       ## Compute metrics
       metrics <- compute_metrics(model_data)
       

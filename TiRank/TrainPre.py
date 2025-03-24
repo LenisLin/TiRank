@@ -42,9 +42,10 @@ def Train_one_epoch(
     total_loss_all = 0.0
     regularization_loss_all = 0.0
     bulk_loss_all = 0.0
+    mmd_loss_all = 0.0
     cosine_loss_all = 0.0
     patho_loss_all = 0.0  # Added for patho loss
-    proto_loss_all = 0.0
+    # proto_loss_all = 0.0
     loss_dict = {}
 
     ## DataLoader Bulk
@@ -80,27 +81,25 @@ def Train_one_epoch(
             pre_patho = torch.tensor(pre_patho, dtype=torch.uint8)
             pre_patho = pre_patho.to(device)
 
-        # Zero the parameter gradients
-        optimizer.zero_grad()
-
         # Forward pass
-        _, risk_scores_a, _ = model(X_a)
+        embeddings_a, risk_scores_a, _ = model(X_a)
         embeddings_b, _, pred_patho = model(X_b)
 
         regularization_loss_ = regularization_loss(model.feature_weights)
+        mmd_loss_ = mmd_loss(embeddings_a,embeddings_b)
 
         # Calculate loss
         if mode == "Cox":
             bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
             #lambda_proto = min(0.1 * (epoch / 10), 0.1) if epoch > 150 else 0
-            #proto_loss = prototype_loss(embeddings_b, bulk_embeddings, e) # Prototype loss
+            #proto_loss = prototype_loss(embeddings_b, embeddings_a, e) # Prototype loss
 
         elif mode == "Classification":
             bulk_loss_ = CrossEntropy_loss(risk_scores_a, label)
 
-            #lambda_proto = min(0.1 * (epoch / 10), 0.1) if epoch > 150 else 0
-            #proto_loss = prototype_loss(embeddings_b, bulk_embeddings, label) # Prototype loss
+            # lambda_proto = min(0.1 * (epoch / 10), 0.1) if epoch > 150 else 0
+            # proto_loss = prototype_loss(embeddings_b, embeddings_a, label) # Prototype loss
 
         elif mode == "Regression":
             bulk_loss_ = MSE_loss(risk_scores_a, label)
@@ -113,7 +112,16 @@ def Train_one_epoch(
                 regularization_loss_ * alphas[0]
                 + bulk_loss_ * alphas[1]
                 + cosine_loss_exp_ * alphas[2]
+                + mmd_loss_ * 1
             )
+
+            # other_loss = (
+            #     regularization_loss_ * alphas[0]
+            #     + bulk_loss_ * alphas[1]
+            #     + cosine_loss_exp_ * alphas[2]
+            #     + mmd_loss_ * 1
+
+            # )
 
             pathoLloss = torch.tensor(0)
 
@@ -127,7 +135,16 @@ def Train_one_epoch(
                 + bulk_loss_ * alphas[1]
                 + cosine_loss_exp_ * alphas[2]
                 + cosine_loss_spatial_ * alphas[3]
+                + mmd_loss_ * 1
+
             )
+
+            # other_loss = (
+            #     regularization_loss_ * alphas[0]
+            #     + bulk_loss_ * alphas[1]
+            #     + cosine_loss_exp_ * alphas[2]
+            #     + cosine_loss_spatial_ * alphas[3]
+            # )
 
         elif infer_mode == "ST" and pre_patho is not None:
             cosine_loss_exp_ = cosine_loss(embeddings_b, A)
@@ -140,14 +157,25 @@ def Train_one_epoch(
                 + bulk_loss_ * alphas[1]
                 + cosine_loss_exp_ * alphas[2]
                 + pathoLloss * alphas[3]
+                + mmd_loss_ * 1
+
             )
+
+            # other_loss = (
+            #     regularization_loss_ * alphas[0]
+            #     + bulk_loss_ * alphas[1]
+            #     + cosine_loss_exp_ * alphas[2]
+            #     + pathoLloss * alphas[3]
+            # )
         else:
             raise ValueError(
                 f"Unsupported mode: {infer_mode}. There are two mode: Cell and Spot."
             )
 
+        #   total_loss = other_loss + lambda_proto * proto_loss
+
         # Backward pass and optimization
-        #total_loss = other_loss + lambda_proto * proto_loss
+        optimizer.zero_grad() # Zero the parameter gradients
         total_loss.backward()
         optimizer.step()
 
@@ -155,6 +183,7 @@ def Train_one_epoch(
         total_loss_all += total_loss.item()
         regularization_loss_all += regularization_loss_.item()
         bulk_loss_all += bulk_loss_.item()
+        mmd_loss_all += mmd_loss_.item()
         cosine_loss_all += cosine_loss_exp_.item()
         patho_loss_all += pathoLloss.item()
         # proto_loss_all += proto_loss.item()
@@ -162,6 +191,7 @@ def Train_one_epoch(
     loss_dict["all_loss_"] = total_loss_all / len(dataloader_B)
     loss_dict["regularization_loss_"] = regularization_loss_all / len(dataloader_B)
     loss_dict["bulk_loss_"] = bulk_loss_all / len(dataloader_B)
+    loss_dict["mmd_loss_"] = mmd_loss_all / len(dataloader_B)
     loss_dict["cosine_loss_"] = cosine_loss_all / len(dataloader_B)
     loss_dict["patho_loss_all"] = patho_loss_all / len(dataloader_B)
     # loss_dict["proto_loss_all"] = proto_loss_all / len(dataloader_B)
@@ -223,14 +253,17 @@ def Validate_model(
                 pre_patho = pre_patho.to(device)
 
             # Forward pass only
-            _, risk_scores_a, _ = model(X_a)
+            embeddings_a, risk_scores_a, _ = model(X_a)
             embeddings_b, _, pred_patho = model(X_b)
 
             # Compute loss as in training function but without backward and optimizer steps
             # The computation here assumes that the loss functions and infer_mode conditions are the same as in training
             # Please adapt if your validation conditions differ from the training
 
-            # Calculate loss
+            # MMD loss
+            mmd_loss_ = mmd_loss(embeddings_a,embeddings_b)
+
+            # Bulk loss
             if mode == "Cox":
                 bulk_loss_ = cox_loss(risk_scores_a, t, e)
 
@@ -256,6 +289,7 @@ def Validate_model(
                     bulk_loss_ * alphas[0]
                     + cosine_loss_exp_ * alphas[1]
                     + cosine_loss_spatial_ * alphas[2]
+                    + mmd_loss_
                 )
 
             elif infer_mode == "ST" and pre_patho is not None:
@@ -268,6 +302,7 @@ def Validate_model(
                     bulk_loss_ * alphas[0]
                     + cosine_loss_exp_ * alphas[1]
                     + pathoLloss * alphas[2]
+                    + mmd_loss_
                 )
             else:
                 raise ValueError(
@@ -564,7 +599,7 @@ def objective(
 
     optimizer = Adam(model.parameters(), lr=lr)
     scheduler = StepLR(optimizer, step_size=10, gamma=0.9)
-    train_loss_dcit = dict()
+    train_loss_dict = dict()
 
     for epoch in range(n_epochs):
         # Train
@@ -583,7 +618,7 @@ def objective(
             device=device,
         )
 
-        train_loss_dcit["Epoch_" + str(epoch + 1)] = train_loss_dcit_epoch
+        train_loss_dict["Epoch_" + str(epoch + 1)] = train_loss_dcit_epoch
 
         scheduler.step()
 
@@ -621,8 +656,7 @@ def objective(
             f"Saving model and plot for Trial {trial.number} with Validation Loss = {val_loss:.4f}"
         )
         plot_loss(
-            train_loss_dcit,
-            alphas,
+            train_loss_dict,
             savePath=os.path.join(model_save_path, plot_filename),
         )
         torch.save(model.state_dict(), os.path.join(model_save_path, model_filename))
