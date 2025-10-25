@@ -1,0 +1,8 @@
+.DS_Store
+.AppleDouble
+.LSOverride
+__MACOSX/
+
+__pycache__/
+*.py[cod]
+*$py.class

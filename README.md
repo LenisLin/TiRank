@@ -79,7 +79,24 @@ TiRank is a cutting-edge toolkit designed to integrate and analyze RNA-seq and s
 
 TiRank supports multiple installation methods. It is recommended to create a dedicated conda environment to ensure compatibility.
 
-### Prerequisites
+### Method 1: Environment Setup and Installation
+
+You can set up the full TiRank environment directly with the following commands:
+
+```bash
+cd TiRank
+conda env create -f environment.yml
+```
+Then, activate the environment and run TiRank:
+
+```bash
+conda activate Tirank
+```
+---
+`Note`: The TiRank framework has been tested on `Ubuntu 22.04` with `Python 3.9`, using `NVIDIA Driver 12.4` and `RTX 3090 GPUs`.
+
+
+<!-- ### Prerequisites
 
 - **Anaconda or Miniconda**
 - **Python 3.9**
@@ -117,7 +134,7 @@ TiRank supports multiple installation methods. It is recommended to create a ded
    - Access sample datasets via [Google Drive](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE).
 
 6. **(Optional) Pretrained Model for Spatial Transcriptomics**:
-   - Download the pre-trained [CTransPath](https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view) model weights.
+   - Download the pre-trained [CTransPath](https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view) model weights. -->
 
 ### Method 2: Docker
 
