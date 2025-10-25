@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='TiRank',  # Replace with your own package name
+    name='tirank',  # Replace with your own package name
     version='0.1.2',  # Package version
     author='Lenis Lin',  # Replace with your name
     author_email='727682308@qq.com',  # Replace with your email
