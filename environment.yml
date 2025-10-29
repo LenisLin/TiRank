@@ -383,3 +383,4 @@ dependencies:
       - umap-learn==0.5.7
       - werkzeug==3.0.6
       - wrapt==2.0.0
+      - click==8.1.8
