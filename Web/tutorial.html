@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>tutorial.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="tirank-web-tutorial">TiRank-web Tutorial</h1>
+<p>Welcome! This guide will walk you through the entire TiRank-web application, from uploading data to analyzing your results.</p>
+<h3 id="what-is-tirank-web">What is TiRank-web?</h3>
+<p>The TiRank-web application is a data-driven tool for creating and deploying powerful data analysis applications. It is structured into six key sections: Homepage, Upload Data, Pre-processing, Analysis, Tutorial, and FAQs.</p>
+<h3 id="how-this-guide-is-structured">How This Guide is Structured</h3>
+<p>This tutorial will walk you through the four main stages of the app:</p>
+<ol>
+<li><strong>Upload Data:</strong> Loading your datasets into the application.</li>
+<li><strong>Pre-processing:</strong> Cleaning and preparing your data for the model.</li>
+<li><strong>Analysis (TiRank):</strong> Running the main TiRank model.</li>
+<li><strong>Analysis (Downstream):</strong> Performing DEG and pathway enrichment.</li>
+</ol>
+<p>Let's get started!</p>
+<hr>
+<h2 id="step-1-uploading-your-data">Step 1: Uploading Your Data</h2>
+<h3 id="11-load-example-data-quickstart">1.1 Load Example Data (Quickstart)</h3>
+<p>To help you get started, we provide example datasets for both Spatial Transcriptomics (ST) and Single-cell RNA sequencing (scRNA-seq).</p>
+<p>As shown in the image, you can select 'Spatial Transcriptomics Data' or 'scRNA-seq Data' to automatically load our sample data. This will fill in all the required paths for the rest of this tutorial.</p>
+<blockquote>
+<p><strong>Hint:</strong> You only need to fill out <em>one</em> of the ST (2-1) or scRNA-seq (2-2) forms, not both.</p>
+</blockquote>
+<p><img src="./assets/load-data-tutorial.png" alt="Load Data Tutorial"></p>
+<h3 id="12-uploading-bulk-transcription-data">1.2 Uploading Bulk Transcription Data</h3>
+<p>We will use the loaded ST data as our example.</p>
+<ol>
+<li><strong>Enter Paths:</strong> The 'Expression Matrix' and 'Clinical Information' fields will be auto-filled from the example data. To use your own data, you must enter the <strong>absolute paths</strong> to your files here.</li>
+<li><strong>View Data:</strong> Click the 'View' button to preview your loaded tables in the 'View Data' card on the right.</li>
+<li><strong>Check Data:</strong> Click the 'Check' button to validate that your data format is compatible with the TiRank model.</li>
+</ol>
+<p><img src="./assets/bulk-data-tutorial.png" alt="Bulk Data Tutorial"></p>
+<h3 id="13-uploading-st-or-scrna-seq-data">1.3 Uploading ST or scRNA-seq Data</h3>
+<p>This step specifies which type of data you are using.</p>
+<ol>
+<li><strong>Enter Paths:</strong> This will also be auto-filled by the example data. To use your own data, enter the <strong>absolute paths</strong> here.</li>
+<li><strong>View Data:</strong> As before, click 'View' to preview your data.</li>
+<li><strong>Confirm Type:</strong> Click the 'Confirm' button (in either the 2-1 card for ST or the 2-2 card for scRNA-seq). This step is essential because our app processes ST and scRNA-seq data differently.</li>
+</ol>
+<p><img src="./assets/st-sc-data-tutorial.png" alt="ST and SC Data Tutorial"></p>
+<hr>
+<h2 id="step-2-pre-processing-your-data">Step 2: Pre-processing Your Data</h2>
+<h3 id="21-normalization-and-transformation">2.1 Normalization and Transformation</h3>
+<ol>
+<li><strong>Select Options:</strong> In the 'Pre-processing Data' card, choose &quot;Enable&quot; or &quot;Bypass&quot; to decide whether to perform Normalization and Log-transformation.</li>
+<li><strong>Perform:</strong> Click the 'Perform' button to start pre-processing.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> The system will show a &quot;Loading&quot; screen. This step may take a few minutes. Please wait for it to complete before clicking anything else.</p>
+</blockquote>
+<p><img src="./assets/preprocess-tutorial.png" alt="Preprocessing Tutorial"></p>
+<h3 id="22-mode-selection-and-genepair-transformation">2.2 Mode Selection and GenePair Transformation</h3>
+<ol>
+<li>
+<p><strong>Mode select:</strong> Choose your desired mode.</p>
+</li>
+<li>
+<p><strong>GenePair Transformation:</strong> Select values for 'Top var genes', 'P value threshold', and 'Top gene pairs'. We recommend these default parameters:</p>
+<pre class="hljs"><code><div>'Top var genes': <span class="hljs-number">2000</span>
+'P value threshold': <span class="hljs-number">0.05</span>
+'Top gene pairs': <span class="hljs-number">2000</span>
+</div></code></pre>
+<p>Click the 'Perform' button to run the transformation.</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> This is another long step. The system will enter a &quot;Loading&quot; screen. Please be patient and do not navigate away.</p>
+</blockquote>
+<p><img src="./assets/preprocess-mode-tutorial.png" alt="Preprocessing Mode Tutorial"></p>
+<h3 id="23-viewing-pre-processing-results">2.3 Viewing Pre-processing Results</h3>
+<p>After the pre-processing and transformation are complete, you can use the radio buttons in the right-hand card to explore the different output plots.</p>
+<p><img src="./assets/preprocess-view-res-tutorial.png" alt="View Preprocessing Results"></p>
+<hr>
+<h2 id="step-3-analysis-with-tirank">Step 3: Analysis with TiRank</h2>
+<h3 id="31-device-selection-cpu-vs-gpu">3.1 Device Selection (CPU vs. GPU)</h3>
+<p>First, choose the hardware you want to use for training. In the 'Device' dropdown, you can select <code>Cpu</code> or <code>Cuda</code> (for GPU training).</p>
+<p>If you want to use a GPU, you must have the correct PyTorch version installed.</p>
+<ol>
+<li>Check your GPU driver version in your terminal:<pre class="hljs"><code><div>nvidia-smi
+</div></code></pre>
+</li>
+<li>Check if PyTorch can detect your GPU by running this Python code:<pre class="hljs"><code><div><span class="hljs-keyword">import</span> torch
+print(torch.cuda.is_available())
+</div></code></pre>
+</li>
+</ol>
+<p>If the output is <strong>True</strong>, you are ready to use your GPU. If <strong>False</strong>, you must install a compatible version of PyTorch from the <a href="https://pytorch.org/">Pytorch official website</a>.</p>
+<p><img src="./assets/device-tutorial.png" alt="Device Select Tutorial"></p>
+<h3 id="32-training-the-tirank-model">3.2 Training the TiRank Model</h3>
+<ol>
+<li><strong>Set Parameters:</strong> You can click 'advanced' to change the model's hyperparameters. If you don't, the following defaults will be used:<pre class="hljs"><code><div>'Nhead': <span class="hljs-number">2</span>
+'n_output': <span class="hljs-number">32</span>
+'nhid1': <span class="hljs-number">96</span>
+'nhid2': <span class="hljs-number">8</span>
+'nlayers': <span class="hljs-number">2</span>
+'n_trails': <span class="hljs-number">20</span>
+'dropout': <span class="hljs-number">0.5</span>
+</div></code></pre>
+</li>
+<li><strong>Train:</strong> Click the 'Train' button. This is the longest step, so please be patient.</li>
+</ol>
+<p><img src="./assets/train-tutorial.png" alt="Train Model Tutorial"></p>
+<h3 id="33-predicting-with-the-tirank-model">3.3 Predicting with the TiRank Model</h3>
+<ol>
+<li><strong>Set Parameters:</strong> You can select 'Reject' to perform rejection and 'advanced' to change prediction parameters. The defaults are:<pre class="hljs"><code><div>'Tolerance': <span class="hljs-number">0.05</span>
+'Reject_mode': 'GMM'
+</div></code></pre>
+</li>
+<li><strong>Predict:</strong> Click the 'Predict' button.</li>
+</ol>
+<p><img src="./assets/predict-tutorial.png" alt="Predict Tutorial"></p>
+<h3 id="34-viewing-tirank-results">3.4 Viewing TiRank Results</h3>
+<p>When training and prediction are finished, you can select and view the resulting graphs from the drop-down box in the right-hand card.</p>
+<p><img src="./assets/train-predict-tutorial.png" alt="View Train/Predict Results"></p>
+<hr>
+<h2 id="step-4-downstream-analysis-deg--pathway">Step 4: Downstream Analysis (DEG &amp; Pathway)</h2>
+<p>The final section performs differential gene expression and pathway enrichment.</p>
+<ol>
+<li><strong>Differential Expression Genes (DEG):</strong> Select your desired <code>logFC threshold</code> and <code>P-value threshold</code> from the dropdowns and click &quot;Perform&quot;.</li>
+<li><strong>Pathway Enrichment:</strong> Simply click the 'Perform' button to run the analysis.</li>
+<li><strong>View Results:</strong> The results will appear on the right, where you can click the 'download' button to save them.</li>
+</ol>
+<p><img src="./assets/degpe-tutorial.png" alt="DEG and PE Tutorial"></p>
+
+</body>
+</html>
