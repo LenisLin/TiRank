@@ -1,10 +1,10 @@
 # TiRank
 
-<img src="TiRank_white.png" alt="TiRank Logo" width=50% />
+<img src="./icons/TiRank_white.png" alt="TiRank Logo" width=50% />
 
 TiRank is a cutting-edge toolkit designed to integrate and analyze RNA-seq and single-cell RNA-seq (scRNA-seq) data. By seamlessly combining spatial transcriptomics or scRNA-seq data with bulk RNA sequencing data, TiRank enables researchers to identify phenotype-associated regions or clusters. The toolkit supports various analysis modes, including survival analysis (Cox), classification, and regression, providing a comprehensive solution for transcriptomic data analysis.
 
-![TiRank Workflow](Fig1.png)
+![TiRank Workflow](./icons/Fig1.png)
 
 ---
 
@@ -272,6 +272,10 @@ TiRank outputs results in the `savePath/3_Analysis/` directory. Key outputs incl
 
 3. **`lr`**:
    - Lower values ensure stable convergence.
+
+---
+
+![TiRank Detail](./icons/FigS1.png)
 
 ---
 
