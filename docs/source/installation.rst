@@ -19,7 +19,7 @@ This is the recommended method. You can set up the full TiRank environment direc
 
    .. code-block:: bash
 
-      conda env create -f environment.yml
+      conda env create -f installation/environment.yml
 
 3. Activate the new environment:
 
