@@ -7,18 +7,16 @@ build:
 
 sphinx:
   configuration: docs/source/conf.py
-  fail_on_warning: false
+  fail_on_warning: false  # set true later if you want strict builds
 
 conda:
   environment: docs/environment.yml
 
-# Optional: if you prefer pip-only instead of conda, you could drop the conda block
-# and replace with:
-# python:
-#   install:
-#     - method: pip
-#       path: .
-#     - requirements: docs/requirements.txt
+# Install your package from the working tree (uses pyproject.toml)
+python:
+  install:
+    - method: pip
+      path: .
 
 formats:
   - htmlzip

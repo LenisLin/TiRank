@@ -5,10 +5,7 @@ dependencies:
   - python=3.9
   - pip
   - sphinx
-  - myst-parser            # use MyST instead of recommonmark
+  - myst-parser          # MyST for your .md files
   - sphinx-rtd-theme
   - sphinx-autodoc-typehints
-  - numpy                  # lightweight, helps imports that annotate np types
-  - pip:
-      - .
-
+  - numpy                # light/core dep that helps with imports and type hints

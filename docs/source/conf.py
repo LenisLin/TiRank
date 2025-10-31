@@ -23,12 +23,26 @@ extensions = [
     'nbsphinx'
 ]
 
-# Tell autosummary to auto-generate stub files
-autosummary_generate = True
-
 templates_path = ['_templates']
 exclude_patterns = []
 
+
+# Tell autosummary to auto-generate stub files
+autosummary_generate = True
+
+# Good defaults so module pages have member anchors & clean ordering
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": False,
+    "private-members": False,
+    "show-inheritance": True,
+    "inherited-members": True,
+    "member-order": "bysource",
+}
+
+# Google-style docstrings
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "TiRank"
+version = "0.0.0"
+description = "TiRank prioritizes phenotypic niches in tumor microenvironment for clinical biomarker discovery"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "LenisLin" }]
+license = { text = "MIT" }
+dependencies = []
+
+[tool.setuptools]
+packages = { find = { where = ["."] } }
