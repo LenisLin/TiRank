@@ -1,0 +1,528 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.SCSTpreprocess &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            TiRank
+              <img src="../../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tirank.SCSTpreprocess</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tirank.SCSTpreprocess</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Preprocessing function for scRNA-seq data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.distance</span><span class="w"> </span><span class="kn">import</span> <span class="n">cdist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">zscore</span>
+
+<span class="c1"># unbalanced</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">imblearn.over_sampling</span><span class="w"> </span><span class="kn">import</span> <span class="n">SMOTE</span><span class="p">,</span> <span class="n">RandomOverSampler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">imblearn.under_sampling</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomUnderSampler</span><span class="p">,</span> <span class="n">TomekLinks</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Preprocessing utilities for scRNA-seq and ST data using Scanpy.</span>
+
+<span class="sd">This module provides a pipeline of functions to load, filter, normalize,</span>
+<span class="sd">log-transform, and cluster single-cell and spatial data. It also includes</span>
+<span class="sd">functions for handling class imbalance in bulk training data (sampling) and</span>
+<span class="sd">for computing similarity/distance matrices.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="merge_datasets">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.merge_datasets.html#tirank.SCSTpreprocess.merge_datasets">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">merge_datasets</span><span class="p">(</span><span class="n">bulkClinical_1</span><span class="p">,</span> <span class="n">bulkClinical_2</span><span class="p">,</span> <span class="n">bulkExp_1</span><span class="p">,</span> <span class="n">bulkExp_2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merges two bulk expression and clinical datasets, finding intersecting genes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bulkClinical_1 (pd.DataFrame): Clinical data for the first cohort.</span>
+<span class="sd">        bulkClinical_2 (pd.DataFrame): Clinical data for the second cohort.</span>
+<span class="sd">        bulkExp_1 (pd.DataFrame): Expression data for the first cohort (genes x samples).</span>
+<span class="sd">        bulkExp_2 (pd.DataFrame): Expression data for the second cohort (genes x samples).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing:</span>
+<span class="sd">            - pd.DataFrame: The merged expression DataFrame.</span>
+<span class="sd">            - pd.DataFrame: The merged clinical DataFrame.</span>
+<span class="sd">        Or returns 0 if no intersecting genes are found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">genes1</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bulkExp_1</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">}</span>
+    <span class="n">genes2</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bulkExp_2</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">}</span>
+    <span class="n">intersectGenes</span> <span class="o">=</span> <span class="n">genes1</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">genes2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">intersectGenes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The length of interaction genes between these two bulk RNA-seq datasets was zero!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="n">intersectGenes_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">intersectGenes</span><span class="p">]</span>
+
+    <span class="n">bulkExp_1</span> <span class="o">=</span> <span class="n">bulkExp_1</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">intersectGenes_list</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">bulkExp_2</span> <span class="o">=</span> <span class="n">bulkExp_2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">intersectGenes_list</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">bulkClinical_1</span><span class="p">,</span> <span class="n">bulkClinical_2</span><span class="p">))</span>
+    <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">bulkExp_1</span><span class="p">,</span> <span class="n">bulkExp_2</span><span class="p">))</span>
+
+    <span class="n">pid1</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">bulkExp_1</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="n">pid2</span> <span class="o">=</span> <span class="p">[</span><span class="n">y</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">bulkExp_2</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+
+    <span class="n">pid1</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pid2</span><span class="p">)</span>
+
+    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkExp</span><span class="p">)</span>
+    <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">bulkClinical</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">bulkClinical_1</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">pid1</span><span class="p">)</span>
+    <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkExp</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">pid1</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">bulkExp_1</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bulkExp</span><span class="p">,</span> <span class="n">bulkClinical</span></div>
+
+
+
+<div class="viewcode-block" id="normalize_data">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.normalize_data.html#tirank.SCSTpreprocess.normalize_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_data</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize gene expression data using z-score normalization (row-wise).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        exp (pd.DataFrame): A pandas DataFrame with genes as rows and samples as columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: A z-score normalized DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Apply z-score normalization</span>
+    <span class="n">normalized_exp</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">zscore</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">normalized_exp</span> <span class="o">=</span> <span class="n">normalized_exp</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">normalized_exp</span></div>
+
+
+
+<div class="viewcode-block" id="is_imbalanced">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.is_imbalanced.html#tirank.SCSTpreprocess.is_imbalanced">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_imbalanced</span><span class="p">(</span><span class="n">bulkClinical</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if the primary clinical variable is imbalanced.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bulkClinical (pd.DataFrame): DataFrame with clinical data. Assumes</span>
+<span class="sd">            the variable of interest is in the first column.</span>
+<span class="sd">        threshold (float): The minimum proportion for a class to be</span>
+<span class="sd">            considered &#39;balanced&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the minority class is below the threshold, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">bulkClinical</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">counts</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">threshold</span></div>
+
+
+
+<div class="viewcode-block" id="perform_sampling_on_RNAseq">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.perform_sampling_on_RNAseq.html#tirank.SCSTpreprocess.perform_sampling_on_RNAseq">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">perform_sampling_on_RNAseq</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;SMOTE&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs sampling (over- or under-sampling) on the bulk training data.</span>
+
+<span class="sd">    This function is used to correct for class imbalance in &#39;Classification&#39; mode.</span>
+<span class="sd">    It loads the training data, applies the specified sampling method, and</span>
+<span class="sd">    overwrites the training files with the resampled data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        mode (str, optional): The sampling method to use. One of &#39;SMOTE&#39;,</span>
+<span class="sd">            &#39;downsample&#39; (RandomUnderSampler), &#39;upsample&#39; (RandomOverSampler),</span>
+<span class="sd">            or &#39;tomeklinks&#39; (TomekLinks). Defaults to &quot;SMOTE&quot;.</span>
+<span class="sd">        threshold (float, optional): The imbalance threshold. Sampling is only</span>
+<span class="sd">            performed if the minority class proportion is below this value.</span>
+<span class="sd">            Defaults to 0.5.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+    <span class="n">savePath_splitData</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span><span class="s2">&quot;split_data&quot;</span><span class="p">)</span>
+
+    <span class="c1">## load</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkExp_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkClinical_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="c1"># Ensure classes are imbalanced before any action</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_imbalanced</span><span class="p">(</span><span class="n">bulkClinical</span><span class="p">,</span> <span class="n">threshold</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Classes are balanced!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bulkExp</span><span class="p">,</span> <span class="n">bulkClinical</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">bulkExp</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">bulkClinical</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;downsample&quot;</span><span class="p">:</span>
+        <span class="n">sampler</span> <span class="o">=</span> <span class="n">RandomUnderSampler</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;upsample&quot;</span><span class="p">:</span>
+        <span class="n">sampler</span> <span class="o">=</span> <span class="n">RandomOverSampler</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;SMOTE&quot;</span><span class="p">:</span>
+        <span class="n">sampler</span> <span class="o">=</span> <span class="n">SMOTE</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;tomeklinks&quot;</span><span class="p">:</span>
+        <span class="n">sampler</span> <span class="o">=</span> <span class="n">TomekLinks</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid mode selected&quot;</span><span class="p">)</span>
+
+    <span class="n">X_res</span><span class="p">,</span> <span class="n">y_res</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Convert back to DataFrame, making sure the samples are consistent with their labels.</span>
+    <span class="n">samples_order</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;sample_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X_res</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+    <span class="n">bulkExp_resampled</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">X_res</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">samples_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">bulkExp</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">bulkClinical_resampled</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">y_res</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">samples_order</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">bulkClinical</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    
+    <span class="c1">## save</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkExp_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkExp_resampled</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="c1">## training bulk clinical info matrix</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkClinical_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkClinical_resampled</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="c1">## training bulk clinical info matrix</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># Perform standard workflow on ST or SC</span>
+
+<span class="c1"># Filtering cells or spots</span>
+<div class="viewcode-block" id="FilteringAnndata">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.FilteringAnndata.html#tirank.SCSTpreprocess.FilteringAnndata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">FilteringAnndata</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="mi">35000</span><span class="p">,</span> <span class="n">min_count</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">MT_propor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_cell</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">imgPath</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Filters an AnnData object based on QC metrics.</span>
+
+<span class="sd">    Filters cells/spots based on total counts and mitochondrial percentage.</span>
+<span class="sd">    Filters genes based on minimum cell count. Also saves a QC violin plot.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        adata (sc.AnnData): The AnnData object to filter.</span>
+<span class="sd">        max_count (int, optional): Maximum total counts per cell/spot.</span>
+<span class="sd">            Defaults to 35000.</span>
+<span class="sd">        min_count (int, optional): Minimum total counts per cell/spot.</span>
+<span class="sd">            Defaults to 5000.</span>
+<span class="sd">        MT_propor (int, optional): Maximum percentage of mitochondrial gene</span>
+<span class="sd">            counts. Defaults to 10.</span>
+<span class="sd">        min_cell (int, optional): Minimum number of cells/spots a gene must</span>
+<span class="sd">            be expressed in. Defaults to 10.</span>
+<span class="sd">        imgPath (str, optional): Path to save the QC violin plot.</span>
+<span class="sd">            Defaults to &quot;./&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sc.AnnData: The filtered AnnData object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">var_names_make_unique</span><span class="p">()</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;mt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;MT-&quot;</span><span class="p">)</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">calculate_qc_metrics</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">qc_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mt&quot;</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Plot</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">violin</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;n_genes_by_counts&#39;</span><span class="p">,</span> <span class="s1">&#39;total_counts&#39;</span><span class="p">,</span> <span class="s1">&#39;pct_counts_mt&#39;</span><span class="p">],</span><span class="n">jitter</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">multi_panel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgPath</span><span class="p">,</span><span class="s2">&quot;qc_violins.png&quot;</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Filtering</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_cells</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">min_counts</span><span class="o">=</span><span class="n">min_count</span><span class="p">)</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_cells</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">max_counts</span><span class="o">=</span><span class="n">max_count</span><span class="p">)</span>
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">adata</span><span class="p">[</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;pct_counts_mt&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">MT_propor</span><span class="p">]</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">filter_genes</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">min_cells</span><span class="o">=</span><span class="n">min_cell</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+
+<span class="c1"># Normalization</span>
+<div class="viewcode-block" id="Normalization">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.Normalization.html#tirank.SCSTpreprocess.Normalization">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Normalization</span><span class="p">(</span><span class="n">adata</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs total count normalization (target_sum=1e4) on an AnnData object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        adata (sc.AnnData): The AnnData object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sc.AnnData: The normalized AnnData object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">target_sum</span><span class="o">=</span><span class="mf">1e4</span><span class="p">,</span> <span class="n">inplace</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+<span class="c1"># log-transformation</span>
+<div class="viewcode-block" id="Logtransformation">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.Logtransformation.html#tirank.SCSTpreprocess.Logtransformation">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Logtransformation</span><span class="p">(</span><span class="n">adata</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs log1p transformation on an AnnData object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        adata (sc.AnnData): The AnnData object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sc.AnnData: The log-transformed AnnData object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+
+<div class="viewcode-block" id="Clustering">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.Clustering.html#tirank.SCSTpreprocess.Clustering">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Clustering</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span><span class="n">infer_mode</span><span class="p">,</span> <span class="n">savePath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs standard clustering (HVGs, PCA, neighbors, UMAP, Leiden).</span>
+
+<span class="sd">    If neighbors are already computed, it just re-runs Leiden. Otherwise,</span>
+<span class="sd">    it runs the full pipeline. Saves a UMAP or spatial plot.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ann_data (sc.AnnData): The AnnData object.</span>
+<span class="sd">        infer_mode (str): The inference data type (&#39;SC&#39; or &#39;ST&#39;) for plotting.</span>
+<span class="sd">        savePath (str): The main project directory path to save plots.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sc.AnnData: The clustered AnnData object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;connectivities&#39;</span> <span class="ow">in</span> <span class="n">ann_data</span><span class="o">.</span><span class="n">obsp</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;leiden&#39;</span> <span class="ow">in</span> <span class="n">ann_data</span><span class="o">.</span><span class="n">uns</span><span class="p">):</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span> <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_clusters&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Identify highly variable genes</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">highly_variable_genes</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span> <span class="n">flavor</span><span class="o">=</span><span class="s2">&quot;seurat&quot;</span><span class="p">,</span> <span class="n">n_top_genes</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+        <span class="c1"># Perform PCA dimension reduction</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">pca</span><span class="p">(</span><span class="n">ann_data</span><span class="p">)</span>
+        <span class="c1"># Computing the neighborhood graph</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">neighbors</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span> <span class="n">use_rep</span><span class="o">=</span><span class="s1">&#39;X_pca&#39;</span><span class="p">)</span>
+        <span class="c1"># UMAP and leiden</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">ann_data</span><span class="p">)</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span> <span class="n">key_added</span><span class="o">=</span><span class="s2">&quot;leiden_clusters&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;SC&quot;</span><span class="p">:</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;leiden_clusters&#39;</span><span class="p">],</span><span class="n">show</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span><span class="s2">&quot;leiden cluster.png&quot;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>  <span class="c1"># Create a 1x2 grid for the plots</span>
+
+        <span class="n">ann_data</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ann_data</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">],</span><span class="n">dtype</span> <span class="o">=</span> <span class="nb">float</span><span class="p">)</span>
+        
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span> <span class="n">img_key</span><span class="o">=</span><span class="s2">&quot;hires&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;leiden_clusters&quot;</span><span class="p">],</span><span class="n">show</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span><span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">ann_data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;leiden_clusters&quot;</span><span class="p">],</span><span class="n">show</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># Ensure proper spacing between the two plots</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span><span class="s2">&quot;leiden cluster.png&quot;</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        
+    <span class="k">return</span> <span class="n">ann_data</span></div>
+
+
+<span class="c1"># This function computes the cell similarity network for single-cell or spatial transcriptomics data.</span>
+<div class="viewcode-block" id="compute_similarity">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.compute_similarity.html#tirank.SCSTpreprocess.compute_similarity">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_similarity</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">ann_data</span><span class="p">,</span> <span class="n">calculate_distance</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extracts and saves the cell/spot similarity matrix (connectivities).</span>
+
+<span class="sd">    Optionally, it can also calculate a spatial distance-based adjacency</span>
+<span class="sd">    matrix (6 nearest neighbors) for ST data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        ann_data (sc.AnnData): A clustered AnnData object (must have</span>
+<span class="sd">            `ann_data.obsp[&#39;connectivities&#39;]`).</span>
+<span class="sd">        calculate_distance (bool, optional): Whether to compute the spatial</span>
+<span class="sd">            distance matrix (ST only). Defaults to False.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+
+    <span class="c1"># data_path refers to the output directory from the Space Ranger.</span>
+    <span class="c1"># perform_normalization indicates whether the input data needs to be normalized.</span>
+
+    <span class="c1"># Obtain the cell-cell similarity matrix</span>
+    <span class="n">cell_cell_similarity</span> <span class="o">=</span> <span class="n">ann_data</span><span class="o">.</span><span class="n">obsp</span><span class="p">[</span><span class="s1">&#39;connectivities&#39;</span><span class="p">]</span>
+    <span class="n">dense_similarity_matrix</span> <span class="o">=</span> <span class="n">cell_cell_similarity</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+    <span class="n">similarity_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">dense_similarity_matrix</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">ann_data</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ann_data</span><span class="o">.</span><span class="n">obs_names</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">calculate_distance</span><span class="p">:</span>
+        <span class="c1"># Obtain the spatial positions and calculate the Euclidean distances</span>
+        <span class="n">spatial_positions</span> <span class="o">=</span> <span class="n">ann_data</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s1">&#39;spatial&#39;</span><span class="p">]</span>
+        <span class="n">euclidean_distances</span> <span class="o">=</span> <span class="n">cdist</span><span class="p">(</span>
+            <span class="n">spatial_positions</span><span class="p">,</span> <span class="n">spatial_positions</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;euclidean&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Create an adjacency matrix initialized with zeros</span>
+        <span class="n">adjacency_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">euclidean_distances</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="c1"># For each spot, mark the six closest spots as neighbors</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">adjacency_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="c1"># Get the indices of the six smallest distances</span>
+            <span class="c1"># Skip the 0th index because it&#39;s the distance to itself</span>
+            <span class="n">closest_indices</span> <span class="o">=</span> <span class="n">euclidean_distances</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[</span><span class="mi">1</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span>
+            <span class="n">adjacency_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">closest_indices</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">distance_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">adjacency_matrix</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">ann_data</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ann_data</span><span class="o">.</span><span class="n">obs_names</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s1">&#39;distance_df.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">distance_df</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s1">&#39;similarity_df.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">similarity_df</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># This function calculates the cell subpopulation mean rank.</span>
+
+
+<div class="viewcode-block" id="calculate_populations_meanRank">
+<a class="viewcode-back" href="../../generated/tirank.SCSTpreprocess.calculate_populations_meanRank.html#tirank.SCSTpreprocess.calculate_populations_meanRank">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_populations_meanRank</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the mean feature values for each cell subpopulation (category).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_data (pd.DataFrame): Input DataFrame (samples x features).</span>
+<span class="sd">        category (pd.Series): A Series indicating the category (e.g., cluster)</span>
+<span class="sd">            of each sample. Must share the same index as `input_data`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: A DataFrame where rows are categories and columns</span>
+<span class="sd">            are the mean of features for that category.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># First, ensure the category Series has the same index as the input_data DataFrame</span>
+    <span class="n">category</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">index</span>
+
+    <span class="c1"># Combine the category series with input dataframe</span>
+    <span class="n">input_data_combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">input_data</span><span class="p">,</span> <span class="n">category</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;Category&#39;</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Now group by the &#39;Category&#39; column and find the mean of each group</span>
+    <span class="n">meanrank_df</span> <span class="o">=</span> <span class="n">input_data_combined</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;Category&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cell subpopulation mean feature calculation done!&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">meanrank_df</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

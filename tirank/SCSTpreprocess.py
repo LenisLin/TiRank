@@ -14,7 +14,31 @@ from scipy.stats import zscore
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler, TomekLinks
 
+"""
+Preprocessing utilities for scRNA-seq and ST data using Scanpy.
+
+This module provides a pipeline of functions to load, filter, normalize,
+log-transform, and cluster single-cell and spatial data. It also includes
+functions for handling class imbalance in bulk training data (sampling) and
+for computing similarity/distance matrices.
+"""
+
 def merge_datasets(bulkClinical_1, bulkClinical_2, bulkExp_1, bulkExp_2):
+    """
+    Merges two bulk expression and clinical datasets, finding intersecting genes.
+
+    Args:
+        bulkClinical_1 (pd.DataFrame): Clinical data for the first cohort.
+        bulkClinical_2 (pd.DataFrame): Clinical data for the second cohort.
+        bulkExp_1 (pd.DataFrame): Expression data for the first cohort (genes x samples).
+        bulkExp_2 (pd.DataFrame): Expression data for the second cohort (genes x samples).
+
+    Returns:
+        tuple: A tuple containing:
+            - pd.DataFrame: The merged expression DataFrame.
+            - pd.DataFrame: The merged clinical DataFrame.
+        Or returns 0 if no intersecting genes are found.
+    """
 
     genes1 = {x for x in bulkExp_1.index.values}
     genes2 = {x for x in bulkExp_2.index.values}
@@ -47,13 +71,13 @@ def merge_datasets(bulkClinical_1, bulkClinical_2, bulkExp_1, bulkExp_2):
 
 def normalize_data(exp):
     """
-    Normalize gene expression data using z-score normalization.
+    Normalize gene expression data using z-score normalization (row-wise).
 
     Args:
-    exp (DataFrame): A pandas DataFrame with genes as rows and samples as columns.
+        exp (pd.DataFrame): A pandas DataFrame with genes as rows and samples as columns.
 
     Returns:
-    DataFrame: A normalized DataFrame.
+        pd.DataFrame: A z-score normalized DataFrame.
     """
     # Apply z-score normalization
     normalized_exp = exp.apply(zscore, axis=1)
@@ -63,11 +87,42 @@ def normalize_data(exp):
 
 
 def is_imbalanced(bulkClinical, threshold):
+    """
+    Checks if the primary clinical variable is imbalanced.
+
+    Args:
+        bulkClinical (pd.DataFrame): DataFrame with clinical data. Assumes
+            the variable of interest is in the first column.
+        threshold (float): The minimum proportion for a class to be
+            considered 'balanced'.
+
+    Returns:
+        bool: True if the minority class is below the threshold, False otherwise.
+    """
     counts = bulkClinical.iloc[:, 0].value_counts(normalize=True)
     return counts.min() < threshold
 
 
 def perform_sampling_on_RNAseq(savePath, mode="SMOTE", threshold=0.5):
+    """
+    Performs sampling (over- or under-sampling) on the bulk training data.
+
+    This function is used to correct for class imbalance in 'Classification' mode.
+    It loads the training data, applies the specified sampling method, and
+    overwrites the training files with the resampled data.
+
+    Args:
+        savePath (str): The main project directory path.
+        mode (str, optional): The sampling method to use. One of 'SMOTE',
+            'downsample' (RandomUnderSampler), 'upsample' (RandomOverSampler),
+            or 'tomeklinks' (TomekLinks). Defaults to "SMOTE".
+        threshold (float, optional): The imbalance threshold. Sampling is only
+            performed if the minority class proportion is below this value.
+            Defaults to 0.5.
+    
+    Returns:
+        None
+    """
     savePath_2 = os.path.join(savePath,"2_preprocessing")
     savePath_splitData = os.path.join(savePath_2,"split_data")
 
@@ -121,6 +176,28 @@ def perform_sampling_on_RNAseq(savePath, mode="SMOTE", threshold=0.5):
 
 # Filtering cells or spots
 def FilteringAnndata(adata, max_count=35000, min_count=5000, MT_propor=10, min_cell=10, imgPath="./"):
+    """
+    Filters an AnnData object based on QC metrics.
+
+    Filters cells/spots based on total counts and mitochondrial percentage.
+    Filters genes based on minimum cell count. Also saves a QC violin plot.
+
+    Args:
+        adata (sc.AnnData): The AnnData object to filter.
+        max_count (int, optional): Maximum total counts per cell/spot.
+            Defaults to 35000.
+        min_count (int, optional): Minimum total counts per cell/spot.
+            Defaults to 5000.
+        MT_propor (int, optional): Maximum percentage of mitochondrial gene
+            counts. Defaults to 10.
+        min_cell (int, optional): Minimum number of cells/spots a gene must
+            be expressed in. Defaults to 10.
+        imgPath (str, optional): Path to save the QC violin plot.
+            Defaults to "./".
+
+    Returns:
+        sc.AnnData: The filtered AnnData object.
+    """
     adata.var_names_make_unique()
     adata.var["mt"] = adata.var_names.str.startswith("MT-")
     sc.pp.calculate_qc_metrics(adata, qc_vars=["mt"], inplace=True)
@@ -141,15 +218,47 @@ def FilteringAnndata(adata, max_count=35000, min_count=5000, MT_propor=10, min_c
 
 # Normalization
 def Normalization(adata):
+    """
+    Performs total count normalization (target_sum=1e4) on an AnnData object.
+
+    Args:
+        adata (sc.AnnData): The AnnData object.
+
+    Returns:
+        sc.AnnData: The normalized AnnData object.
+    """
     sc.pp.normalize_total(adata, target_sum=1e4, inplace = True)
     return adata
 
 # log-transformation
 def Logtransformation(adata):
+    """
+    Performs log1p transformation on an AnnData object.
+
+    Args:
+        adata (sc.AnnData): The AnnData object.
+
+    Returns:
+        sc.AnnData: The log-transformed AnnData object.
+    """
     sc.pp.log1p(adata)
     return adata
 
 def Clustering(ann_data,infer_mode, savePath):
+    """
+    Performs standard clustering (HVGs, PCA, neighbors, UMAP, Leiden).
+
+    If neighbors are already computed, it just re-runs Leiden. Otherwise,
+    it runs the full pipeline. Saves a UMAP or spatial plot.
+
+    Args:
+        ann_data (sc.AnnData): The AnnData object.
+        infer_mode (str): The inference data type ('SC' or 'ST') for plotting.
+        savePath (str): The main project directory path to save plots.
+
+    Returns:
+        sc.AnnData: The clustered AnnData object.
+    """
     savePath_2 = os.path.join(savePath,"2_preprocessing")
     if ('connectivities' in ann_data.obsp) and ('leiden' in ann_data.uns):
         sc.tl.leiden(ann_data, key_added="leiden_clusters")
@@ -184,6 +293,22 @@ def Clustering(ann_data,infer_mode, savePath):
 
 # This function computes the cell similarity network for single-cell or spatial transcriptomics data.
 def compute_similarity(savePath, ann_data, calculate_distance=False):
+    """
+    Extracts and saves the cell/spot similarity matrix (connectivities).
+
+    Optionally, it can also calculate a spatial distance-based adjacency
+    matrix (6 nearest neighbors) for ST data.
+
+    Args:
+        savePath (str): The main project directory path.
+        ann_data (sc.AnnData): A clustered AnnData object (must have
+            `ann_data.obsp['connectivities']`).
+        calculate_distance (bool, optional): Whether to compute the spatial
+            distance matrix (ST only). Defaults to False.
+    
+    Returns:
+        None
+    """
     savePath_2 = os.path.join(savePath,"2_preprocessing")
 
     # data_path refers to the output directory from the Space Ranger.
@@ -230,14 +355,16 @@ def compute_similarity(savePath, ann_data, calculate_distance=False):
 
 def calculate_populations_meanRank(input_data, category):
     """
-    Calculates the mean of features for each cell subpopulation (category)
+    Calculates the mean feature values for each cell subpopulation (category).
 
     Args:
-        input_data (DataFrame): Input dataframe where rows are different samples and columns are features.
-        category (Series): A series indicating the category of each sample.
+        input_data (pd.DataFrame): Input DataFrame (samples x features).
+        category (pd.Series): A Series indicating the category (e.g., cluster)
+            of each sample. Must share the same index as `input_data`.
 
     Returns:
-        DataFrame: A dataframe where rows represent categories and columns represent the mean of features for that category.
+        pd.DataFrame: A DataFrame where rows are categories and columns
+            are the mean of features for that category.
     """
 
     # First, ensure the category Series has the same index as the input_data DataFrame

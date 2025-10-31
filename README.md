@@ -1,10 +1,10 @@
 # TiRank
 
-<img src="./icons/TiRank_white.png" alt="TiRank Logo" width=50% />
+<img src="./docs/source/_static/TiRank_white.png" alt="TiRank Logo" width=50% />
 
 TiRank is a cutting-edge toolkit designed to integrate and analyze RNA-seq and single-cell RNA-seq (scRNA-seq) data. By seamlessly combining spatial transcriptomics or scRNA-seq data with bulk RNA sequencing data, TiRank enables researchers to identify phenotype-associated regions or clusters. The toolkit supports various analysis modes, including survival analysis (Cox), classification, and regression, providing a comprehensive solution for transcriptomic data analysis.
 
-![TiRank Workflow](./icons/Fig1.png)
+![TiRank Workflow](./docs/source/_static/Fig1.png)
 
 ---
 
@@ -33,15 +33,15 @@ TiRank is a cutting-edge toolkit designed to integrate and analyze RNA-seq and s
 
 1. **Integrating scRNA-seq Data for Melanoma Response Analysis**
    - Demonstrates the integration of single-cell RNA-seq data with response information.
-   - [Example Script](Example/SC-Response-SKCM.py)
+   - [Example Script](./docs/Example/SC-Response-SKCM.py)
 
 2. **Combining Spatial Transcriptomics and Bulk Data for Phenotype Detection**
    - Identifies phenotype-associated spots and determines significant clusters.
-   - [Example Script](Example/ST-Cox-CRC.py)
+   - [Example Script](./docs/Example/ST-Cox-CRC.py)
 
 3. **Comprehensive Downstream Analysis**
    - Showcases downstream analyses based on TiRank results, emphasizing spatial structures associated with clinical phenotypes.
-   - [Example Workflow](Downstream/CRC)
+   - [Example Workflow](./docs/Example/Downstream/CRC)
 
 ---
 
@@ -85,7 +85,7 @@ You can set up the full TiRank environment directly with the following commands:
 
 ```bash
 cd TiRank
-conda env create -f environment.yml
+conda env create -f ./installation/environment.yml
 ```
 Then, activate the environment and run TiRank:
 
@@ -275,7 +275,7 @@ TiRank outputs results in the `savePath/3_Analysis/` directory. Key outputs incl
 
 ---
 
-![TiRank Detail](./icons/FigS1.png)
+![TiRank Detail](./docs/source/_static/FigS1.png)
 
 ---
 

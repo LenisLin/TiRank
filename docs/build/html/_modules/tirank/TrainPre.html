@@ -1,0 +1,1518 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.TrainPre &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            TiRank
+              <img src="../../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tirank.TrainPre</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tirank.TrainPre</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">Adam</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.optim.lr_scheduler</span><span class="w"> </span><span class="kn">import</span> <span class="n">StepLR</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">optuna</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.mixture</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianMixture</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.Loss</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.Model</span><span class="w"> </span><span class="kn">import</span> <span class="n">TiRankModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.Visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_loss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.Dataloader</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform_test_exp</span>
+
+<span class="c1"># Training</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains the core logic for training, hyperparameter tuning (Optuna),</span>
+<span class="sd">and final prediction with the TiRank model.</span>
+
+<span class="sd">It includes functions for a single training epoch, model validation,</span>
+<span class="sd">hyperparameter optimization, the GMM-based rejection/filtering mechanism,</span>
+<span class="sd">and permutation testing for cluster significance.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="Train_one_epoch">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.Train_one_epoch.html#tirank.TrainPre.Train_one_epoch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Train_one_epoch</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">dataloader_A</span><span class="p">,</span>
+    <span class="n">dataloader_B</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;Cox&quot;</span><span class="p">,</span>
+    <span class="n">infer_mode</span><span class="o">=</span><span class="s2">&quot;SC&quot;</span><span class="p">,</span>
+    <span class="n">adj_A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">adj_B</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pre_patho_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="n">epoch</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs a single training epoch for the TiRank multi-task model.</span>
+
+<span class="sd">    This function iterates through the sc/st data (dataloader_B) and computes</span>
+<span class="sd">    the composite loss against the bulk data (dataloader_A) and regularization</span>
+<span class="sd">    terms (adjacency matrices, MMD, etc.). It then performs a backward</span>
+<span class="sd">    pass and optimizer step.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (TiRankModel): The TiRank model to be trained.</span>
+<span class="sd">        dataloader_A (DataLoader): DataLoader for the bulk data (train).</span>
+<span class="sd">        dataloader_B (DataLoader): DataLoader for the sc/st data.</span>
+<span class="sd">        mode (str, optional): Analysis mode (&#39;Cox&#39;, &#39;Classification&#39;, &#39;Regression&#39;).</span>
+<span class="sd">        infer_mode (str, optional): Inference data type (&#39;SC&#39; or &#39;ST&#39;).</span>
+<span class="sd">        adj_A (torch.Tensor, optional): Adjacency matrix for sc/st data</span>
+<span class="sd">            (e.g., from connectivities).</span>
+<span class="sd">        adj_B (torch.Tensor, optional): Adjacency matrix for spatial distance (ST only).</span>
+<span class="sd">        pre_patho_labels (pd.Series, optional): Ground truth pathology labels (ST only).</span>
+<span class="sd">        optimizer (torch.optim.Optimizer, optional): The optimizer.</span>
+<span class="sd">        alphas (list, optional): List of floats to weight the loss components</span>
+<span class="sd">            [reg_loss, bulk_loss, cosine_loss_exp, spatial/patho_loss].</span>
+<span class="sd">        device (str, optional): The compute device (&#39;cpu&#39; or &#39;cuda&#39;).</span>
+<span class="sd">        epoch (int, optional): The current epoch number (for prototype loss scheduling).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary of the average loss values for this epoch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+    <span class="c1"># Initialize variables for loss components</span>
+    <span class="n">total_loss_all</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">regularization_loss_all</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">bulk_loss_all</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">mmd_loss_all</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">cosine_loss_all</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">patho_loss_all</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># Added for patho loss</span>
+    <span class="c1"># proto_loss_all = 0.0</span>
+    <span class="n">loss_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1">## DataLoader Bulk</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">X_a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">dataloader_A</span><span class="p">))</span>
+        <span class="n">X_a</span> <span class="o">=</span> <span class="n">X_a</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Classification&quot;</span><span class="p">,</span> <span class="s2">&quot;Regression&quot;</span><span class="p">]:</span>
+        <span class="p">(</span><span class="n">X_a</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">dataloader_A</span><span class="p">))</span>
+        <span class="n">X_a</span> <span class="o">=</span> <span class="n">X_a</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">batch_B</span> <span class="ow">in</span> <span class="n">dataloader_B</span><span class="p">:</span>
+        <span class="c1">## DataLoader SC or ST</span>
+        <span class="p">(</span><span class="n">X_b</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">=</span> <span class="n">batch_B</span>
+        <span class="n">X_b</span> <span class="o">=</span> <span class="n">X_b</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">adj_A</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="n">adj_A</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">idx</span><span class="p">]</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">adj_B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">adj_B</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">idx</span><span class="p">]</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pre_patho_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Convert the tensor idx to numpy for indexing pandas series</span>
+            <span class="n">idx_np</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+            <span class="n">pre_patho</span> <span class="o">=</span> <span class="n">pre_patho_labels</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx_np</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="c1"># Specify dtype if necessary</span>
+            <span class="n">pre_patho</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pre_patho</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            <span class="n">pre_patho</span> <span class="o">=</span> <span class="n">pre_patho</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Forward pass</span>
+        <span class="n">embeddings_a</span><span class="p">,</span> <span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_a</span><span class="p">)</span>
+        <span class="n">embeddings_b</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">pred_patho</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_b</span><span class="p">)</span>
+
+        <span class="n">regularization_loss_</span> <span class="o">=</span> <span class="n">regularization_loss</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">feature_weights</span><span class="p">)</span>
+        <span class="n">mmd_loss_</span> <span class="o">=</span> <span class="n">mmd_loss</span><span class="p">(</span><span class="n">embeddings_a</span><span class="p">,</span><span class="n">embeddings_b</span><span class="p">)</span>
+
+        <span class="c1"># Calculate loss</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+            <span class="n">bulk_loss_</span> <span class="o">=</span> <span class="n">cox_loss</span><span class="p">(</span><span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+            <span class="c1">#lambda_proto = min(0.1 * (epoch / 10), 0.1) if epoch &gt; 150 else 0</span>
+            <span class="c1">#proto_loss = prototype_loss(embeddings_b, embeddings_a, e) # Prototype loss</span>
+
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Classification&quot;</span><span class="p">:</span>
+            <span class="n">bulk_loss_</span> <span class="o">=</span> <span class="n">CrossEntropy_loss</span><span class="p">(</span><span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+            <span class="c1"># lambda_proto = min(0.1 * (epoch / 10), 0.1) if epoch &gt; 150 else 0</span>
+            <span class="c1"># proto_loss = prototype_loss(embeddings_b, embeddings_a, label) # Prototype loss</span>
+
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+            <span class="n">bulk_loss_</span> <span class="o">=</span> <span class="n">MSE_loss</span><span class="p">(</span><span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;SC&quot;</span><span class="p">:</span>
+            <span class="n">cosine_loss_exp_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+
+            <span class="c1"># total loss</span>
+            <span class="n">total_loss</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">regularization_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">bulk_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">cosine_loss_exp_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">mmd_loss_</span> <span class="o">*</span> <span class="mi">1</span>
+            <span class="p">)</span>
+
+            <span class="c1"># other_loss = (</span>
+            <span class="c1">#     regularization_loss_ * alphas[0]</span>
+            <span class="c1">#     + bulk_loss_ * alphas[1]</span>
+            <span class="c1">#     + cosine_loss_exp_ * alphas[2]</span>
+            <span class="c1">#     + mmd_loss_ * 1</span>
+
+            <span class="c1"># )</span>
+
+            <span class="n">pathoLloss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span> <span class="ow">and</span> <span class="n">adj_B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cosine_loss_exp_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+            <span class="n">cosine_loss_spatial_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+
+            <span class="c1"># total loss</span>
+            <span class="n">total_loss</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">regularization_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">bulk_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">cosine_loss_exp_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">cosine_loss_spatial_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">mmd_loss_</span> <span class="o">*</span> <span class="mi">1</span>
+
+            <span class="p">)</span>
+
+            <span class="c1"># other_loss = (</span>
+            <span class="c1">#     regularization_loss_ * alphas[0]</span>
+            <span class="c1">#     + bulk_loss_ * alphas[1]</span>
+            <span class="c1">#     + cosine_loss_exp_ * alphas[2]</span>
+            <span class="c1">#     + cosine_loss_spatial_ * alphas[3]</span>
+            <span class="c1"># )</span>
+
+        <span class="k">elif</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span> <span class="ow">and</span> <span class="n">pre_patho</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cosine_loss_exp_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+            <span class="n">pathoLloss</span> <span class="o">=</span> <span class="n">CrossEntropy_loss</span><span class="p">(</span><span class="n">pred_patho</span><span class="p">,</span> <span class="n">pre_patho</span><span class="p">)</span>
+
+            <span class="c1"># total loss</span>
+
+            <span class="n">total_loss</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">regularization_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">bulk_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">cosine_loss_exp_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">pathoLloss</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">mmd_loss_</span> <span class="o">*</span> <span class="mi">1</span>
+
+            <span class="p">)</span>
+
+            <span class="c1"># other_loss = (</span>
+            <span class="c1">#     regularization_loss_ * alphas[0]</span>
+            <span class="c1">#     + bulk_loss_ * alphas[1]</span>
+            <span class="c1">#     + cosine_loss_exp_ * alphas[2]</span>
+            <span class="c1">#     + pathoLloss * alphas[3]</span>
+            <span class="c1"># )</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unsupported mode: </span><span class="si">{</span><span class="n">infer_mode</span><span class="si">}</span><span class="s2">. There are two mode: Cell and Spot.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1">#   total_loss = other_loss + lambda_proto * proto_loss</span>
+
+        <span class="c1"># Backward pass and optimization</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span> <span class="c1"># Zero the parameter gradients</span>
+        <span class="n">total_loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1">#total_loss_all += other_loss.item() + proto_loss.item()</span>
+        <span class="n">total_loss_all</span> <span class="o">+=</span> <span class="n">total_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">regularization_loss_all</span> <span class="o">+=</span> <span class="n">regularization_loss_</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">bulk_loss_all</span> <span class="o">+=</span> <span class="n">bulk_loss_</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">mmd_loss_all</span> <span class="o">+=</span> <span class="n">mmd_loss_</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">cosine_loss_all</span> <span class="o">+=</span> <span class="n">cosine_loss_exp_</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">patho_loss_all</span> <span class="o">+=</span> <span class="n">pathoLloss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="c1"># proto_loss_all += proto_loss.item()</span>
+
+    <span class="n">loss_dict</span><span class="p">[</span><span class="s2">&quot;all_loss_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_loss_all</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader_B</span><span class="p">)</span>
+    <span class="n">loss_dict</span><span class="p">[</span><span class="s2">&quot;regularization_loss_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">regularization_loss_all</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader_B</span><span class="p">)</span>
+    <span class="n">loss_dict</span><span class="p">[</span><span class="s2">&quot;bulk_loss_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bulk_loss_all</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader_B</span><span class="p">)</span>
+    <span class="n">loss_dict</span><span class="p">[</span><span class="s2">&quot;mmd_loss_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mmd_loss_all</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader_B</span><span class="p">)</span>
+    <span class="n">loss_dict</span><span class="p">[</span><span class="s2">&quot;cosine_loss_&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cosine_loss_all</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader_B</span><span class="p">)</span>
+    <span class="n">loss_dict</span><span class="p">[</span><span class="s2">&quot;patho_loss_all&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">patho_loss_all</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader_B</span><span class="p">)</span>
+    <span class="c1"># loss_dict[&quot;proto_loss_all&quot;] = proto_loss_all / len(dataloader_B)</span>
+
+    <span class="k">return</span> <span class="n">loss_dict</span></div>
+
+
+
+<span class="c1"># Validate</span>
+
+
+<div class="viewcode-block" id="Validate_model">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.Validate_model.html#tirank.TrainPre.Validate_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Validate_model</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">dataloader_A</span><span class="p">,</span>
+    <span class="n">dataloader_B</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;Cox&quot;</span><span class="p">,</span>
+    <span class="n">infer_mode</span><span class="o">=</span><span class="s2">&quot;SC&quot;</span><span class="p">,</span>
+    <span class="n">adj_A</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">adj_B</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pre_patho_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs a single validation step.</span>
+
+<span class="sd">    This function iterates through the dataloaders, performs a forward pass,</span>
+<span class="sd">    and calculates the total validation loss (without backpropagation).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (TiRankModel): The TiRank model to be evaluated.</span>
+<span class="sd">        dataloader_A (DataLoader): DataLoader for the bulk data (validation).</span>
+<span class="sd">        dataloader_B (DataLoader): DataLoader for the sc/st data.</span>
+<span class="sd">        mode (str, optional): Analysis mode (&#39;Cox&#39;, &#39;Classification&#39;, &#39;Regression&#39;).</span>
+<span class="sd">        infer_mode (str, optional): Inference data type (&#39;SC&#39; or &#39;ST&#39;).</span>
+<span class="sd">        adj_A (torch.Tensor, optional): Adjacency matrix for sc/st data.</span>
+<span class="sd">        adj_B (torch.Tensor, optional): Adjacency matrix for spatial distance (ST only).</span>
+<span class="sd">        pre_patho_labels (pd.Series, optional): Ground truth pathology labels (ST only).</span>
+<span class="sd">        alphas (list, optional): List of floats to weight the loss components.</span>
+<span class="sd">        device (str, optional): The compute device (&#39;cpu&#39; or &#39;cuda&#39;).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The average validation loss for this epoch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>  <span class="c1"># Set the model to evaluation mode</span>
+
+    <span class="n">validation_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>  <span class="c1"># No need to track the gradients</span>
+        <span class="c1"># RNA-seq data whole batch validation</span>
+        <span class="n">iter_A</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">dataloader_A</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">X_a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_A</span><span class="p">)</span>
+            <span class="n">X_a</span> <span class="o">=</span> <span class="n">X_a</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Classification&quot;</span><span class="p">,</span> <span class="s2">&quot;Regression&quot;</span><span class="p">]:</span>
+            <span class="p">(</span><span class="n">X_a</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_A</span><span class="p">)</span>
+            <span class="n">X_a</span> <span class="o">=</span> <span class="n">X_a</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">batch_B</span> <span class="ow">in</span> <span class="n">dataloader_B</span><span class="p">:</span>
+            <span class="c1"># Similar setup as in the training function</span>
+            <span class="p">(</span><span class="n">X_b</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="o">=</span> <span class="n">batch_B</span>
+            <span class="n">X_b</span> <span class="o">=</span> <span class="n">X_b</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">adj_A</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">A</span> <span class="o">=</span> <span class="n">adj_A</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">idx</span><span class="p">]</span>
+                <span class="n">A</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">adj_B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">adj_B</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:][:,</span> <span class="n">idx</span><span class="p">]</span>
+                <span class="n">B</span> <span class="o">=</span> <span class="n">B</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">pre_patho_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">idx_np</span> <span class="o">=</span> <span class="n">idx</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                <span class="n">pre_patho</span> <span class="o">=</span> <span class="n">pre_patho_labels</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx_np</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+                <span class="n">pre_patho</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">pre_patho</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+                <span class="n">pre_patho</span> <span class="o">=</span> <span class="n">pre_patho</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="c1"># Forward pass only</span>
+            <span class="n">embeddings_a</span><span class="p">,</span> <span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_a</span><span class="p">)</span>
+            <span class="n">embeddings_b</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">pred_patho</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_b</span><span class="p">)</span>
+
+            <span class="c1"># Compute loss as in training function but without backward and optimizer steps</span>
+            <span class="c1"># The computation here assumes that the loss functions and infer_mode conditions are the same as in training</span>
+            <span class="c1"># Please adapt if your validation conditions differ from the training</span>
+
+            <span class="c1"># MMD loss</span>
+            <span class="n">mmd_loss_</span> <span class="o">=</span> <span class="n">mmd_loss</span><span class="p">(</span><span class="n">embeddings_a</span><span class="p">,</span><span class="n">embeddings_b</span><span class="p">)</span>
+
+            <span class="c1"># Bulk loss</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+                <span class="n">bulk_loss_</span> <span class="o">=</span> <span class="n">cox_loss</span><span class="p">(</span><span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Classification&quot;</span><span class="p">:</span>
+                <span class="n">bulk_loss_</span> <span class="o">=</span> <span class="n">CrossEntropy_loss</span><span class="p">(</span><span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+                <span class="n">bulk_loss_</span> <span class="o">=</span> <span class="n">MSE_loss</span><span class="p">(</span><span class="n">risk_scores_a</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;SC&quot;</span><span class="p">:</span>
+                <span class="n">cosine_loss_exp_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+
+                <span class="c1"># total loss</span>
+                <span class="n">total_loss</span> <span class="o">=</span> <span class="n">bulk_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cosine_loss_exp_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span> <span class="ow">and</span> <span class="n">adj_B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cosine_loss_exp_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+                <span class="n">cosine_loss_spatial_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span>
+
+                <span class="c1"># total loss</span>
+
+                <span class="n">total_loss</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">bulk_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="n">cosine_loss_exp_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="n">cosine_loss_spatial_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="n">mmd_loss_</span>
+                <span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span> <span class="ow">and</span> <span class="n">pre_patho</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">cosine_loss_exp_</span> <span class="o">=</span> <span class="n">cosine_loss</span><span class="p">(</span><span class="n">embeddings_b</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+                <span class="n">pathoLloss</span> <span class="o">=</span> <span class="n">CrossEntropy_loss</span><span class="p">(</span><span class="n">pred_patho</span><span class="p">,</span> <span class="n">pre_patho</span><span class="p">)</span>
+
+                <span class="c1"># total loss</span>
+
+                <span class="n">total_loss</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">bulk_loss_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="n">cosine_loss_exp_</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="n">pathoLloss</span> <span class="o">*</span> <span class="n">alphas</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="n">mmd_loss_</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Unsupported mode: </span><span class="si">{</span><span class="n">infer_mode</span><span class="si">}</span><span class="s2">. There are two mode: Cell and Spot.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Add up the total loss for the validation set</span>
+            <span class="n">validation_loss</span> <span class="o">+=</span> <span class="n">total_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="c1"># Calculate the average loss over all batches in the dataloader</span>
+    <span class="k">return</span> <span class="n">validation_loss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader_B</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Reject</span>
+
+
+<div class="viewcode-block" id="Reject_With_GMM_Bio">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.Reject_With_GMM_Bio.html#tirank.TrainPre.Reject_With_GMM_Bio">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Reject_With_GMM_Bio</span><span class="p">(</span><span class="n">pred_bulk</span><span class="p">,</span> <span class="n">pred_sc</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">min_components</span><span class="p">,</span> <span class="n">max_components</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs GMM-based rejection for Classification and Cox modes.</span>
+
+<span class="sd">    This function identifies phenotype-associated clusters by fitting a GMM</span>
+<span class="sd">    to the bulk scores (to find target means 0 and 1) and another GMM</span>
+<span class="sd">    to the sc/st scores, then finding sc/st clusters whose means align</span>
+<span class="sd">    with the bulk targets within a given tolerance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pred_bulk (np.ndarray): Predicted scores from the bulk data (n_samples, 1).</span>
+<span class="sd">        pred_sc (np.ndarray): Predicted scores from the sc/st data (n_cells, 1).</span>
+<span class="sd">        tolerance (float): The maximum distance a sc/st cluster mean can be from</span>
+<span class="sd">            a bulk target mean to be considered aligned.</span>
+<span class="sd">        min_components (int): The minimum number of GMM components to try.</span>
+<span class="sd">        max_components (int): The maximum number of GMM components to try.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: A binary mask (n_cells, 1) where 1 indicates a cell</span>
+<span class="sd">            to be rejected (phenotype-independent) and 0 indicates a cell</span>
+<span class="sd">            to be kept.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Perform Rejection with GMM mode with tolerance=</span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">, components=[</span><span class="si">{</span><span class="n">min_components</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">max_components</span><span class="si">}</span><span class="s2">]!&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">gmm_bulk</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">619</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">pred_bulk</span><span class="p">)</span>
+
+    <span class="n">gmm_bulk_mean_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">gmm_bulk</span><span class="o">.</span><span class="n">means_</span><span class="p">)</span>
+    <span class="n">gmm_bulk_mean_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">gmm_bulk</span><span class="o">.</span><span class="n">means_</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">gmm_bulk_mean_1</span> <span class="o">-</span> <span class="n">gmm_bulk_mean_0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Underfitting!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Iterate over the number of components</span>
+    <span class="k">for</span> <span class="n">n_components</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">min_components</span><span class="p">,</span> <span class="n">max_components</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">gmm_sc</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">619</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+            <span class="n">pred_sc</span>
+        <span class="p">)</span>
+
+        <span class="n">means</span> <span class="o">=</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">means_</span>
+
+        <span class="c1"># Check if any of the means are close to 0 or 1</span>
+        <span class="n">zero_close</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">mean</span> <span class="o">-</span> <span class="n">gmm_bulk_mean_0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">mean</span> <span class="ow">in</span> <span class="n">means</span><span class="p">)</span>
+        <span class="n">one_close</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gmm_bulk_mean_1</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">mean</span> <span class="ow">in</span> <span class="n">means</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">zero_close</span> <span class="ow">and</span> <span class="n">one_close</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Found distributions with means close to 0 and 1 with </span><span class="si">{</span><span class="n">n_components</span><span class="si">}</span><span class="s2"> components.&quot;</span>
+            <span class="p">)</span>
+
+            <span class="c1"># # Print the means and covariances</span>
+            <span class="c1"># print(&quot;Means of the gaussians in gmm_sc: &quot;, gmm_sc.means_)</span>
+            <span class="c1"># print(&quot;Covariances of the gaussians in gmm_sc: &quot;, gmm_sc.covariances_)</span>
+
+            <span class="c1"># Find the component whose mean is nearest to 0 and 1</span>
+            <span class="c1"># 1</span>
+            <span class="n">diffs_1</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">gmm_bulk_mean_1</span> <span class="o">-</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">means_</span><span class="p">)</span>
+            <span class="n">nearest_component_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diffs_1</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># 0</span>
+            <span class="n">diffs_0</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">gmm_sc</span><span class="o">.</span><span class="n">means_</span> <span class="o">-</span> <span class="n">gmm_bulk_mean_0</span><span class="p">)</span>
+            <span class="n">nearest_component_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diffs_0</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># concat</span>
+            <span class="n">remain_component</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">nearest_component_1</span><span class="p">,</span> <span class="n">nearest_component_0</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># The mask of those rejection cell</span>
+            <span class="n">labels_sc</span> <span class="o">=</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">)</span>
+
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels_sc</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+            <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">labels_sc</span><span class="p">,</span> <span class="n">remain_component</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Reject </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="o">*</span><span class="mi">100</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="w"> </span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%) cells.&quot;</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">mask</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Two distribution rejection faild.&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Perform single distribution rejection.&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n_components</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_components</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">gmm_sc</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">619</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+            <span class="n">pred_sc</span>
+        <span class="p">)</span>
+
+        <span class="n">means</span> <span class="o">=</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">means_</span>
+
+        <span class="c1"># Check if any of the means are close to 0 or 1</span>
+        <span class="n">zero_close</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">mean</span> <span class="o">-</span> <span class="n">gmm_bulk_mean_0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">mean</span> <span class="ow">in</span> <span class="n">means</span><span class="p">)</span>
+        <span class="n">one_close</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gmm_bulk_mean_1</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span> <span class="k">for</span> <span class="n">mean</span> <span class="ow">in</span> <span class="n">means</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">zero_close</span> <span class="ow">or</span> <span class="n">one_close</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">zero_close</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Found distributions with means close to 0 with </span><span class="si">{</span><span class="n">n_components</span><span class="si">}</span><span class="s2"> components.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">one_close</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Found distributions with means close to 1 with </span><span class="si">{</span><span class="n">n_components</span><span class="si">}</span><span class="s2"> components.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># # Print the means and covariances</span>
+            <span class="c1"># print(&quot;Means of the gaussians in gmm_sc: &quot;, gmm_sc.means_)</span>
+            <span class="c1"># print(&quot;Covariances of the gaussians in gmm_sc: &quot;, gmm_sc.covariances_)</span>
+
+            <span class="c1"># Find the component whose mean is nearest to 0 and 1</span>
+            <span class="c1"># 1</span>
+            <span class="n">diffs_1</span> <span class="o">=</span> <span class="n">gmm_bulk_mean_1</span> <span class="o">-</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">means_</span>
+            <span class="n">nearest_component_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diffs_1</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># 0</span>
+            <span class="n">diffs_0</span> <span class="o">=</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">means_</span> <span class="o">-</span> <span class="n">gmm_bulk_mean_0</span>
+            <span class="n">nearest_component_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diffs_0</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># concat</span>
+            <span class="n">remain_component</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">nearest_component_1</span><span class="p">,</span> <span class="n">nearest_component_0</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># The mask of those rejection cell</span>
+            <span class="n">labels_sc</span> <span class="o">=</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">)</span>
+
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels_sc</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+            <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">labels_sc</span><span class="p">,</span> <span class="n">remain_component</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Reject </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="o">*</span><span class="mi">100</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="w"> </span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%) cells.&quot;</span>
+            <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">mask</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Single distribution rejection faild.&quot;</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+
+<div class="viewcode-block" id="Reject_With_GMM_Reg">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.Reject_With_GMM_Reg.html#tirank.TrainPre.Reject_With_GMM_Reg">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Reject_With_GMM_Reg</span><span class="p">(</span><span class="n">pred_bulk</span><span class="p">,</span> <span class="n">pred_sc</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs GMM-based rejection for Regression mode.</span>
+
+<span class="sd">    Fits a single-component GMM to both bulk and sc/st scores to find their</span>
+<span class="sd">    means. If the means are too divergent, rejects all cells. Otherwise,</span>
+<span class="sd">    rejects cells that fall outside a tolerance range around the bulk mean.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pred_bulk (np.ndarray): Predicted scores from the bulk data (n_samples, 1).</span>
+<span class="sd">        pred_sc (np.ndarray): Predicted scores from the sc/st data (n_cells, 1).</span>
+<span class="sd">        tolerance (float): The tolerance (std dev or max value) to define the</span>
+<span class="sd">            acceptance range around the bulk mean.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: A binary mask (n_cells, 1) where 1 indicates rejection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Perform Rejection with GMM mode with tolerance=</span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+
+    <span class="n">gmm_bulk</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">619</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">pred_bulk</span><span class="p">)</span>
+    <span class="n">gmm_sc</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">619</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">)</span>
+
+    <span class="c1"># Mean</span>
+    <span class="n">gmm_bulk_mean</span> <span class="o">=</span> <span class="n">gmm_bulk</span><span class="o">.</span><span class="n">means_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">gmm_sc_mean</span> <span class="o">=</span> <span class="n">gmm_sc</span><span class="o">.</span><span class="n">means_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Std</span>
+    <span class="n">gmm_bulk_variance</span> <span class="o">=</span> <span class="n">gmm_bulk</span><span class="o">.</span><span class="n">covariances_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">gmm_bulk_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gmm_bulk_variance</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">gmm_sc_mean</span> <span class="o">-</span> <span class="n">gmm_bulk_mean</span><span class="p">))</span> <span class="o">&gt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Integration was failed !&quot;</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tolerance</span> <span class="o">&gt;</span> <span class="n">gmm_bulk_std</span><span class="p">:</span>
+            <span class="n">tolerance</span> <span class="o">=</span> <span class="n">gmm_bulk_std</span>
+        <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">gmm_bulk_mean</span> <span class="o">-</span> <span class="n">tolerance</span>
+        <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">gmm_bulk_mean</span> <span class="o">+</span> <span class="n">tolerance</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">mask</span><span class="p">[(</span><span class="n">pred_sc</span> <span class="o">&gt;=</span> <span class="n">lower_bound</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pred_sc</span> <span class="o">&lt;=</span> <span class="n">upper_bound</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reject </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="o">*</span><span class="mi">100</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="w"> </span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%) cells.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+
+<div class="viewcode-block" id="Reject_With_StrictNumber">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.Reject_With_StrictNumber.html#tirank.TrainPre.Reject_With_StrictNumber">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Reject_With_StrictNumber</span><span class="p">(</span><span class="n">pred_bulk</span><span class="p">,</span> <span class="n">pred_sc</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs rejection based on a strict percentile range.</span>
+
+<span class="sd">    Fits a 2-component GMM to bulk scores to find means and std deviations.</span>
+<span class="sd">    It then defines an acceptance range based on the percentile (tolerance)</span>
+<span class="sd">    of a normal distribution (e.g., tolerance=0.95 keeps the central 95%</span>
+<span class="sd">    of each bulk cluster).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pred_bulk (np.ndarray): Predicted scores from the bulk data (n_samples, 1).</span>
+<span class="sd">        pred_sc (np.ndarray): Predicted scores from the sc/st data (n_cells, 1).</span>
+<span class="sd">        tolerance (float): The percentile of the distribution to keep (e.g., 0.95).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: A binary mask (n_cells, 1) where 1 indicates rejection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Perform Rejection with Strict Number mode with tolerance=</span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+
+    <span class="n">gmm_bulk</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">619</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">pred_bulk</span><span class="p">)</span>
+
+    <span class="c1"># Get mean</span>
+    <span class="n">gmm_bulk_means</span> <span class="o">=</span> <span class="n">gmm_bulk</span><span class="o">.</span><span class="n">means_</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">gmm_bulk_mean_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">gmm_bulk_means</span><span class="p">)</span>
+    <span class="n">gmm_bulk_mean_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">gmm_bulk_means</span><span class="p">)</span>
+
+    <span class="c1"># Get std</span>
+    <span class="n">gmm_bulk_stds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gmm_bulk</span><span class="o">.</span><span class="n">covariances_</span><span class="p">)</span>
+    <span class="n">gmm_bulk_std_1</span> <span class="o">=</span> <span class="n">gmm_bulk_stds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">gmm_bulk_std_0</span> <span class="o">=</span> <span class="n">gmm_bulk_stds</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">gmm_bulk_mean_1</span> <span class="o">-</span> <span class="n">gmm_bulk_mean_0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">0.8</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Underfitting!&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the percentile range for the tolerance</span>
+    <span class="n">lower_percentile</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">-</span> <span class="n">tolerance</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">upper_percentile</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">tolerance</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="c1"># Calculate the range for the first Gaussian distribution</span>
+    <span class="n">range_low_1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">lower_percentile</span><span class="p">,</span> <span class="n">gmm_bulk_mean_1</span><span class="p">,</span> <span class="n">gmm_bulk_std_1</span><span class="p">)</span>
+    <span class="n">range_high_1</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">upper_percentile</span><span class="p">,</span> <span class="n">gmm_bulk_mean_1</span><span class="p">,</span> <span class="n">gmm_bulk_std_1</span><span class="p">)</span>
+
+    <span class="c1"># Calculate the range for the second Gaussian distribution</span>
+    <span class="n">range_low_0</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">lower_percentile</span><span class="p">,</span> <span class="n">gmm_bulk_mean_0</span><span class="p">,</span> <span class="n">gmm_bulk_std_0</span><span class="p">)</span>
+    <span class="n">range_high_0</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">upper_percentile</span><span class="p">,</span> <span class="n">gmm_bulk_mean_0</span><span class="p">,</span> <span class="n">gmm_bulk_std_0</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;For the first Gaussian distribution with mean </span><span class="si">{</span><span class="n">gmm_bulk_mean_1</span><span class="si">}</span><span class="s2"> and std </span><span class="si">{</span><span class="n">gmm_bulk_std_1</span><span class="si">}</span><span class="s2">:&quot;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;The range around the mean that contains </span><span class="si">{</span><span class="n">tolerance</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s2">% of the samples is approximately from </span><span class="si">{</span><span class="n">range_low_1</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">range_high_1</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;For the second Gaussian distribution with mean </span><span class="si">{</span><span class="n">gmm_bulk_mean_0</span><span class="si">}</span><span class="s2"> and std </span><span class="si">{</span><span class="n">gmm_bulk_std_0</span><span class="si">}</span><span class="s2">:&quot;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;The range around the mean that contains </span><span class="si">{</span><span class="n">tolerance</span><span class="o">*</span><span class="mi">100</span><span class="si">}</span><span class="s2">% of the samples is approximately from </span><span class="si">{</span><span class="n">range_low_0</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">range_high_0</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># Set mask to zero where the condition for the first Gaussian distribution is met</span>
+    <span class="n">mask</span><span class="p">[(</span><span class="n">pred_sc</span> <span class="o">&gt;=</span> <span class="n">range_low_1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pred_sc</span> <span class="o">&lt;=</span> <span class="n">range_high_1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Set mask to zero where the condition for the second Gaussian distribution is met</span>
+    <span class="n">mask</span><span class="p">[(</span><span class="n">pred_sc</span> <span class="o">&gt;=</span> <span class="n">range_low_0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">pred_sc</span> <span class="o">&lt;=</span> <span class="n">range_high_0</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Reject </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">))</span><span class="o">*</span><span class="mi">100</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="w"> </span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%) cells.&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mask</span></div>
+
+
+
+<span class="c1"># Hyper-paremeters tuning</span>
+
+
+<div class="viewcode-block" id="objective">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.objective.html#tirank.TrainPre.objective">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">objective</span><span class="p">(</span>
+    <span class="n">trial</span><span class="p">,</span>
+    <span class="n">n_features</span><span class="p">,</span>
+    <span class="n">nhead</span><span class="p">,</span>
+    <span class="n">nhid1</span><span class="p">,</span>
+    <span class="n">nhid2</span><span class="p">,</span>
+    <span class="n">n_output</span><span class="p">,</span>
+    <span class="n">nlayers</span><span class="p">,</span>
+    <span class="n">n_pred</span><span class="p">,</span>
+    <span class="n">dropout</span><span class="p">,</span>
+    <span class="n">n_patho</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">,</span>
+    <span class="n">encoder_type</span><span class="p">,</span>
+    <span class="n">train_loader_Bulk</span><span class="p">,</span>
+    <span class="n">val_loader_Bulk</span><span class="p">,</span>
+    <span class="n">train_loader_SC</span><span class="p">,</span>
+    <span class="n">adj_A</span><span class="p">,</span>
+    <span class="n">adj_B</span><span class="p">,</span>
+    <span class="n">pre_patho_labels</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">,</span>
+    <span class="n">infer_mode</span><span class="p">,</span>
+    <span class="n">model_save_path</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The objective function for Optuna hyperparameter optimization.</span>
+
+<span class="sd">    This function defines the search space for hyperparameters (lr, epochs,</span>
+<span class="sd">    loss weights), builds a model, trains it, and returns the validation loss.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        trial (optuna.trial.Trial): An Optuna trial object.</span>
+<span class="sd">        (All other args are passed from the `tune_hyperparameters` wrapper)</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The validation loss for the trial.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Initiate model in trail </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2"> with mode: </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">, infer mode: </span><span class="si">{</span><span class="n">infer_mode</span><span class="si">}</span><span class="s2"> encoder type: </span><span class="si">{</span><span class="n">encoder_type</span><span class="si">}</span><span class="s2"> on device: </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2">.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">TiRankModel</span><span class="p">(</span>
+        <span class="n">n_features</span><span class="o">=</span><span class="n">n_features</span><span class="p">,</span>
+        <span class="n">nhead</span><span class="o">=</span><span class="n">nhead</span><span class="p">,</span>
+        <span class="n">nhid1</span><span class="o">=</span><span class="n">nhid1</span><span class="p">,</span>
+        <span class="n">nhid2</span><span class="o">=</span><span class="n">nhid2</span><span class="p">,</span>
+        <span class="n">n_output</span><span class="o">=</span><span class="n">n_output</span><span class="p">,</span>
+        <span class="n">nlayers</span><span class="o">=</span><span class="n">nlayers</span><span class="p">,</span>
+        <span class="n">n_pred</span><span class="o">=</span><span class="n">n_pred</span><span class="p">,</span>
+        <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span>
+        <span class="n">n_patho</span><span class="o">=</span><span class="n">n_patho</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+        <span class="n">encoder_type</span><span class="o">=</span><span class="n">encoder_type</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">init_weights</span><span class="p">)</span>
+
+    <span class="c1"># Define hyperparameters with trial object</span>
+    <span class="n">lr_choices</span> <span class="o">=</span> <span class="p">[</span><span class="mf">2e-3</span><span class="p">,</span><span class="mf">1e-3</span><span class="p">,</span> <span class="mf">8e-4</span><span class="p">,</span> <span class="mf">6e-4</span><span class="p">,</span> <span class="mf">4e-4</span><span class="p">,</span> <span class="mf">2e-4</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">]</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">suggest_categorical</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">,</span> <span class="n">lr_choices</span><span class="p">)</span>
+
+    <span class="n">n_epochs_choices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">500</span><span class="p">,</span><span class="mi">525</span><span class="p">,</span><span class="mi">550</span><span class="p">,</span><span class="mi">575</span><span class="p">,</span><span class="mi">600</span><span class="p">]</span>
+    <span class="n">n_epochs</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">suggest_categorical</span><span class="p">(</span><span class="s2">&quot;n_epochs&quot;</span><span class="p">,</span> <span class="n">n_epochs_choices</span><span class="p">)</span>
+
+    <span class="c1"># Define alpha values as specific choices</span>
+    <span class="n">alpha_0_choices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">alpha_1_choices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.15</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">]</span>
+    <span class="n">alpha_2_choices</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1e-1</span><span class="p">,</span> <span class="mf">0.95e-1</span><span class="p">,</span> <span class="mf">0.9e-1</span><span class="p">,</span> <span class="mf">1.05e-1</span><span class="p">,</span> <span class="mf">1.1e-1</span><span class="p">,</span> <span class="mf">1.15e-1</span><span class="p">,</span> <span class="mf">1.2e-1</span><span class="p">,</span> <span class="mf">0.9e-1</span><span class="p">,</span> <span class="mf">0.85e-1</span><span class="p">]</span>
+    <span class="n">alpha_3_choices</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1e-1</span><span class="p">,</span> <span class="mf">0.95e-1</span><span class="p">,</span> <span class="mf">0.9e-1</span><span class="p">,</span> <span class="mf">1.05e-1</span><span class="p">,</span> <span class="mf">1.1e-1</span><span class="p">,</span> <span class="mf">1.15e-1</span><span class="p">,</span> <span class="mf">1.2e-1</span><span class="p">,</span> <span class="mf">0.9e-1</span><span class="p">,</span> <span class="mf">0.85e-1</span><span class="p">]</span>
+
+    <span class="c1"># Suggest categorical choices for each alpha</span>
+    <span class="n">alphas</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">suggest_categorical</span><span class="p">(</span><span class="s2">&quot;alpha_0&quot;</span><span class="p">,</span> <span class="n">alpha_0_choices</span><span class="p">),</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">suggest_categorical</span><span class="p">(</span><span class="s2">&quot;alpha_1&quot;</span><span class="p">,</span> <span class="n">alpha_1_choices</span><span class="p">),</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">suggest_categorical</span><span class="p">(</span><span class="s2">&quot;alpha_2&quot;</span><span class="p">,</span> <span class="n">alpha_2_choices</span><span class="p">),</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">suggest_categorical</span><span class="p">(</span><span class="s2">&quot;alpha_3&quot;</span><span class="p">,</span> <span class="n">alpha_3_choices</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">)</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">StepLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+    <span class="n">train_loss_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
+        <span class="c1"># Train</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="n">train_loss_dcit_epoch</span> <span class="o">=</span> <span class="n">Train_one_epoch</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">dataloader_A</span><span class="o">=</span><span class="n">train_loader_Bulk</span><span class="p">,</span>
+            <span class="n">dataloader_B</span><span class="o">=</span><span class="n">train_loader_SC</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">infer_mode</span><span class="o">=</span><span class="n">infer_mode</span><span class="p">,</span>
+            <span class="n">adj_A</span><span class="o">=</span><span class="n">adj_A</span><span class="p">,</span>
+            <span class="n">adj_B</span><span class="o">=</span><span class="n">adj_B</span><span class="p">,</span>
+            <span class="n">pre_patho_labels</span><span class="o">=</span><span class="n">pre_patho_labels</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">alphas</span><span class="o">=</span><span class="n">alphas</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">train_loss_dict</span><span class="p">[</span><span class="s2">&quot;Epoch_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="n">train_loss_dcit_epoch</span>
+
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1"># Val</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">val_loss</span> <span class="o">=</span> <span class="n">Validate_model</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">dataloader_A</span><span class="o">=</span><span class="n">val_loader_Bulk</span><span class="p">,</span>
+            <span class="n">dataloader_B</span><span class="o">=</span><span class="n">train_loader_SC</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+            <span class="n">infer_mode</span><span class="o">=</span><span class="n">infer_mode</span><span class="p">,</span>
+            <span class="n">adj_A</span><span class="o">=</span><span class="n">adj_A</span><span class="p">,</span>
+            <span class="n">adj_B</span><span class="o">=</span><span class="n">adj_B</span><span class="p">,</span>
+            <span class="n">pre_patho_labels</span><span class="o">=</span><span class="n">pre_patho_labels</span><span class="p">,</span>
+            <span class="n">alphas</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">],</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">trial</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">val_loss</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">should_prune</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">optuna</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">TrialPruned</span><span class="p">()</span>
+
+    <span class="c1"># Generate the filename including hyperparameters</span>
+    <span class="n">hyperparams_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;lr_</span><span class="si">{</span><span class="n">lr</span><span class="si">}</span><span class="s2">_epochs_</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">_alpha0_</span><span class="si">{</span><span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_alpha1_</span><span class="si">{</span><span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_alpha2_</span><span class="si">{</span><span class="n">alphas</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">_alpha3_</span><span class="si">{</span><span class="n">alphas</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">model_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;model_</span><span class="si">{</span><span class="n">hyperparams_str</span><span class="si">}</span><span class="s2">.pt&quot;</span>
+    <span class="n">plot_filename</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;loss_curve_trial_</span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">hyperparams_str</span><span class="si">}</span><span class="s2">_val_loss_</span><span class="si">{</span><span class="n">val_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">.png&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Saving the model and plot with new filenames</span>
+    <span class="k">if</span> <span class="n">trial</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="n">trial</span><span class="o">.</span><span class="n">study</span><span class="o">.</span><span class="n">best_trials</span> <span class="ow">and</span> <span class="n">val_loss</span> <span class="o">&lt;</span> <span class="n">trial</span><span class="o">.</span><span class="n">study</span><span class="o">.</span><span class="n">best_value</span>
+    <span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Saving model and plot for Trial </span><span class="si">{</span><span class="n">trial</span><span class="o">.</span><span class="n">number</span><span class="si">}</span><span class="s2"> with Validation Loss = </span><span class="si">{</span><span class="n">val_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">plot_loss</span><span class="p">(</span>
+            <span class="n">train_loss_dict</span><span class="p">,</span>
+            <span class="n">savePath</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_save_path</span><span class="p">,</span> <span class="n">plot_filename</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">model_save_path</span><span class="p">,</span> <span class="n">model_filename</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">val_loss</span></div>
+
+
+
+<div class="viewcode-block" id="tune_hyperparameters">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.tune_hyperparameters.html#tirank.TrainPre.tune_hyperparameters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tune_hyperparameters</span><span class="p">(</span>
+    <span class="n">savePath</span><span class="p">,</span>  <span class="c1"># Dictionary containing all model parameters</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>  <span class="c1"># Computing device (&#39;cpu&#39; or &#39;cuda&#39;)</span>
+    <span class="n">n_trials</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>  <span class="c1"># Number of optimization trials</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Runs the Optuna hyperparameter tuning study.</span>
+
+<span class="sd">    This function loads all necessary data and model parameters, then</span>
+<span class="sd">    initializes and runs an Optuna study to find the best</span>
+<span class="sd">    hyperparameters by minimizing the validation loss.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        device (str, optional): The compute device. Defaults to &quot;cpu&quot;.</span>
+<span class="sd">        n_trials (int, optional): The number of Optuna trials to run.</span>
+<span class="sd">            Defaults to 50.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+    <span class="n">savePath_data2train</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;data2train&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Load dataloaders</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s2">&quot;train_loader_Bulk.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">train_loader_Bulk</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s2">&quot;val_loader_Bulk.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">val_loader_Bulk</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s2">&quot;train_loader_SC.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">train_loader_SC</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s2">&quot;adj_A.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">adj_A</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s2">&quot;adj_B.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">adj_B</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s2">&quot;patholabels.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">pre_patho_labels</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Initial model parameters</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;model_para.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">model_para</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Extract parameters from the model_para dictionary</span>
+    <span class="n">n_features</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_features&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">nhead</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nhead&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">nhid1</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nhid1&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+    <span class="n">nhid2</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nhid2&quot;</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+    <span class="n">n_output</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_output&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">nlayers</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nlayers&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">n_pred</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_pred&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">dropout</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dropout&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">n_patho</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_patho&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;Cox&quot;</span><span class="p">)</span>
+    <span class="n">infer_mode</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;infer_mode&quot;</span><span class="p">,</span> <span class="s2">&quot;Cell&quot;</span><span class="p">)</span>
+    <span class="n">encoder_type</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;encoder_type&quot;</span><span class="p">,</span> <span class="s2">&quot;MLP&quot;</span><span class="p">)</span>
+    <span class="n">model_save_path</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_save_path&quot;</span><span class="p">,</span> <span class="s2">&quot;./checkpoints/&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_save_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">model_save_path</span><span class="p">)</span>
+
+    <span class="n">study</span> <span class="o">=</span> <span class="n">optuna</span><span class="o">.</span><span class="n">create_study</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s2">&quot;minimize&quot;</span><span class="p">)</span>
+    <span class="n">study</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">trial</span><span class="p">:</span> <span class="n">objective</span><span class="p">(</span>
+            <span class="n">trial</span><span class="p">,</span>
+            <span class="n">n_features</span><span class="p">,</span>
+            <span class="n">nhead</span><span class="p">,</span>
+            <span class="n">nhid1</span><span class="p">,</span>
+            <span class="n">nhid2</span><span class="p">,</span>
+            <span class="n">n_output</span><span class="p">,</span>
+            <span class="n">nlayers</span><span class="p">,</span>
+            <span class="n">n_pred</span><span class="p">,</span>
+            <span class="n">dropout</span><span class="p">,</span>
+            <span class="n">n_patho</span><span class="p">,</span>
+            <span class="n">mode</span><span class="p">,</span>
+            <span class="n">encoder_type</span><span class="p">,</span>
+            <span class="n">train_loader_Bulk</span><span class="p">,</span>
+            <span class="n">val_loader_Bulk</span><span class="p">,</span>
+            <span class="n">train_loader_SC</span><span class="p">,</span>
+            <span class="n">adj_A</span><span class="p">,</span>
+            <span class="n">adj_B</span><span class="p">,</span>
+            <span class="n">pre_patho_labels</span><span class="p">,</span>
+            <span class="n">device</span><span class="p">,</span>
+            <span class="n">infer_mode</span><span class="p">,</span>
+            <span class="n">model_save_path</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">n_trials</span><span class="o">=</span><span class="n">n_trials</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># save the best hyperparameters</span>
+    <span class="n">best_params</span> <span class="o">=</span> <span class="n">study</span><span class="o">.</span><span class="n">best_trial</span><span class="o">.</span><span class="n">params</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;best_params.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Best hyperparameters:&quot;</span><span class="p">,</span> <span class="n">best_params</span><span class="p">)</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">best_params</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>  <span class="c1">## bet parameters set</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># Get Best performance model</span>
+<div class="viewcode-block" id="get_best_model">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.get_best_model.html#tirank.TrainPre.get_best_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_best_model</span><span class="p">(</span><span class="n">savePath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads the best performing model from the hyperparameter tuning.</span>
+
+<span class="sd">    This function reads the &#39;best_params.pkl&#39; file, reconstructs the</span>
+<span class="sd">    corresponding model filename, initializes a new `TiRankModel`</span>
+<span class="sd">    with the saved parameters, and loads the weights.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TiRankModel: The trained TiRank model with the best weights loaded.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading the Best Model.&quot;</span><span class="p">)</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+    <span class="n">model_save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;checkpoints&quot;</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;best_params.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">best_params</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">lr</span> <span class="o">=</span> <span class="n">best_params</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span>
+    <span class="n">n_epochs</span> <span class="o">=</span> <span class="n">best_params</span><span class="p">[</span><span class="s2">&quot;n_epochs&quot;</span><span class="p">]</span>
+    <span class="n">alpha_0</span> <span class="o">=</span> <span class="n">best_params</span><span class="p">[</span><span class="s2">&quot;alpha_0&quot;</span><span class="p">]</span>
+    <span class="n">alpha_1</span> <span class="o">=</span> <span class="n">best_params</span><span class="p">[</span><span class="s2">&quot;alpha_1&quot;</span><span class="p">]</span>
+    <span class="n">alpha_2</span> <span class="o">=</span> <span class="n">best_params</span><span class="p">[</span><span class="s2">&quot;alpha_2&quot;</span><span class="p">]</span>
+    <span class="n">alpha_3</span> <span class="o">=</span> <span class="n">best_params</span><span class="p">[</span><span class="s2">&quot;alpha_3&quot;</span><span class="p">]</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;model_para.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">model_para</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1">## Load model</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">model_save_path</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;model_lr_</span><span class="si">{</span><span class="n">lr</span><span class="si">}</span><span class="s2">_epochs_</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">_alpha0_</span><span class="si">{</span><span class="n">alpha_0</span><span class="si">}</span><span class="s2">_alpha1_</span><span class="si">{</span><span class="n">alpha_1</span><span class="si">}</span><span class="s2">_alpha2_</span><span class="si">{</span><span class="n">alpha_2</span><span class="si">}</span><span class="s2">_alpha3_</span><span class="si">{</span><span class="n">alpha_3</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">n_features</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_features&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">nhead</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nhead&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">nhid1</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nhid1&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+    <span class="n">nhid2</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nhid2&quot;</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+    <span class="n">n_output</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_output&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">nlayers</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nlayers&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">n_pred</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_pred&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">dropout</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dropout&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">n_patho</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;n_patho&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;Cox&quot;</span><span class="p">)</span>
+    <span class="n">encoder_type</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;encoder_type&quot;</span><span class="p">,</span> <span class="s2">&quot;MLP&quot;</span><span class="p">)</span>
+    <span class="n">model_save_path</span> <span class="o">=</span> <span class="n">model_para</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;model_save_path&quot;</span><span class="p">,</span> <span class="s2">&quot;./checkpoints/&quot;</span><span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">TiRankModel</span><span class="p">(</span>
+        <span class="n">n_features</span><span class="o">=</span><span class="n">n_features</span><span class="p">,</span>
+        <span class="n">nhead</span><span class="o">=</span><span class="n">nhead</span><span class="p">,</span>
+        <span class="n">nhid1</span><span class="o">=</span><span class="n">nhid1</span><span class="p">,</span>
+        <span class="n">nhid2</span><span class="o">=</span><span class="n">nhid2</span><span class="p">,</span>
+        <span class="n">n_output</span><span class="o">=</span><span class="n">n_output</span><span class="p">,</span>
+        <span class="n">nlayers</span><span class="o">=</span><span class="n">nlayers</span><span class="p">,</span>
+        <span class="n">n_pred</span><span class="o">=</span><span class="n">n_pred</span><span class="p">,</span>
+        <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span>
+        <span class="n">n_patho</span><span class="o">=</span><span class="n">n_patho</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+        <span class="n">encoder_type</span><span class="o">=</span><span class="n">encoder_type</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<span class="c1"># Predict</span>
+
+
+<div class="viewcode-block" id="Predict">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.Predict.html#tirank.TrainPre.Predict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Predict</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">do_reject</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">reject_mode</span><span class="o">=</span><span class="s2">&quot;GMM&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs inference using the best trained TiRank model.</span>
+
+<span class="sd">    This function loads the best model, loads the full bulk and sc/st gene</span>
+<span class="sd">    pair matrices, and predicts scores for all samples. It then applies the</span>
+<span class="sd">    chosen rejection (filtering) method to classify cells/spots as</span>
+<span class="sd">    &#39;Rank+&#39;, &#39;Rank-&#39;, or &#39;Background&#39;. The final results are saved to</span>
+<span class="sd">    &#39;spot_predict_score.csv&#39; and &#39;final_anndata.h5ad&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        mode (str): The analysis mode (&#39;Cox&#39;, &#39;Classification&#39;, &#39;Regression&#39;).</span>
+<span class="sd">        do_reject (bool, optional): Whether to perform the GMM-based rejection.</span>
+<span class="sd">            Defaults to True.</span>
+<span class="sd">        tolerance (float, optional): The tolerance parameter for the rejection</span>
+<span class="sd">            method. Defaults to 0.05.</span>
+<span class="sd">        reject_mode (str, optional): The rejection method to use (&#39;GMM&#39; or &#39;Strict&#39;).</span>
+<span class="sd">            Defaults to &quot;GMM&quot;.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">get_best_model</span><span class="p">(</span><span class="n">savePath</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Starting Inference.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Load data</span>
+    <span class="c1">### Training bulk set</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;train_bulk_gene_pairs_mat.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">train_bulk_gene_pairs_mat</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1">### All bulk</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s2">&quot;bulk_exp.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s2">&quot;bulk_clinical.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">bulk_rownames</span> <span class="o">=</span> <span class="n">bulkClinical</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1">### Transfer all bulk into gene pairs</span>
+    <span class="n">bulk_GPmat</span> <span class="o">=</span> <span class="n">transform_test_exp</span><span class="p">(</span>
+        <span class="n">train_exp</span><span class="o">=</span><span class="n">train_bulk_gene_pairs_mat</span><span class="p">,</span> <span class="n">test_exp</span><span class="o">=</span><span class="n">bulkExp</span>
+    <span class="p">)</span>
+
+    <span class="c1">### SC gene pair matrix</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;sc_gene_pairs_mat.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">sc_GPmat</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;scAnndata.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">sc_rownames</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="c1"># Predict on cell</span>
+    <span class="n">Exp_Tensor_sc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sc_GPmat</span><span class="p">))</span>
+    <span class="n">Exp_Tensor_sc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Exp_Tensor_sc</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">embeddings_sc</span><span class="p">,</span> <span class="n">pred_sc</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">Exp_Tensor_sc</span><span class="p">)</span>
+
+    <span class="c1"># Predict on bulk</span>
+    <span class="n">Exp_Tensor_bulk</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bulk_GPmat</span><span class="p">))</span>
+    <span class="n">Exp_Tensor_bulk</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Exp_Tensor_bulk</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">embeddings_bulk</span><span class="p">,</span> <span class="n">pred_bulk</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">Exp_Tensor_bulk</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+        <span class="n">pred_bulk</span> <span class="o">=</span> <span class="n">pred_bulk</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pred_sc</span> <span class="o">=</span> <span class="n">pred_sc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Classification&quot;</span><span class="p">:</span>
+        <span class="n">pred_sc</span> <span class="o">=</span> <span class="n">pred_sc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pred_bulk</span> <span class="o">=</span> <span class="n">pred_bulk</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+        <span class="n">pred_sc</span> <span class="o">=</span> <span class="n">pred_sc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pred_bulk</span> <span class="o">=</span> <span class="n">pred_bulk</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">embeddings_sc</span> <span class="o">=</span> <span class="n">embeddings_sc</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">embeddings_bulk</span> <span class="o">=</span> <span class="n">embeddings_bulk</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">do_reject</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">reject_mode</span> <span class="o">==</span> <span class="s2">&quot;GMM&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Cox&quot;</span><span class="p">,</span> <span class="s2">&quot;Classification&quot;</span><span class="p">]:</span>
+                <span class="n">reject_mask</span> <span class="o">=</span> <span class="n">Reject_With_GMM_Bio</span><span class="p">(</span>
+                    <span class="n">pred_bulk</span><span class="p">,</span>
+                    <span class="n">pred_sc</span><span class="p">,</span>
+                    <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span>
+                    <span class="n">min_components</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                    <span class="n">max_components</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+                <span class="n">reject_mask</span> <span class="o">=</span> <span class="n">Reject_With_GMM_Reg</span><span class="p">(</span>
+                    <span class="n">pred_bulk</span><span class="p">,</span> <span class="n">pred_sc</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span>
+                <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">reject_mode</span> <span class="o">==</span> <span class="s2">&quot;Strict&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Cox&quot;</span><span class="p">,</span> <span class="s2">&quot;Classification&quot;</span><span class="p">]:</span>
+                <span class="n">reject_mask</span> <span class="o">=</span> <span class="n">Reject_With_StrictNumber</span><span class="p">(</span>
+                    <span class="n">pred_bulk</span><span class="p">,</span> <span class="n">pred_sc</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported Rejcetion Mode: </span><span class="si">{</span><span class="n">reject_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">reject_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pred_sc</span><span class="p">)</span>
+
+    <span class="n">saveDF_sc</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">reject_mask</span><span class="p">,</span> <span class="n">pred_sc</span><span class="p">,</span> <span class="n">embeddings_sc</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">sc_GPmat</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">colnames</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Reject&quot;</span><span class="p">,</span> <span class="s2">&quot;Pred_score&quot;</span><span class="p">]</span>
+    <span class="n">colnames</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;embedding_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">embeddings_sc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+
+    <span class="n">saveDF_sc</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">colnames</span>
+    <span class="n">saveDF_sc</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">sc_rownames</span>
+
+    <span class="n">reject_mask_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pred_bulk</span><span class="p">)</span>
+    <span class="n">saveDF_bulk</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">reject_mask_</span><span class="p">,</span> <span class="n">pred_bulk</span><span class="p">,</span> <span class="n">embeddings_bulk</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">bulk_GPmat</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">saveDF_bulk</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">colnames</span>
+    <span class="n">saveDF_bulk</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">bulk_rownames</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Inference Done.&quot;</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;saveDF_bulk.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">saveDF_bulk</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;saveDF_sc.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">saveDF_sc</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1">## Original categorize function</span>
+    <span class="k">if</span> <span class="n">saveDF_sc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The prediction matrix was not match with original scAnndata.&quot;</span><span class="p">)</span>
+
+    <span class="n">scAnndata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;Rank_Embedding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">saveDF_sc</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span>
+    <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Reject&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">saveDF_sc</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Rank_Score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">saveDF_sc</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Cox&quot;</span><span class="p">,</span> <span class="s2">&quot;Classification&quot;</span><span class="p">]:</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Rank_Score&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Reject&quot;</span><span class="p">])</span>
+        <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Rank_Label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;Background&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;Rank-&quot;</span> <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mf">0.5</span> <span class="k">else</span> <span class="s2">&quot;Rank+&quot;</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">temp</span>
+        <span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;We set Rank score &lt; 0.5 as Rank- () while &gt; 0.5 as Rank+ &quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+        <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Rank_Label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Rank_Score&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;Reject&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+
+    <span class="c1">## Save</span>
+    <span class="n">sc_pred_df</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span>
+    <span class="n">sc_pred_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;spot_predict_score.csv&quot;</span><span class="p">))</span>
+    <span class="n">scAnndata</span><span class="o">.</span><span class="n">write_h5ad</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;final_anndata.h5ad&quot;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># permutation test to determine the phenotype associated cluster</span>
+
+
+<div class="viewcode-block" id="permute_once">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.permute_once.html#tirank.TrainPre.permute_once">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">permute_once</span><span class="p">(</span><span class="n">Rank_Labels</span><span class="p">,</span> <span class="n">Labels</span><span class="p">,</span> <span class="n">unique_labels</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function for a single permutation test shuffle.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        Rank_Labels (list): The list of all &#39;Rank_Label&#39; assignments.</span>
+<span class="sd">        Labels (list): The list of all cluster assignments.</span>
+<span class="sd">        unique_labels (set): The set of unique cluster labels.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary with permuted counts for each cluster.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shuffled_rank_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">Rank_Labels</span><span class="p">)</span>
+    <span class="n">local_counts</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">label</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Background&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Rank+&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Rank-&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">unique_labels</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">unique_labels</span><span class="p">:</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
+        <span class="n">subset</span> <span class="o">=</span> <span class="p">[</span><span class="n">shuffled_rank_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+        <span class="n">local_counts</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">subset</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;Background&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank+&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank-&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">local_counts</span></div>
+
+
+
+<div class="viewcode-block" id="AssignPcluster">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.AssignPcluster.html#tirank.TrainPre.AssignPcluster">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">AssignPcluster</span><span class="p">(</span><span class="n">df_p_values</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Assigns a final phenotype (&#39;Rank+&#39;, &#39;Rank-&#39;, &#39;Background&#39;) to clusters.</span>
+
+<span class="sd">    This assignment is based on the p-values from the permutation test.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df_p_values (pd.DataFrame): DataFrame with p-values for &#39;Rank+&#39;,</span>
+<span class="sd">            &#39;Rank-&#39;, and &#39;Background&#39; enrichment for each cluster.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: A dictionary mapping the final assignment (&#39;Rank+&#39;, &#39;Rank-&#39;,</span>
+<span class="sd">            &#39;Background&#39;) to a list of cluster IDs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create boolean masks for each condition</span>
+    <span class="n">mask_background_high</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="p">[</span><span class="s2">&quot;Background&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.05</span>
+    <span class="n">mask_rank_plus_low</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="p">[</span><span class="s2">&quot;Rank+&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
+    <span class="n">mask_rank_minus_high</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="p">[</span><span class="s2">&quot;Rank-&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.05</span>
+
+    <span class="c1"># Mask for &#39;Rank+&#39; category</span>
+    <span class="n">mask_rank_plus_category</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">mask_background_high</span> <span class="o">&amp;</span> <span class="n">mask_rank_plus_low</span> <span class="o">&amp;</span> <span class="n">mask_rank_minus_high</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Mask for &#39;Rank-&#39; category</span>
+    <span class="n">mask_rank_plus_high</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="p">[</span><span class="s2">&quot;Rank+&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.05</span>
+    <span class="n">mask_rank_minus_low</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="p">[</span><span class="s2">&quot;Rank-&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.05</span>
+    <span class="n">mask_rank_minus_category</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">mask_background_high</span> <span class="o">&amp;</span> <span class="n">mask_rank_minus_low</span> <span class="o">&amp;</span> <span class="n">mask_rank_plus_high</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Indices for each category</span>
+    <span class="n">indices_rank_plus</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">mask_rank_plus_category</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">indices_rank_minus</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">mask_rank_minus_category</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># Indices for &#39;Background&#39; category (remaining indices)</span>
+    <span class="n">indices_background</span> <span class="o">=</span> <span class="n">df_p_values</span><span class="o">.</span><span class="n">index</span><span class="p">[</span>
+        <span class="o">~</span><span class="p">(</span><span class="n">mask_rank_plus_category</span> <span class="o">|</span> <span class="n">mask_rank_minus_category</span><span class="p">)</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># Create the dictionary</span>
+    <span class="n">category_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Rank+&quot;</span><span class="p">:</span> <span class="n">indices_rank_plus</span><span class="p">,</span>
+        <span class="s2">&quot;Rank-&quot;</span><span class="p">:</span> <span class="n">indices_rank_minus</span><span class="p">,</span>
+        <span class="s2">&quot;Background&quot;</span><span class="p">:</span> <span class="n">indices_background</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">category_dict</span></div>
+
+
+
+<div class="viewcode-block" id="Pcluster">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.Pcluster.html#tirank.TrainPre.Pcluster">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Pcluster</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">clusterColName</span><span class="p">,</span> <span class="n">perm_n</span><span class="o">=</span><span class="mi">1001</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs a permutation test to identify significantly enriched clusters.</span>
+
+<span class="sd">    This function tests whether the observed number of &#39;Rank+&#39; or &#39;Rank-&#39;</span>
+<span class="sd">    labels within any given cluster (e.g., &#39;leiden_clusters&#39;) is</span>
+<span class="sd">    significantly higher than expected by chance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        clusterColName (str): The column name in &#39;spot_predict_score.csv&#39;</span>
+<span class="sd">            that contains the cluster labels (e.g., &#39;leiden_clusters&#39;,</span>
+<span class="sd">            &#39;patho_class&#39;).</span>
+<span class="sd">        perm_n (int, optional): The number of permutations to run.</span>
+<span class="sd">            Defaults to 1001.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Load data</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+    <span class="n">pred_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;spot_predict_score.csv&quot;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Check if the clusterColName is in the observation matrix</span>
+    <span class="k">if</span> <span class="n">clusterColName</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">clusterColName</span><span class="si">}</span><span class="s2"> was not in prediction datafrane.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Extract data</span>
+    <span class="n">Labels</span> <span class="o">=</span> <span class="n">pred_df</span><span class="p">[</span><span class="n">clusterColName</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">Rank_Labels</span> <span class="o">=</span> <span class="n">pred_df</span><span class="p">[</span><span class="s2">&quot;Rank_Label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="c1"># Count the actual occurrences</span>
+    <span class="n">unique_labels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span>
+    <span class="n">actual_counts</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">unique_labels</span><span class="p">:</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">Labels</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
+        <span class="n">subset</span> <span class="o">=</span> <span class="p">[</span><span class="n">Rank_Labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+        <span class="n">actual_counts</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">subset</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;Background&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank+&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank-&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Permutation procedure using multi-threading</span>
+    <span class="n">permuted_counts</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">label</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;Background&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;Rank+&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;Rank-&quot;</span><span class="p">:</span> <span class="p">[]}</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">unique_labels</span>
+    <span class="p">}</span>
+
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">permute_once</span><span class="p">,</span> <span class="n">Rank_Labels</span><span class="p">,</span> <span class="n">Labels</span><span class="p">,</span> <span class="n">unique_labels</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">perm_n</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">unique_labels</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;Background&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank+&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank-&quot;</span><span class="p">}:</span>
+                    <span class="n">permuted_counts</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
+
+    <span class="c1"># Calculate p-values based on the permuted distribution</span>
+    <span class="n">p_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">unique_labels</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">unique_labels</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;Rank+&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank-&quot;</span><span class="p">,</span> <span class="s2">&quot;Background&quot;</span><span class="p">}:</span>
+            <span class="n">observed</span> <span class="o">=</span> <span class="n">actual_counts</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">permuted_counts</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">p_values</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">extreme_count</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                    <span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">permuted_counts</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="k">if</span> <span class="n">observed</span> <span class="o">&gt;</span> <span class="n">x</span>
+                <span class="p">)</span>
+                <span class="n">p_values</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">extreme_count</span> <span class="o">/</span> <span class="n">perm_n</span>
+
+    <span class="c1"># transpose the DataFrame to get labels as rows</span>
+    <span class="n">df_p_values</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">p_values</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># Re-assign label</span>
+    <span class="n">category_dict</span> <span class="o">=</span> <span class="n">AssignPcluster</span><span class="p">(</span><span class="n">df_p_values</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">category_dict</span><span class="p">)</span>
+
+    <span class="c1"># Save Category</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">clusterColName</span><span class="si">}</span><span class="s2">_category_dict.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">category_dict</span><span class="p">,</span> <span class="n">json_file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>   
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="IdenHub">
+<a class="viewcode-back" href="../../generated/tirank.TrainPre.IdenHub.html#tirank.TrainPre.IdenHub">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">IdenHub</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">cateCol1</span><span class="p">,</span> <span class="n">cateCol2</span><span class="p">,</span> <span class="n">min_spots</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Identifies &quot;hubs&quot; by combining two categorical cluster labels.</span>
+
+<span class="sd">    This function creates a new &#39;combine_cluster&#39; column by merging two</span>
+<span class="sd">    existing cluster labels (e.g., &#39;patho_class&#39; and &#39;leiden_clusters&#39;).</span>
+<span class="sd">    It also filters out any combined clusters that have fewer than</span>
+<span class="sd">    `min_spots` members, labeling them as &#39;NA&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        cateCol1 (str): The name of the first categorical column in</span>
+<span class="sd">            &#39;spot_predict_score.csv&#39;.</span>
+<span class="sd">        cateCol2 (str): The name of the second categorical column.</span>
+<span class="sd">        min_spots (int): The minimum number of spots required to keep</span>
+<span class="sd">            a combined cluster.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Load data</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+    <span class="n">pred_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;spot_predict_score.csv&quot;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Check if the clusterColName is in the observation matrix</span>
+    <span class="k">if</span> <span class="n">cateCol1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cateCol1</span><span class="si">}</span><span class="s2"> was not in prediction datafrane.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cateCol2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pred_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cateCol2</span><span class="si">}</span><span class="s2"> was not in prediction datafrane.&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Conbime the categorys</span>
+    <span class="n">cate1</span> <span class="o">=</span> <span class="n">pred_df</span><span class="p">[</span><span class="n">cateCol1</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>   
+    <span class="n">cate2</span> <span class="o">=</span> <span class="n">pred_df</span><span class="p">[</span><span class="n">cateCol2</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">pred_df</span><span class="p">[</span><span class="s2">&quot;combine_cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">cate1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cate2</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cate1</span><span class="p">))]</span>
+
+    <span class="c1"># Identify categories with counts less than the threshold</span>
+    <span class="n">category_counts</span> <span class="o">=</span> <span class="n">pred_df</span><span class="p">[</span><span class="s1">&#39;combine_cluster&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+    <span class="n">categories_to_replace</span> <span class="o">=</span> <span class="n">category_counts</span><span class="p">[</span><span class="n">category_counts</span> <span class="o">&lt;</span> <span class="n">min_spots</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Categories with counts less than </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">min_spots</span><span class="p">,</span> <span class="n">categories_to_replace</span><span class="p">))</span>
+
+    <span class="n">pred_df</span><span class="p">[</span><span class="s1">&#39;combine_cluster&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_df</span><span class="p">[</span><span class="s1">&#39;combine_cluster&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">categories_to_replace</span><span class="p">,</span> <span class="s1">&#39;NA&#39;</span><span class="p">)</span>
+    <span class="n">pred_df</span><span class="p">[</span><span class="s2">&quot;combine_cluster&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pred_df</span><span class="p">[</span><span class="s2">&quot;combine_cluster&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+
+    <span class="n">pred_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;spot_predict_score.csv&quot;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

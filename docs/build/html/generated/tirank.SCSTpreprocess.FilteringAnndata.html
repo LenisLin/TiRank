@@ -1,0 +1,180 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.SCSTpreprocess.FilteringAnndata &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tirank.SCSTpreprocess.Logtransformation" href="tirank.SCSTpreprocess.Logtransformation.html" />
+    <link rel="prev" title="tirank.SCSTpreprocess.Clustering" href="tirank.SCSTpreprocess.Clustering.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TiRank
+              <img src="../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#core-model-training">Core Model &amp; Training</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#data-handling-preprocessing">Data Handling &amp; Preprocessing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tirank.LoadData.html">tirank.LoadData</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="tirank.SCSTpreprocess.html">tirank.SCSTpreprocess</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.Clustering.html">tirank.SCSTpreprocess.Clustering</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">tirank.SCSTpreprocess.FilteringAnndata</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.Logtransformation.html">tirank.SCSTpreprocess.Logtransformation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.Normalization.html">tirank.SCSTpreprocess.Normalization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.calculate_populations_meanRank.html">tirank.SCSTpreprocess.calculate_populations_meanRank</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.compute_similarity.html">tirank.SCSTpreprocess.compute_similarity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.is_imbalanced.html">tirank.SCSTpreprocess.is_imbalanced</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.merge_datasets.html">tirank.SCSTpreprocess.merge_datasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.normalize_data.html">tirank.SCSTpreprocess.normalize_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.SCSTpreprocess.perform_sampling_on_RNAseq.html">tirank.SCSTpreprocess.perform_sampling_on_RNAseq</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tirank.Dataloader.html">tirank.Dataloader</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#feature-engineering">Feature Engineering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#plotting-visualization">Plotting &amp; Visualization</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="tirank.SCSTpreprocess.html">tirank.SCSTpreprocess</a></li>
+      <li class="breadcrumb-item active">tirank.SCSTpreprocess.FilteringAnndata</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/tirank.SCSTpreprocess.FilteringAnndata.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tirank-scstpreprocess-filteringanndata">
+<h1>tirank.SCSTpreprocess.FilteringAnndata<a class="headerlink" href="#tirank-scstpreprocess-filteringanndata" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="tirank.SCSTpreprocess.FilteringAnndata">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">FilteringAnndata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MT_propor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgPath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#FilteringAnndata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tirank.SCSTpreprocess.FilteringAnndata" title="Link to this definition"></a></dt>
+<dd><p>Filters an AnnData object based on QC metrics.</p>
+<p>Filters cells/spots based on total counts and mitochondrial percentage.
+Filters genes based on minimum cell count. Also saves a QC violin plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>sc.AnnData</em>) – The AnnData object to filter.</p></li>
+<li><p><strong>max_count</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum total counts per cell/spot.
+Defaults to 35000.</p></li>
+<li><p><strong>min_count</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimum total counts per cell/spot.
+Defaults to 5000.</p></li>
+<li><p><strong>MT_propor</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum percentage of mitochondrial gene
+counts. Defaults to 10.</p></li>
+<li><p><strong>min_cell</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimum number of cells/spots a gene must
+be expressed in. Defaults to 10.</p></li>
+<li><p><strong>imgPath</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to save the QC violin plot.
+Defaults to “./”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The filtered AnnData object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sc.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tirank.SCSTpreprocess.Clustering.html" class="btn btn-neutral float-left" title="tirank.SCSTpreprocess.Clustering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tirank.SCSTpreprocess.Logtransformation.html" class="btn btn-neutral float-right" title="tirank.SCSTpreprocess.Logtransformation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

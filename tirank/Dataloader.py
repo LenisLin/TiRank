@@ -6,65 +6,34 @@ import random, pickle, os
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-# def view_clinical_variables(savePath):
-#     savePath_1 = os.path.join(savePath,"1_loaddata")
+"""
+PyTorch Dataset and DataLoader definitions for TiRank.
 
-#     # Load data
-#     f = open(os.path.join(savePath_1, 'bulk_clinical.pkl'), 'rb')
-#     bulkClinical = pickle.load(f)
-#     f.close()
+This module defines the custom Dataset classes for bulk, single-cell (SC),
+and spatial transcriptomics (ST) data, handling the different analysis modes
+(Cox, Classification, Regression). It also includes functions for splitting
+data and packing it into PyTorch DataLoader objects for training and inference.
+"""
 
-#     print(bulkClinical.columns)
-
-#     return bulkClinical
-
-# def assign_binary_values(df, column_name):
-#     # transfer into dataframe
-#     df = pd.DataFrame(df)
-
-#     # Ensure the column exists in the DataFrame
-#     if column_name not in df.columns:
-#         raise ValueError(f"Column '{column_name}' not found in DataFrame.")
-
-#     # Step 1: Identify the unique categories in the specified column
-#     unique_categories = df[column_name].unique().tolist()
-    
-#     # Safety check: Ensure there are only two unique categories
-#     if len(unique_categories) != 2:
-#         raise ValueError("The column does not contain exactly two unique categories.")
-    
-#     # Step 2: Assign numerical values to these categories
-#     category_to_number = {unique_categories[0]: 0, unique_categories[1]: 1}
-    
-#     # Convert the specified column in the DataFrame based on the detected categories
-#     df[column_name] = df[column_name].map(category_to_number)
-    
-#     return df, category_to_number
-
-# def choose_clinical_variable(savePath, bulkClinical, mode, var_1, var_2 = None):
-# def choose_clinical_variable(savePath, bulkClinical):
-#     savePath_2 = os.path.join(savePath,"2_preprocessing")
-
-#     # selecting mode
-#     if mode == "Cox":
-#         Time_col = var_1
-#         Status_col = var_2
-#     elif mode == "Classification" or "Regression":
-
-#     elif mode == "Regression":
-#         Variable_col = var_1
-#         bulkClinical = bulkClinical.loc[:,Variable_col]
-
-#     else:
-#         raise(TypeError("Unexpected Mode had been selected."))
-
-#     with open(os.path.join(savePath_2, 'bulk_clinical.pkl'), 'wb') as f:
-#         pickle.dump(bulkClinical, f)
-#     f.close()
-
-#     return None
 
 def generate_val(savePath, validation_proportion=0.15, mode =  None):
+    """
+    Splits the bulk expression and clinical data into training and validation sets.
+    
+    Loads the full bulk expression and clinical data, combines them, performs a
+    random split, and saves the training and validation sets back to disk in
+    the '2_preprocessing/split_data' directory.
+
+    Args:
+        savePath (str): The main project directory path.
+        validation_proportion (float, optional): The fraction of data to use for
+            the validation set. Defaults to 0.15.
+        mode (str, optional): The analysis mode ('Cox', 'Classification', 'Regression').
+            This determines how many columns to use for the clinical data.
+    
+    Returns:
+        None
+    """
     savePath_1 = os.path.join(savePath,"1_loaddata")
     savePath_2 = os.path.join(savePath,"2_preprocessing")
 
@@ -145,6 +114,18 @@ def generate_val(savePath, validation_proportion=0.15, mode =  None):
 
 
 class BulkDataset(Dataset):
+    """
+    PyTorch Dataset class for bulk RNA-seq (gene pair) data.
+
+    Handles different analysis modes by returning the appropriate clinical
+    labels (e.g., time and event for Cox, a single label for Classification).
+    
+    Args:
+        df_Xa (pd.DataFrame): DataFrame of gene pair features (samples x gene pairs).
+        df_cli (pd.DataFrame or pd.Series): DataFrame/Series with clinical information.
+        mode (str, optional): Analysis mode. One of 'Cox', 'Classification',
+            or 'Regression'. Defaults to 'Cox'.
+    """
     def __init__(self, df_Xa, df_cli, mode='Cox'):
         self.mode = mode
 
@@ -172,9 +153,21 @@ class BulkDataset(Dataset):
             raise ValueError(f"Unsupported mode: {self.mode}")
 
     def __len__(self):
+        """Returns the total number of samples."""
         return len(self.Xa)
 
     def __getitem__(self, idx):
+        """
+        Fetches a sample and its corresponding label(s).
+
+        Args:
+            idx (int): The index of the sample to fetch.
+
+        Returns:
+            tuple: A tuple containing the feature tensor and label(s).
+                (Xa, t, e) for 'Cox' mode.
+                (Xa, label) for 'Classification' or 'Regression' mode.
+        """
         if self.mode == 'Cox':
             return self.Xa[idx], self.t[idx], self.e[idx]
         else:
@@ -184,15 +177,32 @@ class BulkDataset(Dataset):
 
 
 class SCDataset(Dataset):
+    """
+    PyTorch Dataset class for single-cell RNA-seq (gene pair) data.
+    
+    Args:
+        df_Xb (pd.DataFrame or np.ndarray): DataFrame of gene pair features
+            (cells x gene pairs).
+    """
     def __init__(self, df_Xb):
         if type(df_Xb) is np.ndarray:
             df_Xb = pd.DataFrame(df_Xb)
         self.Xb = torch.tensor(df_Xb.values, dtype=torch.float32)
 
     def __len__(self):
+        """Returns the total number of cells."""
         return len(self.Xb)
 
     def __getitem__(self, idx):
+        """
+        Fetches a single cell's feature vector and its index.
+
+        Args:
+            idx (int): The index of the cell to fetch.
+
+        Returns:
+            tuple: (Xb, idx)
+        """
 
         return self.Xb[idx], idx
 
@@ -200,19 +210,57 @@ class SCDataset(Dataset):
 
 
 class STDataset(Dataset):
+    """
+    PyTorch Dataset class for Spatial Transcriptomics (gene pair) data.
+    
+    Args:
+        df_Xc (pd.DataFrame or np.ndarray): DataFrame of gene pair features
+            (spots x gene pairs).
+    """
     def __init__(self, df_Xc):
         self.Xc = torch.tensor(df_Xc.values, dtype=torch.float32)
 
     def __len__(self):
+        """Returns the total number of spots."""
         return len(self.Xc)
 
     def __getitem__(self, idx):
+        """
+        Fetches a single spot's feature vector and its index.
+
+        Args:
+            idx (int): The index of the spot to fetch.
+
+        Returns:
+            tuple: (Xc, idx)
+        """
 
         return self.Xc[idx], idx
     
 
 # Pack data
 def PackData(savePath, mode, infer_mode, batch_size = 1024):
+    """
+    Loads all preprocessed data and packages it into PyTorch DataLoaders.
+    
+    This function reads the training/validation gene pair matrices, clinical data,
+    AnnData object, similarity matrix, and pathological labels from disk. It
+    instantiates the Dataset classes (BulkDataset, STDataset, SCDataset) and
+    wraps them in DataLoader objects. It also prepares the adjacency matrix (adj_A)
+    and pathological labels (patholabels) for the model.
+    
+    All resulting DataLoader objects and supporting data are saved to the
+    '3_Analysis/data2train' directory.
+
+    Args:
+        savePath (str): The main project directory path.
+        mode (str): The analysis mode ('Cox', 'Classification', 'Regression').
+        infer_mode (str): The inference data type ('ST' or 'SC').
+        batch_size (int, optional): Batch size for the DataLoaders. Defaults to 1024.
+    
+    Returns:
+        None
+    """
     savePath_2 = os.path.join(savePath,"2_preprocessing")
     savePath_3 = os.path.join(savePath,"3_Analysis")
     savePath_splitData = os.path.join(savePath_2,"split_data")
@@ -296,6 +344,23 @@ def PackData(savePath, mode, infer_mode, batch_size = 1024):
 # Extract GP on other datasets
 
 def transform_test_exp(train_exp, test_exp):
+    """
+    Transforms a test expression matrix into a gene pair matrix using pairs from a training set.
+
+    Given a gene pair matrix from training (columns are 'GeneA__GeneB') and a new
+    expression matrix (genes as rows), this function computes the gene pair
+    values for the new data, matching the pairs from training.
+
+    Args:
+        train_exp (pd.DataFrame): The gene pair matrix from the training set.
+            Its columns define the gene pairs to be used.
+        test_exp (pd.DataFrame): The raw gene expression matrix for the test set
+            (genes as rows, samples as columns).
+
+    Returns:
+        pd.DataFrame: A new gene pair matrix (samples x gene pairs) for the
+            test set, with the same columns as `train_exp`.
+    """
     # Initialize a new DataFrame to store the transformed test data
     transformed_test_exp = pd.DataFrame(index=test_exp.columns)
 

@@ -1,0 +1,320 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.LoadData &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            TiRank
+              <img src="../../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tirank.LoadData</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tirank.LoadData</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Data Loading Utilities for TiRank.</span>
+
+<span class="sd">This module provides functions to load bulk expression data (CSV, TXT),</span>
+<span class="sd">bulk clinical data (CSV, TXT, Excel), and single-cell/spatial</span>
+<span class="sd">transcriptomics data (H5AD, 10x Visium folders). It also includes</span>
+<span class="sd">helper functions to check data consistency and preview DataFrames.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">## load the expression profile from bulk</span>
+<div class="viewcode-block" id="load_bulk_exp">
+<a class="viewcode-back" href="../../generated/tirank.LoadData.load_bulk_exp.html#tirank.LoadData.load_bulk_exp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_bulk_exp</span><span class="p">(</span><span class="n">path_to_bulk_exp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads a bulk expression file (CSV or TXT) into a DataFrame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_to_bulk_exp (str): The file path to the bulk expression data.</span>
+<span class="sd">            Assumes genes are rows and samples are columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: A pandas DataFrame of the expression data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">path_to_bulk_exp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+        <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_to_bulk_exp</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">path_to_bulk_exp</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+        <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">path_to_bulk_exp</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bulkExp</span></div>
+
+
+<span class="c1">## load the clinical information from bulk</span>
+<div class="viewcode-block" id="load_bulk_clinical">
+<a class="viewcode-back" href="../../generated/tirank.LoadData.load_bulk_clinical.html#tirank.LoadData.load_bulk_clinical">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_bulk_clinical</span><span class="p">(</span><span class="n">path_to_bulk_cli</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads a bulk clinical data file (CSV, TXT, or Excel) into a DataFrame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_to_bulk_cli (str): The file path to the bulk clinical data.</span>
+<span class="sd">            Assumes samples are rows and clinical variables are columns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: A pandas DataFrame of the clinical data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">path_to_bulk_cli</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.csv&#39;</span><span class="p">):</span>
+        <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">path_to_bulk_cli</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">path_to_bulk_cli</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.txt&#39;</span><span class="p">):</span>
+        <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">path_to_bulk_cli</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">path_to_bulk_cli</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> 
+
+    <span class="k">return</span> <span class="n">bulkClinical</span></div>
+
+
+<span class="c1">## check the bulk data of bulk</span>
+<div class="viewcode-block" id="check_bulk">
+<a class="viewcode-back" href="../../generated/tirank.LoadData.check_bulk.html#tirank.LoadData.check_bulk">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_bulk</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="n">bulkExp</span><span class="p">,</span><span class="n">bulkClinical</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks and filters bulk data for common samples.</span>
+
+<span class="sd">    Intersects the samples in the bulk expression columns and the bulk</span>
+<span class="sd">    clinical index. Filters both DataFrames to keep only the common</span>
+<span class="sd">    samples and saves the results as pickle files.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path to save results.</span>
+<span class="sd">        bulkExp (pd.DataFrame): Bulk expression DataFrame (genes x samples).</span>
+<span class="sd">        bulkClinical (pd.DataFrame): Bulk clinical DataFrame (samples x variables).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>    
+
+    <span class="n">common_elements</span> <span class="o">=</span> <span class="n">bulkClinical</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">bulkExp</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">common_elements</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The rownames of clinical information was not match with expression profile !&quot;</span><span class="p">)</span>
+    
+    <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">bulkClinical</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">common_elements</span><span class="p">,:]</span>
+    <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">bulkExp</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="n">common_elements</span><span class="p">]</span>
+    
+    <span class="c1"># save Data</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s1">&#39;bulk_exp.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">bulkExp</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s1">&#39;bulk_clinical.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">bulkClinical</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1">## load single cell expression data</span>
+<div class="viewcode-block" id="load_sc_data">
+<a class="viewcode-back" href="../../generated/tirank.LoadData.load_sc_data.html#tirank.LoadData.load_sc_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_sc_data</span><span class="p">(</span><span class="n">path_to_sc_h5ead</span><span class="p">,</span> <span class="n">savePath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads single-cell RNA-seq data from an .h5ad file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_to_sc_h5ead (str): The file path to the .h5ad file.</span>
+<span class="sd">        savePath (str): The main project directory path to save the</span>
+<span class="sd">            loaded AnnData object as &#39;anndata.pkl&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sc.AnnData: The loaded AnnData object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>
+
+    <span class="c1">## highly recommend the user to upload the h5ad file </span>
+    <span class="c1">## offer a link or file to teach how to create .h5ad file</span>
+    <span class="k">if</span> <span class="n">path_to_sc_h5ead</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.h5ad&#39;</span><span class="p">):</span>
+        <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="n">path_to_sc_h5ead</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s1">&#39;anndata.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">scAnndata</span></div>
+
+
+
+<span class="c1">## load spatial transcriptomics expression data</span>
+<div class="viewcode-block" id="load_st_data">
+<a class="viewcode-back" href="../../generated/tirank.LoadData.load_st_data.html#tirank.LoadData.load_st_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_st_data</span><span class="p">(</span><span class="n">path_to_st_floder</span><span class="p">,</span> <span class="n">savePath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads spatial transcriptomics (ST) data from a 10x Visium folder.</span>
+
+<span class="sd">    Uses scanpy.read_visium() to load the data.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path_to_st_floder (str): The file path to the directory containing</span>
+<span class="sd">            the 10x Visium output (e.g., &#39;spatial&#39;, &#39;filtered_feature_bc_matrix.h5&#39;).</span>
+<span class="sd">        savePath (str): The main project directory path to save the</span>
+<span class="sd">            loaded AnnData object as &#39;anndata.pkl&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        sc.AnnData: The loaded AnnData object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Now just only can load the files output from spaceranger</span>
+    <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_visium</span><span class="p">(</span><span class="n">path_to_st_floder</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s1">&#39;anndata.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span>  <span class="n">scAnndata</span></div>
+
+
+<span class="c1">## View column of clinical dataframe</span>
+<div class="viewcode-block" id="view_dataframe">
+<a class="viewcode-back" href="../../generated/tirank.LoadData.view_dataframe.html#tirank.LoadData.view_dataframe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">view_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">nrow</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">ncol</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prints a top-left subset of a DataFrame for quick viewing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (pd.DataFrame): The DataFrame to view.</span>
+<span class="sd">        nrow (int, optional): The number of rows to show. Defaults to 10.</span>
+<span class="sd">        ncol (int, optional): The number of columns to show. Defaults to 8.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">nrow</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="n">ncol</span><span class="p">])</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1">## Transfer sc / st expression profile</span>
+<div class="viewcode-block" id="transfer_exp_profile">
+<a class="viewcode-back" href="../../generated/tirank.LoadData.transfer_exp_profile.html#tirank.LoadData.transfer_exp_profile">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transfer_exp_profile</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts the .X matrix of an AnnData object to a pandas DataFrame.</span>
+
+<span class="sd">    Handles both sparse and dense .X matrices. The resulting DataFrame</span>
+<span class="sd">    is structured as genes (rows) x cells/spots (columns).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        scAnndata (sc.AnnData): The AnnData object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: The expression matrix as a pandas DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scAnndata</span><span class="o">.</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="s2">&quot;1&quot;</span><span class="p">)):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scAnndata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scAnndata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">var_names</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span>    
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

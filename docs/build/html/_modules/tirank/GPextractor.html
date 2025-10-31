@@ -1,0 +1,657 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.GPextractor &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            TiRank
+              <img src="../../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tirank.GPextractor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tirank.GPextractor</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Gene-pairs (GP) extractor</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">pickle</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lifelines</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoxPHFitter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">pearsonr</span><span class="p">,</span> <span class="n">ttest_ind</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.stats.multitest</span><span class="w"> </span><span class="kn">import</span> <span class="n">multipletests</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.Dataloader</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform_test_exp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.Visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_genepair</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Gene Pair Extractor module for TiRank.</span>
+
+<span class="sd">This module contains the GenePairExtractor class, which is the core component</span>
+<span class="sd">for implementing the Relative Expression Ordering (REO) transformation.</span>
+<span class="sd">It identifies phenotype-associated genes from bulk data, forms gene pairs,</span>
+<span class="sd">filters them, and then applies this transformation to both bulk and</span>
+<span class="sd">single-cell/spatial data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GenePairExtractor">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GenePairExtractor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to extract and filter phenotype-associated gene pairs (PGPs).</span>
+
+<span class="sd">    This class loads bulk and sc/st expression data, identifies genes associated</span>
+<span class="sd">    with a clinical phenotype (via t-test, Cox regression, or Pearson correlation),</span>
+<span class="sd">    creates all possible pairs between positive and negative-associated genes,</span>
+<span class="sd">    filters these pairs based on co-occurrence and variance, and finally</span>
+<span class="sd">    transforms both bulk and sc/st datasets into gene pair matrices.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        analysis_mode (str): The analysis mode (&#39;Classification&#39;, &#39;Cox&#39;, &#39;Regression&#39;).</span>
+<span class="sd">        top_var_genes (int, optional): The number of top variable genes to</span>
+<span class="sd">            pre-filter from the sc/st data. Defaults to 500.</span>
+<span class="sd">        top_gene_pairs (int, optional): The number of top variable gene pairs</span>
+<span class="sd">            to select after filtering. Defaults to 2000.</span>
+<span class="sd">        p_value_threshold (float, optional): P-value threshold for selecting</span>
+<span class="sd">            phenotype-associated genes. Defaults to None (which may be an issue,</span>
+<span class="sd">            but reflects the original code&#39;s None default).</span>
+<span class="sd">        max_cutoff (float, optional): Maximum co-occurrence proportion for filtering</span>
+<span class="sd">            gene pairs (removes highly redundant pairs). Defaults to 0.8.</span>
+<span class="sd">        min_cutoff (float, optional): Minimum co-occurrence proportion for filtering</span>
+<span class="sd">            gene pairs (removes pairs with no co-occurrence). Defaults to 0.2.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">savePath</span><span class="p">,</span>
+        <span class="n">analysis_mode</span><span class="p">,</span>
+        <span class="n">top_var_genes</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+        <span class="n">top_gene_pairs</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+        <span class="n">p_value_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_cutoff</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+        <span class="n">min_cutoff</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">savePath</span> <span class="o">=</span> <span class="n">savePath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis_mode</span> <span class="o">=</span> <span class="n">analysis_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_var_genes</span> <span class="o">=</span> <span class="n">top_var_genes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_gene_pairs</span> <span class="o">=</span> <span class="n">top_gene_pairs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p_value_threshold</span> <span class="o">=</span> <span class="n">p_value_threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_cutoff</span> <span class="o">=</span> <span class="n">max_cutoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_cutoff</span> <span class="o">=</span> <span class="n">min_cutoff</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the required expression and clinical data from disk.</span>
+<span class="sd">        </span>
+<span class="sd">        Loads &#39;bulkExp_train.pkl&#39;, &#39;bulkClinical_train.pkl&#39;, and &#39;scAnndata.pkl&#39;</span>
+<span class="sd">        from the &#39;2_preprocessing&#39; directory and stores them as attributes.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting load data for gene pair transformation.&quot;</span><span class="p">)</span>
+        <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+        <span class="n">savePath_splitData</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;split_data&quot;</span><span class="p">)</span>
+
+        <span class="c1">## bulk</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s2">&quot;bulkExp_train.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s2">&quot;bulkClinical_train.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clinical_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1">## sc</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;scAnndata.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scAnndata</span><span class="o">.</span><span class="n">X</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="n">scExp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scAnndata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scExp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scAnndata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="n">scExp</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">var_names</span>
+        <span class="n">scExp</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span> <span class="o">=</span> <span class="n">scExp</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves the generated gene pair matrices to disk.</span>
+<span class="sd">        </span>
+<span class="sd">        Saves &#39;train_bulk_gene_pairs_mat.pkl&#39;, &#39;val_bulkExp_gene_pairs_mat.pkl&#39;,</span>
+<span class="sd">        and &#39;sc_gene_pairs_mat.pkl&#39; to the &#39;2_preprocessing&#39; directory.</span>
+<span class="sd">        The validation matrix is created by transforming the validation</span>
+<span class="sd">        expression data using the training gene pairs.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting save gene pair matrices.&quot;</span><span class="p">)</span>
+        <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+        <span class="n">savePath_splitData</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;split_data&quot;</span><span class="p">)</span>
+
+        <span class="c1">## Load val bulk</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s2">&quot;bulkExp_val.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">bulkExp_val</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">train_bulk_gene_pairs_mat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulk_gene_pairs_mat</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">val_bulkExp_gene_pairs_mat</span> <span class="o">=</span> <span class="n">transform_test_exp</span><span class="p">(</span>
+            <span class="n">train_exp</span><span class="o">=</span><span class="n">train_bulk_gene_pairs_mat</span><span class="p">,</span> <span class="n">test_exp</span><span class="o">=</span><span class="n">bulkExp_val</span>
+        <span class="p">)</span>
+        <span class="n">sc_gene_pairs_mat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">single_cell_gene_pairs_mat</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;train_bulk_gene_pairs_mat.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">train_bulk_gene_pairs_mat</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>  <span class="c1">## training bulk gene pair matrix</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;val_bulkExp_gene_pairs_mat.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span>
+                <span class="n">val_bulkExp_gene_pairs_mat</span><span class="p">,</span> <span class="n">f</span>
+            <span class="p">)</span>  <span class="c1">## validating bulk gene pair matrix</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;sc_gene_pairs_mat.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">sc_gene_pairs_mat</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>  <span class="c1">## single cell gene pair matrix</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save gene pair matrices done.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_extraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Main orchestration function to run the full gene pair extraction pipeline.</span>
+<span class="sd">        </span>
+<span class="sd">        This function performs the following steps:</span>
+<span class="sd">        1. Finds intersecting genes between bulk and sc/st data.</span>
+<span class="sd">        2. Selects top variable genes from sc/st data.</span>
+<span class="sd">        3. Subsets all expression data to these genes.</span>
+<span class="sd">        4. Identifies phenotype-associated gene sets (e.g., risk/protective)</span>
+<span class="sd">           based on the specified &#39;analysis_mode&#39;.</span>
+<span class="sd">        5. Transforms the bulk expression data into a gene pair matrix.</span>
+<span class="sd">        6. Filters the gene pair matrix by co-occurrence and variance.</span>
+<span class="sd">        7. Transforms the sc/st expression data using the filtered gene pairs.</span>
+<span class="sd">        8. Saves the final matrices as attributes and plots them.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting gene pair extraction.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Find the intersection of genes in bulk and single-cell datasets</span>
+        <span class="n">intersect_genes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">index</span>
+        <span class="p">)</span>
+        <span class="n">intersect_single_cell_expression</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="n">intersect_genes</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Sort genes by variance in the single-cell dataset</span>
+        <span class="n">gene_variances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">intersect_single_cell_expression</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sorted_genes</span> <span class="o">=</span> <span class="n">gene_variances</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Select the top variable genes</span>
+        <span class="n">top_variable_genes</span> <span class="o">=</span> <span class="n">sorted_genes</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_var_genes</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="c1"># Extract the candidate genes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extract_candidate_genes</span><span class="p">(</span><span class="n">top_variable_genes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Get candidate genes done.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Obtain the list of candidate genes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_mode</span> <span class="o">==</span> <span class="s2">&quot;Classification&quot;</span><span class="p">:</span>
+            <span class="n">regulated_genes_r</span><span class="p">,</span> <span class="n">regulated_genes_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_binomial_gene_pairs</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_r</span><span class="p">)</span><span class="si">}</span><span class="s2"> genes up-regulated in Group 0 and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_p</span><span class="p">)</span><span class="si">}</span><span class="s2"> genes up-regulated in Group 1.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+            <span class="n">regulated_genes_r</span><span class="p">,</span> <span class="n">regulated_genes_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_survival_gene_pairs</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_r</span><span class="p">)</span><span class="si">}</span><span class="s2"> Risk genes and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_p</span><span class="p">)</span><span class="si">}</span><span class="s2"> Protective genes.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+            <span class="n">regulated_genes_r</span><span class="p">,</span> <span class="n">regulated_genes_p</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">calculate_regression_gene_pairs</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;There are </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_r</span><span class="p">)</span><span class="si">}</span><span class="s2"> positive-associated genes and </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_p</span><span class="p">)</span><span class="si">}</span><span class="s2"> negative-associated genes.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported mode: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_r</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">regulated_genes_p</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;A set of genes is empty. Try increasing the &#39;top_var_genes&#39; value or loosening the &#39;p.value&#39; threshold.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Get candidate gene pairs done.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Transform the bulk gene pairs</span>
+        <span class="n">bulk_gene_pairs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_bulk_gene_pairs</span><span class="p">(</span>
+            <span class="n">regulated_genes_r</span><span class="p">,</span> <span class="n">regulated_genes_p</span>
+        <span class="p">)</span>
+        <span class="c1"># Filter the gene pairs</span>
+        <span class="n">bulk_gene_pairs_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_gene_pairs</span><span class="p">(</span><span class="n">bulk_gene_pairs</span><span class="p">)</span>
+
+        <span class="c1"># Transform the single-cell gene pairs</span>
+        <span class="n">single_cell_gene_pairs_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_single_cell_gene_pairs</span><span class="p">(</span>
+            <span class="n">bulk_gene_pairs_mat</span>
+        <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Profile transformation done.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Return the bulk and single-cell gene pairs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bulk_gene_pairs_mat</span> <span class="o">=</span> <span class="n">bulk_gene_pairs_mat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_gene_pairs_mat</span> <span class="o">=</span> <span class="n">single_cell_gene_pairs_mat</span>
+
+        <span class="c1"># Visualize the gene pair</span>
+        <span class="n">plot_genepair</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulk_gene_pairs_mat</span><span class="p">,</span> <span class="s2">&quot;bulk&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">savePath</span><span class="p">)</span>
+        <span class="n">plot_genepair</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">single_cell_gene_pairs_mat</span><span class="p">,</span> <span class="s2">&quot;sc&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">savePath</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract_candidate_genes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gene_names</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Subsets the expression matrices to a list of candidate genes.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            gene_names (list): A list of gene names to keep.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing:</span>
+<span class="sd">                - pd.DataFrame: The subsetted bulk expression matrix.</span>
+<span class="sd">                - pd.DataFrame: The subsetted single-cell expression matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Construct gene pairs</span>
+        <span class="n">single_cell_gene_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">gene_names</span><span class="p">]</span>
+        <span class="n">bulk_gene_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">gene_names</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="c1"># Remove rows in bulk dataset where all entries are 0</span>
+        <span class="n">bulk_gene_subset</span> <span class="o">=</span> <span class="n">bulk_gene_subset</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">bulk_gene_subset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">gene_names</span> <span class="o">=</span> <span class="n">bulk_gene_subset</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">single_cell_gene_subset</span> <span class="o">=</span> <span class="n">single_cell_gene_subset</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">gene_names</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">bulk_gene_subset</span><span class="p">,</span> <span class="n">single_cell_gene_subset</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_binomial_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds phenotype-associated genes for &#39;Classification&#39; mode.</span>
+<span class="sd">        </span>
+<span class="sd">        Performs a t-test for each gene between two groups in the clinical data.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing:</span>
+<span class="sd">                - list: Genes up-regulated in group 0 (t-stat &gt; 0).</span>
+<span class="sd">                - list: Genes up-regulated in group 1 (t-stat &lt; 0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate group means and perform t-test</span>
+        <span class="n">group_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clinical_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">group_0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">group_labels</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">group_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">group_labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Calculate t-tests and log fold changes</span>
+        <span class="n">p_values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">t_stats</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">t_stat</span><span class="p">,</span> <span class="n">p_value</span> <span class="o">=</span> <span class="n">ttest_ind</span><span class="p">(</span><span class="n">group_0</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">gene</span><span class="p">],</span> <span class="n">group_1</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">gene</span><span class="p">])</span>
+            <span class="n">t_stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_stat</span><span class="p">)</span>
+            <span class="n">p_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_value</span><span class="p">)</span>
+
+        <span class="c1"># Store the results in a DataFrame</span>
+        <span class="n">DEGs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;AveExpr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">t_stats</span><span class="p">,</span>
+                <span class="s2">&quot;P.Value&quot;</span><span class="p">:</span> <span class="n">p_values</span><span class="p">,</span>
+                <span class="s2">&quot;gene&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Drop the row which p_values is NULL</span>
+        <span class="n">DEGs</span> <span class="o">=</span> <span class="n">DEGs</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+        <span class="c1"># Adjust p-values for multiple testing</span>
+        <span class="c1"># DEGs[&#39;adj.P.Val&#39;] = multipletests(DEGs[&#39;P.Value&#39;], method=&#39;fdr_bh&#39;)[1]</span>
+
+        <span class="c1"># Filter significant genes</span>
+        <span class="n">DEGs</span> <span class="o">=</span> <span class="n">DEGs</span><span class="p">[</span><span class="n">DEGs</span><span class="p">[</span><span class="s2">&quot;P.Value&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_value_threshold</span><span class="p">]</span>
+
+        <span class="c1"># Separate up- and down-regulated genes</span>
+        <span class="n">regulated_genes_in_g0</span> <span class="o">=</span> <span class="n">DEGs</span><span class="p">[</span><span class="n">DEGs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">regulated_genes_in_g1</span> <span class="o">=</span> <span class="n">DEGs</span><span class="p">[</span><span class="n">DEGs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">regulated_genes_in_g0</span><span class="p">,</span> <span class="n">regulated_genes_in_g1</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_survival_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds phenotype-associated genes for &#39;Cox&#39; survival mode.</span>
+<span class="sd">        </span>
+<span class="sd">        Performs a univariate Cox proportional hazards model for each gene.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing:</span>
+<span class="sd">                - list: Risk genes (Hazard Ratio &gt; 1).</span>
+<span class="sd">                - list: Protective genes (Hazard Ratio &lt; 1).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Perform univariate Cox analysis on the bulk dataset using CoxPHFitter</span>
+        <span class="n">survival_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gene&quot;</span><span class="p">,</span> <span class="s2">&quot;HR&quot;</span><span class="p">,</span> <span class="s2">&quot;p_value&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">exp_gene</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+            <span class="n">clinical_temp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">clinical_data</span><span class="p">,</span> <span class="n">exp_gene</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">cph</span> <span class="o">=</span> <span class="n">CoxPHFitter</span><span class="p">()</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cph</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+                    <span class="n">clinical_temp</span><span class="p">,</span>
+                    <span class="n">duration_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clinical_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">event_col</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">clinical_data</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">hr</span> <span class="o">=</span> <span class="n">cph</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;exp(coef)&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">p_value</span> <span class="o">=</span> <span class="n">cph</span><span class="o">.</span><span class="n">summary</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">survival_results</span> <span class="o">=</span> <span class="n">survival_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">{</span><span class="s2">&quot;gene&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s2">&quot;HR&quot;</span><span class="p">:</span> <span class="n">hr</span><span class="p">,</span> <span class="s2">&quot;p_value&quot;</span><span class="p">:</span> <span class="n">p_value</span><span class="p">},</span>
+                <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">survival_results</span> <span class="o">=</span> <span class="n">survival_results</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;HR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;HR&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;p_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;p_value&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="c1"># survival_results[&#39;adj.P.Val&#39;] = multipletests(survival_results[&#39;p_value&#39;], method=&#39;fdr_bh&#39;)[1Next_Step]</span>
+        <span class="c1">#    &#39;adj.P.Val&#39;], method=&#39;fdr_bh&#39;)[1]</span>
+
+        <span class="c1"># Filter significant genes</span>
+        <span class="n">survival_results</span> <span class="o">=</span> <span class="n">survival_results</span><span class="p">[</span>
+            <span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;p_value&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_value_threshold</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Construct gene pairs for HR&gt;1 and HR&lt;1 separately</span>
+        <span class="n">regulated_genes_r</span> <span class="o">=</span> <span class="n">survival_results</span><span class="p">[</span><span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;HR&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span>
+        <span class="n">regulated_genes_p</span> <span class="o">=</span> <span class="n">survival_results</span><span class="p">[</span><span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;HR&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">regulated_genes_r</span><span class="p">,</span> <span class="n">regulated_genes_p</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_regression_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds phenotype-associated genes for &#39;Regression&#39; mode.</span>
+<span class="sd">        </span>
+<span class="sd">        Performs a Pearson correlation for each gene against the continuous</span>
+<span class="sd">        clinical variable.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing:</span>
+<span class="sd">                - list: Positively correlated genes.</span>
+<span class="sd">                - list: Negatively correlated genes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Bulk dataset Pearson correlation. Define gene pairs based on correlation coefficient and p-value</span>
+        <span class="n">correlation_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;gene&quot;</span><span class="p">,</span> <span class="s2">&quot;correlation&quot;</span><span class="p">,</span> <span class="s2">&quot;pvalue&quot;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">exp_gene</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">correlation</span><span class="p">,</span> <span class="n">pvalue</span> <span class="o">=</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">exp_gene</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">clinical_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+
+            <span class="n">correlation_results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">correlation_results</span><span class="p">,</span>
+                    <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;gene&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                            <span class="s2">&quot;correlation&quot;</span><span class="p">:</span> <span class="n">correlation</span><span class="p">,</span>
+                            <span class="s2">&quot;pvalue&quot;</span><span class="p">:</span> <span class="n">pvalue</span><span class="p">,</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                    <span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">correlation_results</span> <span class="o">=</span> <span class="n">correlation_results</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+        <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;correlation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;correlation&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span>
+            <span class="nb">float</span>
+        <span class="p">)</span>
+        <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;pvalue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;pvalue&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="c1"># correlation_results[&#39;adj.P.Val&#39;] = multipletests(</span>
+        <span class="c1">#    correlation_results[&#39;pvalue&#39;], method=&#39;fdr_bh&#39;)[1]</span>
+
+        <span class="c1"># Filter significant genes</span>
+        <span class="n">correlation_results</span> <span class="o">=</span> <span class="n">correlation_results</span><span class="p">[</span>
+            <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;pvalue&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_value_threshold</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Define gene pairs based on whether correlation is &gt;0 or &lt;0</span>
+        <span class="n">positive_correlation_genes</span> <span class="o">=</span> <span class="n">correlation_results</span><span class="p">[</span>
+            <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;correlation&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span>
+        <span class="n">negative_correlation_genes</span> <span class="o">=</span> <span class="n">correlation_results</span><span class="p">[</span>
+            <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;correlation&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
+        <span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">positive_correlation_genes</span><span class="p">,</span> <span class="n">negative_correlation_genes</span>
+
+    <span class="c1"># Construct bulk gene pairs</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform_bulk_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">genes_r</span><span class="p">,</span> <span class="n">genes_p</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transforms the bulk expression matrix into a gene pair matrix (REO).</span>
+<span class="sd">        </span>
+<span class="sd">        Creates all possible pairs between the two gene sets (e.g., risk/protective).</span>
+<span class="sd">        A pair is 1 if gene_r &gt; gene_p, else -1.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            genes_r (list): The list of genes for the &quot;positive&quot; set (e.g., risk genes).</span>
+<span class="sd">            genes_p (list): The list of genes for the &quot;negative&quot; set (e.g., protective genes).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: The transformed bulk gene pair matrix (gene pairs x samples).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get genes</span>
+        <span class="n">exp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">genes_r</span><span class="p">]</span>
+        <span class="n">exp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">genes_p</span><span class="p">]</span>
+
+        <span class="c1"># Compute result matrix</span>
+        <span class="n">result_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exp1</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">exp2</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">result_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">result_values</span><span class="p">)</span>
+
+        <span class="c1"># Create result DataFrame</span>
+        <span class="n">row_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">__</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">genes_r</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">genes_p</span><span class="p">]</span>
+        <span class="n">result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">result_values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">row_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">columns</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result_df</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bulk_GPMat</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Filters the bulk gene pair matrix based on co-occurrence and variance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bulk_GPMat (pd.DataFrame): The raw bulk gene pair matrix.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: The filtered bulk gene pair matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Filter results of gene pair construction. max_cutoff and min_cutoff define the upper and lower proportions</span>
+        <span class="n">bulk_GPMat</span> <span class="o">=</span> <span class="n">bulk_GPMat</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">bulk_GPMat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cutoff</span> <span class="o">*</span> <span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">bulk_GPMat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_cutoff</span> <span class="o">*</span> <span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_gene_pairs</span><span class="p">:</span>
+            <span class="c1"># Compute variance of gene pairs and sort</span>
+            <span class="n">gene_pair_variances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">bulk_GPMat</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">sorted_gene_pairs</span> <span class="o">=</span> <span class="n">gene_pair_variances</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="c1"># Select top variable gene pairs</span>
+            <span class="n">top_var_gene_pairs</span> <span class="o">=</span> <span class="n">sorted_gene_pairs</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_gene_pairs</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">bulk_GPMat</span> <span class="o">=</span> <span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">top_var_gene_pairs</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">bulk_GPMat</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform_single_cell_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bulk_GPMat</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transforms the sc/st expression matrix into a gene pair matrix.</span>
+<span class="sd">        </span>
+<span class="sd">        Uses the *exact* same gene pairs that were filtered from the bulk data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bulk_GPMat (pd.DataFrame): The filtered bulk gene pair matrix.</span>
+<span class="sd">                The index of this DataFrame defines the gene pairs to use.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pd.DataFrame: The transformed sc/st gene pair matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get gene pairs</span>
+        <span class="n">gene_pairs</span> <span class="o">=</span> <span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="c1"># Split gene pairs</span>
+        <span class="n">genes_1</span><span class="p">,</span> <span class="n">genes_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_gene_pairs</span><span class="p">(</span><span class="n">gene_pairs</span><span class="p">)</span>
+
+        <span class="c1"># Construct gene pairs</span>
+        <span class="n">exp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">genes_1</span><span class="p">]</span>
+        <span class="n">exp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">genes_2</span><span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">exp1</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="n">exp2</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Create result DataFrame</span>
+        <span class="n">result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">result</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span><span class="o">.</span><span class="n">columns</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result_df</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">split_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gene_pairs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper function to split gene pair names.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            gene_pairs (list): A list of gene pair strings (e.g., &quot;GENE1__GENE2&quot;).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing:</span>
+<span class="sd">                - list: The list of first genes (e.g., &quot;GENE1&quot;).</span>
+<span class="sd">                - list: The list of second genes (e.g., &quot;GENE2&quot;).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Split gene pairs to get two lists of genes, gene1 and gene2.</span>
+        <span class="c1"># gene1 contains the genes in the first position of gene_pairs, gene2 contains the second genes.</span>
+        <span class="n">gene1</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gene_pairs</span><span class="p">]</span>
+        <span class="n">gene2</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gene_pairs</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">gene1</span><span class="p">,</span> <span class="n">gene2</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.Imageprocessing &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tirank.Imageprocessing.GetPathoClass" href="tirank.Imageprocessing.GetPathoClass.html" />
+    <link rel="prev" title="tirank.GPextractor.GenePairExtractor" href="tirank.GPextractor.GenePairExtractor.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TiRank
+              <img src="../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#core-model-training">Core Model &amp; Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#data-handling-preprocessing">Data Handling &amp; Preprocessing</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#feature-engineering">Feature Engineering</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tirank.GPextractor.html">tirank.GPextractor</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">tirank.Imageprocessing</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.GetPathoClass.html">tirank.Imageprocessing.GetPathoClass</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.crop_images.html">tirank.Imageprocessing.crop_images</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.ctranspath.html">tirank.Imageprocessing.ctranspath</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.infer_by_pretrain.html">tirank.Imageprocessing.infer_by_pretrain</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.plot_patho_class_heatmap.html">tirank.Imageprocessing.plot_patho_class_heatmap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.process_embeddings.html">tirank.Imageprocessing.process_embeddings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.scale_coordinate.html">tirank.Imageprocessing.scale_coordinate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.ConvStem.html">tirank.Imageprocessing.ConvStem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Imageprocessing.ImageDataset.html">tirank.Imageprocessing.ImageDataset</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#plotting-visualization">Plotting &amp; Visualization</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+      <li class="breadcrumb-item active">tirank.Imageprocessing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/tirank.Imageprocessing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tirank-imageprocessing">
+<h1>tirank.Imageprocessing<a class="headerlink" href="#tirank-imageprocessing" title="Link to this heading"></a></h1>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="tirank.Imageprocessing.GetPathoClass.html#tirank.Imageprocessing.GetPathoClass" title="tirank.Imageprocessing.GetPathoClass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.GetPathoClass</span></code></a></p></td>
+<td><p>Orchestrates the full image processing pipeline.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tirank.Imageprocessing.crop_images.html#tirank.Imageprocessing.crop_images" title="tirank.Imageprocessing.crop_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.crop_images</span></code></a></p></td>
+<td><p>Crops image tiles (patches) from the H&amp;E slide for each spot.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tirank.Imageprocessing.ctranspath.html#tirank.Imageprocessing.ctranspath" title="tirank.Imageprocessing.ctranspath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.ctranspath</span></code></a></p></td>
+<td><p>Factory function to create the CTransPath model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tirank.Imageprocessing.infer_by_pretrain.html#tirank.Imageprocessing.infer_by_pretrain" title="tirank.Imageprocessing.infer_by_pretrain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.infer_by_pretrain</span></code></a></p></td>
+<td><p>Generates feature embeddings from image tiles using the pre-trained CTransPath.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tirank.Imageprocessing.plot_patho_class_heatmap.html#tirank.Imageprocessing.plot_patho_class_heatmap" title="tirank.Imageprocessing.plot_patho_class_heatmap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.plot_patho_class_heatmap</span></code></a></p></td>
+<td><p>Generates and saves a spatial scatter plot of pathological classes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tirank.Imageprocessing.process_embeddings.html#tirank.Imageprocessing.process_embeddings" title="tirank.Imageprocessing.process_embeddings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.process_embeddings</span></code></a></p></td>
+<td><p>Performs PCA dimensionality reduction and K-means clustering.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="tirank.Imageprocessing.scale_coordinate.html#tirank.Imageprocessing.scale_coordinate" title="tirank.Imageprocessing.scale_coordinate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.scale_coordinate</span></code></a></p></td>
+<td><p>Scales ST spot coordinates to match the high-resolution image.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="tirank.Imageprocessing.ConvStem.html#tirank.Imageprocessing.ConvStem" title="tirank.Imageprocessing.ConvStem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.ConvStem</span></code></a></p></td>
+<td><p>Custom Convolutional Stem for the CTransPath model (replaces the patch embed layer).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="tirank.Imageprocessing.ImageDataset.html#tirank.Imageprocessing.ImageDataset" title="tirank.Imageprocessing.ImageDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tirank.Imageprocessing.ImageDataset</span></code></a></p></td>
+<td><p>PyTorch Dataset for loading image tiles (patches).</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tirank.GPextractor.GenePairExtractor.html" class="btn btn-neutral float-left" title="tirank.GPextractor.GenePairExtractor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tirank.Imageprocessing.GetPathoClass.html" class="btn btn-neutral float-right" title="tirank.Imageprocessing.GetPathoClass" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,522 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.Dataloader &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            TiRank
+              <img src="../../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tirank.Dataloader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tirank.Dataloader</h1><div class="highlight"><pre>
+<span></span><span class="c1"># DataLoader classes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span><span class="o">,</span><span class="w"> </span><span class="nn">pickle</span><span class="o">,</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">PyTorch Dataset and DataLoader definitions for TiRank.</span>
+
+<span class="sd">This module defines the custom Dataset classes for bulk, single-cell (SC),</span>
+<span class="sd">and spatial transcriptomics (ST) data, handling the different analysis modes</span>
+<span class="sd">(Cox, Classification, Regression). It also includes functions for splitting</span>
+<span class="sd">data and packing it into PyTorch DataLoader objects for training and inference.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="generate_val">
+<a class="viewcode-back" href="../../generated/tirank.Dataloader.generate_val.html#tirank.Dataloader.generate_val">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_val</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">validation_proportion</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span>  <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Splits the bulk expression and clinical data into training and validation sets.</span>
+<span class="sd">    </span>
+<span class="sd">    Loads the full bulk expression and clinical data, combines them, performs a</span>
+<span class="sd">    random split, and saves the training and validation sets back to disk in</span>
+<span class="sd">    the &#39;2_preprocessing/split_data&#39; directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        validation_proportion (float, optional): The fraction of data to use for</span>
+<span class="sd">            the validation set. Defaults to 0.15.</span>
+<span class="sd">        mode (str, optional): The analysis mode (&#39;Cox&#39;, &#39;Classification&#39;, &#39;Regression&#39;).</span>
+<span class="sd">            This determines how many columns to use for the clinical data.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s1">&#39;bulk_exp.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">bulkExp</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s1">&#39;bulk_clinical.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Load data</span>
+    <span class="n">bulkExp</span><span class="p">,</span> <span class="n">bulkClinical</span>
+    <span class="c1"># Transpose bulkExp so that samples are rows</span>
+    <span class="n">bulkExp_transposed</span> <span class="o">=</span> <span class="n">bulkExp</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># Concatenate bulkExp and bulkClinical</span>
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">bulkExp_transposed</span><span class="p">,</span> <span class="n">bulkClinical</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Split the combined dataframe</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">619</span><span class="p">)</span>
+    <span class="n">num_val</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">combined</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">validation_proportion</span><span class="p">)</span>
+    <span class="n">validx</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">combined</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="n">num_val</span><span class="p">)</span>
+
+    <span class="n">combined_val</span> <span class="o">=</span> <span class="n">combined</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">validx</span><span class="p">,]</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">combined</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">combined_val</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">combined_train</span> <span class="o">=</span> <span class="n">combined</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Classification&quot;</span><span class="p">:</span>
+    <span class="c1"># if mode == &quot;Bionomial&quot;:</span>
+        <span class="c1"># Separate the training and validation sets back into bulkExp and bulkClinical</span>
+        <span class="n">bulkExp_train</span> <span class="o">=</span> <span class="n">combined_train</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">bulkClinical_train</span> <span class="o">=</span> <span class="n">combined_train</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">bulkExp_val</span> <span class="o">=</span> <span class="n">combined_val</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">bulkClinical_val</span> <span class="o">=</span> <span class="n">combined_val</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+        <span class="c1"># Separate the training and validation sets back into bulkExp and bulkClinical</span>
+        <span class="n">bulkExp_train</span> <span class="o">=</span> <span class="n">combined_train</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">bulkClinical_train</span> <span class="o">=</span> <span class="n">combined_train</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+
+        <span class="n">bulkExp_val</span> <span class="o">=</span> <span class="n">combined_val</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">bulkClinical_val</span> <span class="o">=</span> <span class="n">combined_val</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+        <span class="c1"># Separate the training and validation sets back into bulkExp and bulkClinical</span>
+        <span class="n">bulkExp_train</span> <span class="o">=</span> <span class="n">combined_train</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">bulkClinical_train</span> <span class="o">=</span> <span class="n">combined_train</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">bulkExp_val</span> <span class="o">=</span> <span class="n">combined_val</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">bulkClinical_val</span> <span class="o">=</span> <span class="n">combined_val</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>      
+
+    <span class="c1">## save</span>
+    <span class="n">savePath_splitData</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span><span class="s2">&quot;split_data&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkExp_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkExp_train</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="c1">## training bulk clinical info matrix</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkExp_val.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkExp_val</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="c1">## validating bulk clinical info matrix</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkClinical_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkClinical_train</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="c1">## training bulk clinical info matrix</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkClinical_val.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">bulkClinical_val</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="c1">## validating bulk clinical info matrix</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># RNA-seq</span>
+
+
+<div class="viewcode-block" id="BulkDataset">
+<a class="viewcode-back" href="../../generated/tirank.Dataloader.BulkDataset.html#tirank.Dataloader.BulkDataset">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BulkDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PyTorch Dataset class for bulk RNA-seq (gene pair) data.</span>
+
+<span class="sd">    Handles different analysis modes by returning the appropriate clinical</span>
+<span class="sd">    labels (e.g., time and event for Cox, a single label for Classification).</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        df_Xa (pd.DataFrame): DataFrame of gene pair features (samples x gene pairs).</span>
+<span class="sd">        df_cli (pd.DataFrame or pd.Series): DataFrame/Series with clinical information.</span>
+<span class="sd">        mode (str, optional): Analysis mode. One of &#39;Cox&#39;, &#39;Classification&#39;,</span>
+<span class="sd">            or &#39;Regression&#39;. Defaults to &#39;Cox&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df_Xa</span><span class="p">,</span> <span class="n">df_cli</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;Cox&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">mode</span>
+
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;Cox&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Xa</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_Xa</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="c1"># Handle &#39;Cox&#39; type: df_cli is expected to be a DataFrame with columns [&#39;t&#39;, &#39;e&#39;]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_cli</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_cli</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="c1"># elif mode == &#39;Bionomial&#39;:</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;Classification&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Xa</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_Xa</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="c1"># Handle &#39;Bionomial&#39; type: df_cli is expected to be a Series/1D array with group labels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_cli</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;Regression&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Xa</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_Xa</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="c1"># Handle &#39;Regression&#39; type: df_cli is expected to be a Series/1D array with continuous values</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_cli</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported mode: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the total number of samples.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Xa</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches a sample and its corresponding label(s).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx (int): The index of the sample to fetch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: A tuple containing the feature tensor and label(s).</span>
+<span class="sd">                (Xa, t, e) for &#39;Cox&#39; mode.</span>
+<span class="sd">                (Xa, label) for &#39;Classification&#39; or &#39;Regression&#39; mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;Cox&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xa</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xa</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
+
+
+<span class="c1"># scRNA</span>
+
+
+<div class="viewcode-block" id="SCDataset">
+<a class="viewcode-back" href="../../generated/tirank.Dataloader.SCDataset.html#tirank.Dataloader.SCDataset">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SCDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PyTorch Dataset class for single-cell RNA-seq (gene pair) data.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        df_Xb (pd.DataFrame or np.ndarray): DataFrame of gene pair features</span>
+<span class="sd">            (cells x gene pairs).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df_Xb</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">df_Xb</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+            <span class="n">df_Xb</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">df_Xb</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xb</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_Xb</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the total number of cells.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Xb</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches a single cell&#39;s feature vector and its index.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx (int): The index of the cell to fetch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (Xb, idx)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xb</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">idx</span></div>
+
+
+<span class="c1"># ST</span>
+
+
+<div class="viewcode-block" id="STDataset">
+<a class="viewcode-back" href="../../generated/tirank.Dataloader.STDataset.html#tirank.Dataloader.STDataset">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">STDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PyTorch Dataset class for Spatial Transcriptomics (gene pair) data.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        df_Xc (pd.DataFrame or np.ndarray): DataFrame of gene pair features</span>
+<span class="sd">            (spots x gene pairs).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df_Xc</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">df_Xc</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the total number of spots.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Xc</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fetches a single spot&#39;s feature vector and its index.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx (int): The index of the spot to fetch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (Xc, idx)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Xc</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">idx</span></div>
+
+    
+
+<span class="c1"># Pack data</span>
+<div class="viewcode-block" id="PackData">
+<a class="viewcode-back" href="../../generated/tirank.Dataloader.PackData.html#tirank.Dataloader.PackData">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">PackData</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">infer_mode</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads all preprocessed data and packages it into PyTorch DataLoaders.</span>
+<span class="sd">    </span>
+<span class="sd">    This function reads the training/validation gene pair matrices, clinical data,</span>
+<span class="sd">    AnnData object, similarity matrix, and pathological labels from disk. It</span>
+<span class="sd">    instantiates the Dataset classes (BulkDataset, STDataset, SCDataset) and</span>
+<span class="sd">    wraps them in DataLoader objects. It also prepares the adjacency matrix (adj_A)</span>
+<span class="sd">    and pathological labels (patholabels) for the model.</span>
+<span class="sd">    </span>
+<span class="sd">    All resulting DataLoader objects and supporting data are saved to the</span>
+<span class="sd">    &#39;3_Analysis/data2train&#39; directory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The main project directory path.</span>
+<span class="sd">        mode (str): The analysis mode (&#39;Cox&#39;, &#39;Classification&#39;, &#39;Regression&#39;).</span>
+<span class="sd">        infer_mode (str): The inference data type (&#39;ST&#39; or &#39;SC&#39;).</span>
+<span class="sd">        batch_size (int, optional): Batch size for the DataLoaders. Defaults to 1024.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+    <span class="n">savePath_splitData</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span><span class="s2">&quot;split_data&quot;</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s1">&#39;train_bulk_gene_pairs_mat.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">train_bulk_gene_pairs_mat</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s1">&#39;val_bulkExp_gene_pairs_mat.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">val_bulkExp_gene_pairs_mat</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkClinical_train.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">bulkClinical_train</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_splitData</span><span class="p">,</span> <span class="s1">&#39;bulkClinical_val.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">bulkClinical_val</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s1">&#39;scAnndata.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s1">&#39;sc_gene_pairs_mat.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">sc_gene_pairs_mat</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s1">&#39;similarity_df.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">similarity_df</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
+
+    <span class="n">train_dataset_Bulk</span> <span class="o">=</span> <span class="n">BulkDataset</span><span class="p">(</span><span class="n">train_bulk_gene_pairs_mat</span><span class="p">,</span> <span class="n">bulkClinical_train</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+    <span class="n">val_dataset_Bulk</span> <span class="o">=</span> <span class="n">BulkDataset</span><span class="p">(</span><span class="n">val_bulkExp_gene_pairs_mat</span><span class="p">,</span> <span class="n">bulkClinical_val</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+    <span class="n">train_loader_Bulk</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset_Bulk</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">val_loader_Bulk</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_dataset_Bulk</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span><span class="p">:</span>
+    <span class="c1"># if infer_mode == &quot;Spot&quot;:</span>
+        <span class="n">adj_A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">similarity_df</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">adj_B</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">patholabels</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;patho_class&quot;</span><span class="p">]</span>
+
+        <span class="n">train_dataset_SC</span> <span class="o">=</span> <span class="n">STDataset</span><span class="p">(</span><span class="n">sc_gene_pairs_mat</span><span class="p">)</span>
+        <span class="n">train_loader_SC</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset_SC</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;SC&quot;</span><span class="p">:</span>
+    <span class="c1"># elif infer_mode == &quot;Cell&quot;:</span>
+        <span class="n">adj_A</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">similarity_df</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">adj_B</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">patholabels</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">train_dataset_SC</span> <span class="o">=</span> <span class="n">STDataset</span><span class="p">(</span><span class="n">sc_gene_pairs_mat</span><span class="p">)</span>
+        <span class="n">train_loader_SC</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset_SC</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unexpected infer mode !&quot;</span><span class="p">)</span>
+    
+    <span class="n">savePath_data2train</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span><span class="s2">&quot;data2train&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s1">&#39;train_loader_Bulk.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">train_loader_Bulk</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s1">&#39;val_loader_Bulk.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">val_loader_Bulk</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s1">&#39;train_loader_SC.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">train_loader_SC</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s1">&#39;adj_A.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">adj_A</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s1">&#39;adj_B.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">adj_B</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_data2train</span><span class="p">,</span> <span class="s1">&#39;patholabels.pkl&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">patholabels</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># Extract GP on other datasets</span>
+
+<div class="viewcode-block" id="transform_test_exp">
+<a class="viewcode-back" href="../../generated/tirank.Dataloader.transform_test_exp.html#tirank.Dataloader.transform_test_exp">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transform_test_exp</span><span class="p">(</span><span class="n">train_exp</span><span class="p">,</span> <span class="n">test_exp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms a test expression matrix into a gene pair matrix using pairs from a training set.</span>
+
+<span class="sd">    Given a gene pair matrix from training (columns are &#39;GeneA__GeneB&#39;) and a new</span>
+<span class="sd">    expression matrix (genes as rows), this function computes the gene pair</span>
+<span class="sd">    values for the new data, matching the pairs from training.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        train_exp (pd.DataFrame): The gene pair matrix from the training set.</span>
+<span class="sd">            Its columns define the gene pairs to be used.</span>
+<span class="sd">        test_exp (pd.DataFrame): The raw gene expression matrix for the test set</span>
+<span class="sd">            (genes as rows, samples as columns).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        pd.DataFrame: A new gene pair matrix (samples x gene pairs) for the</span>
+<span class="sd">            test set, with the same columns as `train_exp`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize a new DataFrame to store the transformed test data</span>
+    <span class="n">transformed_test_exp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">test_exp</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="c1"># Iterate over the columns in the train_exp DataFrame</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">train_exp</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="c1"># Parse the column name to get the two gene names</span>
+        <span class="n">geneA</span><span class="p">,</span> <span class="n">geneB</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;__&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Check if both genes are present in the test_exp</span>
+        <span class="k">if</span> <span class="n">geneA</span> <span class="ow">in</span> <span class="n">test_exp</span><span class="o">.</span><span class="n">index</span> <span class="ow">and</span> <span class="n">geneB</span> <span class="ow">in</span> <span class="n">test_exp</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="c1"># Perform the comparison for each sample in test_exp and assign the values to the new DataFrame</span>
+            <span class="n">transformed_test_exp</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">test_exp</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">geneA</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">test_exp</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">geneB</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+
+            <span class="c1"># Handle cases where geneA == geneB by assigning 0</span>
+            <span class="n">transformed_test_exp</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">column</span><span class="p">][</span><span class="n">test_exp</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">geneA</span><span class="p">]</span>
+                                                <span class="o">==</span> <span class="n">test_exp</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">geneB</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If one or both genes are not present, assign 0 for all samples</span>
+            <span class="n">transformed_test_exp</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Transpose the DataFrame to match the structure of train_exp</span>
+    <span class="c1"># transformed_test_exp = transformed_test_exp.transpose()</span>
+
+    <span class="k">return</span> <span class="n">transformed_test_exp</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

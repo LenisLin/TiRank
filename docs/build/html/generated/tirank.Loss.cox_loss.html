@@ -1,0 +1,172 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.Loss.cox_loss &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tirank.Loss.gaussian_kernel" href="tirank.Loss.gaussian_kernel.html" />
+    <link rel="prev" title="tirank.Loss.cosine_loss" href="tirank.Loss.cosine_loss.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TiRank
+              <img src="../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#core-model-training">Core Model &amp; Training</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="tirank.Model.html">tirank.Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tirank.TrainPre.html">tirank.TrainPre</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="tirank.Loss.html">tirank.Loss</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tirank.Loss.CrossEntropy_loss.html">tirank.Loss.CrossEntropy_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Loss.MSE_loss.html">tirank.Loss.MSE_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Loss.cosine_loss.html">tirank.Loss.cosine_loss</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">tirank.Loss.cox_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Loss.gaussian_kernel.html">tirank.Loss.gaussian_kernel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Loss.mmd_loss.html">tirank.Loss.mmd_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Loss.prototype_loss.html">tirank.Loss.prototype_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Loss.regularization_loss.html">tirank.Loss.regularization_loss</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#data-handling-preprocessing">Data Handling &amp; Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#feature-engineering">Feature Engineering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#plotting-visualization">Plotting &amp; Visualization</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="tirank.Loss.html">tirank.Loss</a></li>
+      <li class="breadcrumb-item active">tirank.Loss.cox_loss</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/tirank.Loss.cox_loss.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tirank-loss-cox-loss">
+<h1>tirank.Loss.cox_loss<a class="headerlink" href="#tirank-loss-cox-loss" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="tirank.Loss.cox_loss">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">cox_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#cox_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tirank.Loss.cox_loss" title="Link to this definition"></a></dt>
+<dd><p>Calculates the Cox partial log-likelihood loss for survival analysis.</p>
+<p>This implementation uses a pairwise comparison approach with a margin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>torch.Tensor</em>) – Predicted risk scores, shape [batch_size].</p></li>
+<li><p><strong>t</strong> (<em>torch.Tensor</em>) – Event times, shape [batch_size].</p></li>
+<li><p><strong>e</strong> (<em>torch.Tensor</em>) – Event indicators (1 if event occurred, 0 otherwise),
+shape [batch_size].</p></li>
+<li><p><strong>margin</strong> (<em>float</em><em>, </em><em>optional</em>) – A margin parameter to stabilize the loss.
+Defaults to 0.1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar Cox partial log-likelihood loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tirank.Loss.cosine_loss.html" class="btn btn-neutral float-left" title="tirank.Loss.cosine_loss" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tirank.Loss.gaussian_kernel.html" class="btn btn-neutral float-right" title="tirank.Loss.gaussian_kernel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.Model.initial_model_para &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tirank.Model.setup_seed" href="tirank.Model.setup_seed.html" />
+    <link rel="prev" title="tirank.Model" href="tirank.Model.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TiRank
+              <img src="../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#core-model-training">Core Model &amp; Training</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="tirank.Model.html">tirank.Model</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">tirank.Model.initial_model_para</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.setup_seed.html">tirank.Model.setup_seed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.ClassscorePredictor.html">tirank.Model.ClassscorePredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.DenseNetEncoderModel.html">tirank.Model.DenseNetEncoderModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.MLPEncoderModel.html">tirank.Model.MLPEncoderModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.PathologyPredictor.html">tirank.Model.PathologyPredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.PositionalEncoding.html">tirank.Model.PositionalEncoding</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.RegscorePredictor.html">tirank.Model.RegscorePredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.RiskscorePredictor.html">tirank.Model.RiskscorePredictor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.TiRankModel.html">tirank.Model.TiRankModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Model.TransformerEncoderModel.html">tirank.Model.TransformerEncoderModel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tirank.TrainPre.html">tirank.TrainPre</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tirank.Loss.html">tirank.Loss</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#data-handling-preprocessing">Data Handling &amp; Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#feature-engineering">Feature Engineering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#plotting-visualization">Plotting &amp; Visualization</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="tirank.Model.html">tirank.Model</a></li>
+      <li class="breadcrumb-item active">tirank.Model.initial_model_para</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/tirank.Model.initial_model_para.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tirank-model-initial-model-para">
+<h1>tirank.Model.initial_model_para<a class="headerlink" href="#tirank-model-initial-model-para" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="tirank.Model.initial_model_para">
+<span class="sig-prename descclassname"><span class="pre">tirank.Model.</span></span><span class="sig-name descname"><span class="pre">initial_model_para</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhead</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">96</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlayers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pred</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Cox'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'MLP'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Model.html#initial_model_para"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tirank.Model.initial_model_para" title="Link to this definition"></a></dt>
+<dd><p>Initializes and saves the model hyperparameter configuration.</p>
+<p>This function reads the input data dimensions (e.g., number of gene pairs)
+and spatial cluster dimensions, combines them with the user-defined
+hyperparameters, and saves the complete configuration as ‘model_para.pkl’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>nhead</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of heads for Transformer encoder. Defaults to 2.</p></li>
+<li><p><strong>nhid1</strong> (<em>int</em><em>, </em><em>optional</em>) – Hidden dimension for the encoder. Defaults to 96.</p></li>
+<li><p><strong>nhid2</strong> (<em>int</em><em>, </em><em>optional</em>) – Hidden dimension for the predictor heads. Defaults to 8.</p></li>
+<li><p><strong>n_output</strong> (<em>int</em><em>, </em><em>optional</em>) – Output dimension of the encoder (embedding size).
+Defaults to 32.</p></li>
+<li><p><strong>nlayers</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of layers in the encoder. Defaults to 3.</p></li>
+<li><p><strong>n_pred</strong> (<em>int</em><em>, </em><em>optional</em>) – Output dimension of the predictor (e.g., 1 for Cox/Regression,
+2 for binary Classification). Defaults to 1.</p></li>
+<li><p><strong>dropout</strong> (<em>float</em><em>, </em><em>optional</em>) – Dropout rate. Defaults to 0.5.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Analysis mode (‘Cox’, ‘Classification’, ‘Regression’).
+Defaults to “Cox”.</p></li>
+<li><p><strong>infer_mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Inference data type (‘SC’ or ‘ST’). Defaults to “SC”.</p></li>
+<li><p><strong>encoder_type</strong> (<em>str</em><em>, </em><em>optional</em>) – Type of encoder to use (‘MLP’, ‘Transformer’, ‘DenseNet’).
+Defaults to “MLP”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tirank.Model.html" class="btn btn-neutral float-left" title="tirank.Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tirank.Model.setup_seed.html" class="btn btn-neutral float-right" title="tirank.Model.setup_seed" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.Visualization.create_boxplot &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tirank.Visualization.create_comparison_density_plot" href="tirank.Visualization.create_comparison_density_plot.html" />
+    <link rel="prev" title="tirank.Visualization.Pathway_Enrichment" href="tirank.Visualization.Pathway_Enrichment.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            TiRank
+              <img src="../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#core-model-training">Core Model &amp; Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#data-handling-preprocessing">Data Handling &amp; Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api.html#feature-engineering">Feature Engineering</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#plotting-visualization">Plotting &amp; Visualization</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="tirank.Visualization.html">tirank.Visualization</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.DEG_analysis.html">tirank.Visualization.DEG_analysis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.DEG_volcano.html">tirank.Visualization.DEG_volcano</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.Pathway_Enrichment.html">tirank.Visualization.Pathway_Enrichment</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">tirank.Visualization.create_boxplot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.create_comparison_density_plot.html">tirank.Visualization.create_comparison_density_plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.create_density_plot.html">tirank.Visualization.create_density_plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.create_hist_plot.html">tirank.Visualization.create_hist_plot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.create_tensor.html">tirank.Visualization.create_tensor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.evaluate_on_test_data.html">tirank.Visualization.evaluate_on_test_data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.model_predict.html">tirank.Visualization.model_predict</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.plot_STmap.html">tirank.Visualization.plot_STmap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.plot_genepair.html">tirank.Visualization.plot_genepair</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.plot_label_distribution_among_conditions.html">tirank.Visualization.plot_label_distribution_among_conditions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.plot_loss.html">tirank.Visualization.plot_loss</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.plot_score_distribution.html">tirank.Visualization.plot_score_distribution</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tirank.Visualization.plot_score_umap.html">tirank.Visualization.plot_score_umap</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="tirank.Visualization.html">tirank.Visualization</a></li>
+      <li class="breadcrumb-item active">tirank.Visualization.create_boxplot</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/tirank.Visualization.create_boxplot.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tirank-visualization-create-boxplot">
+<h1>tirank.Visualization.create_boxplot<a class="headerlink" href="#tirank-visualization-create-boxplot" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="tirank.Visualization.create_boxplot">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">create_boxplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'True</span> <span class="pre">Label'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Predicted</span> <span class="pre">Score'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#create_boxplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tirank.Visualization.create_boxplot" title="Link to this definition"></a></dt>
+<dd><p>Creates a boxplot on a given axis with a Mann-Whitney U test.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – DataFrame containing the plot data.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Title for the subplot.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The matplotlib axis to plot on.</p></li>
+<li><p><strong>group_column</strong> (<em>str</em><em>, </em><em>optional</em>) – The column for the x-axis groups
+(must contain two groups, 0 and 1). Defaults to “True Label”.</p></li>
+<li><p><strong>score_column</strong> (<em>str</em><em>, </em><em>optional</em>) – The column for the y-axis numerical
+values. Defaults to “Predicted Score”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tirank.Visualization.Pathway_Enrichment.html" class="btn btn-neutral float-left" title="tirank.Visualization.Pathway_Enrichment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tirank.Visualization.create_comparison_density_plot.html" class="btn btn-neutral float-right" title="tirank.Visualization.create_comparison_density_plot" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

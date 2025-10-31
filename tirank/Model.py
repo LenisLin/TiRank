@@ -13,14 +13,31 @@ import torch.nn.functional as F
 from .Loss import *
 
 # Initial
+"""
+PyTorch model definitions for the TiRank framework.
+
+This module defines the core neural network architectures, including the
+various encoders (Transformer, MLP, DenseNet), the prediction heads for
+different modes (Cox, Classification, Regression), and the main `TiRankModel`
+that combines them into a multi-task learning framework.
+"""
 
 
 def setup_seed(seed):
-     torch.manual_seed(seed)
-     torch.cuda.manual_seed_all(seed)
-     np.random.seed(seed)
-     random.seed(seed)
-     torch.backends.cudnn.deterministic = True
+    """
+    Sets the random seed for reproducibility across all relevant libraries.
+
+    Args:
+        seed (int): The random seed to use.
+    
+    Returns:
+        None
+    """
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 def initial_model_para(
         savePath,
@@ -35,6 +52,33 @@ def initial_model_para(
         infer_mode="SC",
         encoder_type = "MLP"
 ):
+    """
+    Initializes and saves the model hyperparameter configuration.
+
+    This function reads the input data dimensions (e.g., number of gene pairs)
+    and spatial cluster dimensions, combines them with the user-defined
+    hyperparameters, and saves the complete configuration as 'model_para.pkl'.
+
+    Args:
+        savePath (str): The main project directory path.
+        nhead (int, optional): Number of heads for Transformer encoder. Defaults to 2.
+        nhid1 (int, optional): Hidden dimension for the encoder. Defaults to 96.
+        nhid2 (int, optional): Hidden dimension for the predictor heads. Defaults to 8.
+        n_output (int, optional): Output dimension of the encoder (embedding size).
+            Defaults to 32.
+        nlayers (int, optional): Number of layers in the encoder. Defaults to 3.
+        n_pred (int, optional): Output dimension of the predictor (e.g., 1 for Cox/Regression,
+            2 for binary Classification). Defaults to 1.
+        dropout (float, optional): Dropout rate. Defaults to 0.5.
+        mode (str, optional): Analysis mode ('Cox', 'Classification', 'Regression').
+            Defaults to "Cox".
+        infer_mode (str, optional): Inference data type ('SC' or 'ST'). Defaults to "SC".
+        encoder_type (str, optional): Type of encoder to use ('MLP', 'Transformer', 'DenseNet').
+            Defaults to "MLP".
+    
+    Returns:
+        None
+    """
     savePath_2 = os.path.join(savePath,"2_preprocessing")
     savePath_3 = os.path.join(savePath,"3_Analysis")
     savePath_data2train = os.path.join(savePath_3,"data2train")
@@ -79,6 +123,17 @@ def initial_model_para(
 
 
 class TransformerEncoderModel(nn.Module):
+    """
+    Transformer-based encoder network.
+
+    Args:
+        n_features (int): Input feature size (number of gene pairs).
+        nhead (int): Number of heads in the multi-head attention models.
+        nhid (int): Dimension of the feedforward network model.
+        nlayers (int): Number of sub-encoder-layers in the encoder.
+        n_output (int): Output embedding dimension.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+    """
     def __init__(self, n_features, nhead, nhid, nlayers, n_output, dropout=0.5):
         super(TransformerEncoderModel, self).__init__()
         self.model_type = 'Transformer'
@@ -93,6 +148,7 @@ class TransformerEncoderModel(nn.Module):
         self.init_weights()
 
     def init_weights(self):
+        """Initializes weights for the linear layers."""
         initrange = 0.1
         self.fc_in.bias.data.zero_()  # Added line
         self.fc_in.weight.data.uniform_(-initrange, initrange)  # Added line
@@ -100,6 +156,15 @@ class TransformerEncoderModel(nn.Module):
         self.fc_out.weight.data.uniform_(-initrange, initrange)
 
     def forward(self, x):
+        """
+        Forward pass for the Transformer encoder.
+
+        Args:
+            x (torch.Tensor): Input feature tensor.
+
+        Returns:
+            torch.Tensor: Output embedding tensor.
+        """
         x = self.fc_in(x)  # Added line
         x = x.unsqueeze(0)  # Add sequence length dimension
         x = self.pos_encoder(x)
@@ -111,6 +176,17 @@ class TransformerEncoderModel(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
+    """
+    PositionalEncoding module for Transformer.
+    
+    Injects sinusoidal positional encodings to the input embeddings.
+
+    Args:
+        d_model (int): The embedding dimension.
+        dropout (float, optional): Dropout value. Defaults to 0.1.
+        max_len (int, optional): The maximum length of the input sequences.
+            Defaults to 5000.
+    """
     def __init__(self, d_model, dropout=0.1, max_len=5000):
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -125,11 +201,31 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
+        """
+        Forward pass for PositionalEncoding.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor with added positional encoding.
+        """
         x = x + self.pe[:x.size(0), :]
         return self.dropout(x)
         
 
 class DenseNetEncoderModel(nn.Module):
+    """
+    DenseNet-style encoder network.
+
+    Args:
+        n_features (int): Input feature size (number of gene pairs).
+        nlayers (int): Number of dense layers.
+        n_output (int): Output embedding dimension.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+        growth_rate (float, optional): Growth rate for the dense layers.
+            Defaults to 0.5.
+    """
     def __init__(self, n_features, nlayers, n_output, dropout=0.5, growth_rate=0.5):
         super(DenseNetEncoderModel, self).__init__()
         self.model_type = 'DenseNet'
@@ -158,6 +254,15 @@ class DenseNetEncoderModel(nn.Module):
         self.dropout_layer = nn.Dropout(dropout)
 
     def forward(self, x):
+        """
+        Forward pass for the DenseNet encoder.
+
+        Args:
+            x (torch.Tensor): Input feature tensor.
+
+        Returns:
+            torch.Tensor: Output embedding tensor.
+        """
         features = x
         for layer in self.layers:
             # Compute the current layer's output
@@ -173,6 +278,16 @@ class DenseNetEncoderModel(nn.Module):
 
 
 class MLPEncoderModel(nn.Module):
+    """
+    MLP-based (Multi-Layer Perceptron) encoder network.
+
+    Args:
+        n_features (int): Input feature size (number of gene pairs).
+        nhid (int): Dimension of the hidden layers.
+        nlayers (int): Total number of layers (input, hidden, output).
+        n_output (int): Output embedding dimension.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+    """
     def __init__(self, n_features, nhid, nlayers, n_output, dropout=0.5):
         super(MLPEncoderModel, self).__init__()
         self.model_type = 'MLP'
@@ -194,6 +309,15 @@ class MLPEncoderModel(nn.Module):
         )
 
     def forward(self, x):
+        """
+        Forward pass for the MLP encoder.
+
+        Args:
+            x (torch.Tensor): Input feature tensor.
+
+        Returns:
+            torch.Tensor: Output embedding tensor.
+        """
         embedding = self.layers(x)
         return embedding
 
@@ -201,6 +325,18 @@ class MLPEncoderModel(nn.Module):
 
 
 class RiskscorePredictor(nn.Module):
+    """
+    Prediction head for 'Cox' survival analysis.
+
+    Predicts a single risk score, applying a sigmoid activation to
+    constrain the output between 0 and 1.
+
+    Args:
+        n_features (int): Input embedding dimension (from encoder).
+        nhid (int): Hidden dimension of the predictor MLP.
+        nhout (int, optional): Output dimension. Defaults to 1.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+    """
     def __init__(self, n_features, nhid, nhout=1, dropout=0.5):
         super(RiskscorePredictor, self).__init__()
         self.RiskscoreMLP = nn.Sequential(
@@ -215,6 +351,15 @@ class RiskscorePredictor(nn.Module):
         )
 
     def forward(self, embedding):
+        """
+        Forward pass for the risk score predictor.
+
+        Args:
+            embedding (torch.Tensor): Input embedding tensor from the encoder.
+
+        Returns:
+            torch.Tensor: Predicted risk score (scalar tensor).
+        """
         risk_score = torch.sigmoid(self.RiskscoreMLP(embedding))
         return risk_score.squeeze()
 
@@ -222,6 +367,17 @@ class RiskscorePredictor(nn.Module):
 
 
 class RegscorePredictor(nn.Module):
+    """
+    Prediction head for 'Regression' analysis.
+
+    Predicts a single continuous value. No output activation is applied.
+
+    Args:
+        n_features (int): Input embedding dimension (from encoder).
+        nhid (int): Hidden dimension of the predictor MLP.
+        nhout (int, optional): Output dimension. Defaults to 1.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+    """
     def __init__(self, n_features, nhid, nhout=1, dropout=0.5):
         super(RegscorePredictor, self).__init__()
         self.RegscoreMLP = nn.Sequential(
@@ -236,6 +392,15 @@ class RegscorePredictor(nn.Module):
         )
 
     def forward(self, embedding):
+        """
+        Forward pass for the regression score predictor.
+
+        Args:
+            embedding (torch.Tensor): Input embedding tensor from the encoder.
+
+        Returns:
+            torch.Tensor: Predicted continuous value (scalar tensor).
+        """
         risk_score = self.RegscoreMLP(embedding)
         return risk_score.squeeze()
 
@@ -243,6 +408,17 @@ class RegscorePredictor(nn.Module):
 
 
 class ClassscorePredictor(nn.Module):
+    """
+    Prediction head for 'Classification' analysis.
+
+    Predicts class probabilities using a Softmax activation.
+
+    Args:
+        n_features (int): Input embedding dimension (from encoder).
+        nhid (int): Hidden dimension of the predictor MLP.
+        nhout (int, optional): Output dimension (number of classes). Defaults to 2.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+    """
     def __init__(self, n_features, nhid, nhout=2, dropout=0.5):
         super(ClassscorePredictor, self).__init__()
         self.ClassscoreMLP = nn.Sequential(
@@ -257,6 +433,15 @@ class ClassscorePredictor(nn.Module):
         )
 
     def forward(self, embedding):
+        """
+        Forward pass for the classification score predictor.
+
+        Args:
+            embedding (torch.Tensor): Input embedding tensor from the encoder.
+
+        Returns:
+            torch.Tensor: Predicted class probabilities.
+        """
         proba_score = F.softmax(self.ClassscoreMLP(embedding))
         return proba_score
 
@@ -265,6 +450,17 @@ class ClassscorePredictor(nn.Module):
 
 
 class PathologyPredictor(nn.Module):
+    """
+    Auxiliary prediction head for spatial pathology class.
+
+    Used for the WSI-guided spatial location-aware module in ST mode.
+
+    Args:
+        n_features (int): Input embedding dimension (from encoder).
+        nhid (int): Hidden dimension of the predictor MLP.
+        nclass (int): Number of pathology classes to predict.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+    """
     def __init__(self, n_features, nhid, nclass, dropout=0.5):
         super(PathologyPredictor, self).__init__()
         self.PathologyMLP = nn.Sequential(
@@ -279,6 +475,15 @@ class PathologyPredictor(nn.Module):
         )
 
     def forward(self, embedding):
+        """
+        Forward pass for the pathology predictor.
+
+        Args:
+            embedding (torch.Tensor): Input embedding tensor from the encoder.
+
+        Returns:
+            torch.Tensor: Predicted pathology class probabilities.
+        """
         pathology_score = F.softmax(self.PathologyMLP(embedding))
         return pathology_score
 
@@ -286,6 +491,31 @@ class PathologyPredictor(nn.Module):
 
 
 class TiRankModel(nn.Module):
+    """
+    The main TiRank multi-task learning model.
+
+    This model combines one of the available encoders (MLP, Transformer,
+    DenseNet) with a primary prediction head (for Cox, Classification, or
+    Regression) and an optional auxiliary head for pathology prediction
+    (used in ST mode). It also includes a learnable feature weight layer
+    for L1 regularization.
+
+    Args:
+        n_features (int): Input feature size (number of gene pairs).
+        nhead (int): Number of heads for Transformer.
+        nhid1 (int): Hidden dimension for the encoder.
+        nhid2 (int): Hidden dimension for the predictor heads.
+        nlayers (int): Number of layers in the encoder.
+        n_output (int): Output dimension of the encoder (embedding size).
+        n_pred (int, optional): Output dimension of the primary predictor.
+            Defaults to 1.
+        n_patho (int, optional): Output dimension of the pathology predictor
+            (number of classes). Defaults to 0.
+        dropout (float, optional): Dropout value. Defaults to 0.5.
+        mode (str, optional): Analysis mode ('Cox', 'Classification', 'Regression').
+            Defaults to "Cox".
+        encoder_type (str, optional): Type of encoder to use. Defaults to "MLP".
+    """
     def __init__(self, n_features, nhead, nhid1, nhid2, nlayers, n_output, n_pred=1, n_patho=0, dropout=0.5, mode="Cox", encoder_type="MLP"):
         super(TiRankModel, self).__init__()
 
@@ -328,6 +558,18 @@ class TiRankModel(nn.Module):
             n_output, nhid2, n_patho, dropout)
 
     def forward(self, x):
+        """
+        The main forward pass for the TiRank model.
+
+        Args:
+            x (torch.Tensor): Input gene pair feature tensor.
+
+        Returns:
+            tuple: A tuple containing:
+                - torch.Tensor: The learned embedding.
+                - torch.Tensor: The primary prediction (risk score, class, etc.).
+                - torch.Tensor: The auxiliary pathology prediction.
+        """
         scaled_x = x * self.feature_weights.T
         embedding = self.encoder(scaled_x)
         risk_score = self.predictor(embedding)
@@ -336,6 +578,12 @@ class TiRankModel(nn.Module):
         return embedding, risk_score, patho_pred
 
     def init_weights(self, m):
+        """
+        Applies Xavier uniform initialization to linear layers.
+
+        Args:
+            m (nn.Module): A module (or layer) from the network.
+        """
         if isinstance(m, nn.Linear):
             torch.nn.init.xavier_uniform_(m.weight)
             # print("Perfoem xavier_uniform initiate")

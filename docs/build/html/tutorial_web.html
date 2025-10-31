@@ -1,0 +1,297 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TiRank Web App Tutorial &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="api.html" />
+    <link rel="prev" title="Tutorial 2: scRNA-seq + Classification Analysis" href="tutorial_sc_classification.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            TiRank
+              <img src="_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TiRank Web App Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction-of-tirank-web">Introduction of TiRank Web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uploaddata">1. UploadData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#load-example-data">1.1 Load Example Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bulk-transcription-data">1.2 Bulk Transcription Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spatial-transcriptome-data-scrna-seq-data">1.3 Spatial transcriptome Data / scRNA-seq Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing">2. Preprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pre-processing-data">2.1 Pre-processing Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mode-select-and-genepair-transformation">2.2 Mode select And GenePair Transformation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#view-results">2.3 View Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-tirank">3. Analysis/TiRank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#device-select">3.1 Device select</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-tirank-model">3.2 Training TiRank Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prediction">3.3 Prediction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">3.4 View Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-differential-expression-genes-pathway-enrichment">4. Analysis/Differential expression genes &amp; Pathway enrichment</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">TiRank Web App Tutorial</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tutorial_web.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tirank-web-app-tutorial">
+<span id="tutorial-web"></span><h1>TiRank Web App Tutorial<a class="headerlink" href="#tirank-web-app-tutorial" title="Link to this heading"></a></h1>
+<p>This tutorial provides a complete walkthrough of the TiRank web application.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation references several images (e.g., <code class="docutils literal notranslate"><span class="pre">load-data-tutorial.png</span></code>). For these images to display correctly when you build the documentation locally, please copy all image files from your project’s <code class="docutils literal notranslate"><span class="pre">Web/assets/</span></code> directory into the <code class="docutils literal notranslate"><span class="pre">docs/source/_static/</span></code> directory.</p>
+</div>
+<section id="introduction-of-tirank-web">
+<h2>Introduction of TiRank Web<a class="headerlink" href="#introduction-of-tirank-web" title="Link to this heading"></a></h2>
+<p>The development of the TiRank-web application leverages the Python Dash framework (<a class="reference external" href="https://dash.plotly.com/">https://dash.plotly.com</a>) a product of Plotly designed for the creation and deployment of data-driven applications with custom interfaces. TiRank-web is structured into six key sections: Homepage, Upload Data, Pre-processing, Analysis, Tutorial, and FAQs, aimed at enhancing user engagement and efficiency.</p>
+<p>In the Upload Data section, users can upload their datasets, which TiRank then organizes into designated folders for temporary storage and figure generation. The Pre-processing phase involves comprehensive data cleaning, normalization, and partitioning into training and validation subsets to enable hyperparameter optimization. This phase ends in the construction of a binary gene pair matrix, setting the stage for the subsequent Analysis phase. Here, a neural network model is employed to compute the ‘TiRank Score’, integrating a rejection mechanism for filtering out entities with low confidence. This phase also encompasses tools for differential gene expression analysis and pathway enrichment, thereby supporting biomarker discovery and further scientific investigation. The Tutorial and FAQs segments provide extensive guidance and address common questions, thus ensuring effective exploration of TiRank-web’s capabilities.</p>
+</section>
+<hr class="docutils" />
+<section id="uploaddata">
+<h2>1. UploadData<a class="headerlink" href="#uploaddata" title="Link to this heading"></a></h2>
+<section id="load-example-data">
+<h3>1.1 Load Example Data<a class="headerlink" href="#load-example-data" title="Link to this heading"></a></h3>
+<p>To facilitate a clearer understanding of this system’s utility, we provide exemplary datasets for both Spatial Transcriptomics (ST) and Single-cell RNA sequencing (scRNA-seq). In the accompanying figure on the right, users are given the option to select and load sample datasets pertaining to either ‘Spatial Transcriptomics Data’ or ‘scRNA-seq Data’.</p>
+<p>Upon selection of either the ‘Spatial Transcriptomics Data’ or ‘scRNA-seq Data’ button, The Expression Matrix and Clinical Information in the Bulk Transcription Data below will automatically fill the path of our sample data. Moreover, choosing ‘Spatial Transcriptomics Data’ will result in the auto-filling of the form labeled 2-1 with our Spatial Transcriptomics (ST) sample data. Conversely, opting for ‘scRNA-seq data’ will auto-complete the form labeled 2-2 with our Single-cell RNA sequencing (scRNA-seq) sample data.</p>
+<p><strong>Hint: Only fill out one of the 2-1 form and the 2-2 form</strong></p>
+<a class="reference internal image-reference" href="_images/load-data-tutorial.png"><img alt="Load Example Data" src="_images/load-data-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+<section id="bulk-transcription-data">
+<h3>1.2 Bulk Transcription Data<a class="headerlink" href="#bulk-transcription-data" title="Link to this heading"></a></h3>
+<p>Next, we will use the loaded ST data as an example to tell how the whole system is used.</p>
+<ol class="arabic simple">
+<li><p>Upon loading the sample data, the paths to the sample datasets will be automatically entered into the ‘Expression Matrix’ and ‘Clinical Information’ forms. Users also have the flexibility to input their own data by manually entering the <strong>absolute paths</strong> to their datasets in the respective forms.</p></li>
+<li><p>After loading the Data, you can click the ‘View’ button (as shown in the second step of the right image) to visualize the loaded table data. The data will be displayed in the ‘View Data’ card on the right.</p></li>
+<li><p>Finally, you need to click the ‘Check’ button to check whether the data format meets the requirements of the TiRank model.</p></li>
+</ol>
+<a class="reference internal image-reference" href="_images/bulk-data-tutorial.png"><img alt="Bulk Data Tutorial" src="_images/bulk-data-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+<section id="spatial-transcriptome-data-scrna-seq-data">
+<h3>1.3 Spatial transcriptome Data / scRNA-seq Data<a class="headerlink" href="#spatial-transcriptome-data-scrna-seq-data" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Upon loading the sample data, the paths to the sample datasets will be automatically entered into the ‘Spatial transcriptome Data’ <strong>or</strong> ‘scRNA-seq Data’ forms. Users also have the flexibility to input their own data by manually entering the <strong>absolute paths</strong> to their datasets in the respective forms.</p></li>
+<li><p>Same as visualizing bulk data, you can click the ‘View’ button (as shown in the second step of the right image) to visualize the loaded table data. The data will be displayed in the ‘View Data’ card on the right.</p></li>
+<li><p>Finally, you need to click the “Confirm” button to make sure that your data is ST data (as shown in step 3 of the right image, or in the 2-2 card if you are loading SC data). Moreover, this step is necessary because our subsequent processing of ST data is different from that of SC data.</p></li>
+</ol>
+<a class="reference internal image-reference" href="_images/st-sc-data-tutorial.png"><img alt="ST/SC Data Tutorial" src="_images/st-sc-data-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+</section>
+<hr class="docutils" />
+<section id="preprocessing">
+<h2>2. Preprocessing<a class="headerlink" href="#preprocessing" title="Link to this heading"></a></h2>
+<section id="pre-processing-data">
+<h3>2.1 Pre-processing Data<a class="headerlink" href="#pre-processing-data" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>In the data preprocessing section, you need to select “Enable” or “Bypass” to decide whether to perform Normalization and Log-transformation (as shown in the first step of the right image).</p></li>
+<li><p>After that, you need to click the Perform button to preprocess the data.</p>
+<p><strong>Note</strong>: The system will enter a Loading screen, this may take a few minutes, please do not do anything in the interim, until the data Preprocessing is completed, return to the preprocessing screen.</p>
+</li>
+</ol>
+<a class="reference internal image-reference" href="_images/preprocess-tutorial.png"><img alt="Preprocessing Tutorial" src="_images/preprocess-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+<section id="mode-select-and-genepair-transformation">
+<h3>2.2 Mode select And GenePair Transformation<a class="headerlink" href="#mode-select-and-genepair-transformation" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>Mode select:</strong> Choose the mode you want.</p></li>
+<li><p><strong>GenePair Transformation:</strong> You need to select the values of ‘Top var genes’, ‘P value threshold’ and ‘Top gene pairs’ from the drop-down box. In addition, we recommend that you choose the parameter values listed below.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="err">&#39;Top</span><span class="w"> </span><span class="err">var</span><span class="w"> </span><span class="err">ge</span><span class="kc">nes</span><span class="err">&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span>
+<span class="err">&#39;P</span><span class="w"> </span><span class="err">value</span><span class="w"> </span><span class="kc">t</span><span class="err">hreshold&#39;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span>
+<span class="err">&#39;Top</span><span class="w"> </span><span class="err">ge</span><span class="kc">ne</span><span class="w"> </span><span class="err">pairs&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">2000</span>
+</pre></div>
+</div>
+<p>Finally, you need to click the ‘Perform’ button to perform the GenePair Transformation.</p>
+<p><strong>Note</strong>: This is the same as the data Preprocessing, the system will enter a Loadding interface, which may take more time, please do not do anything in the meantime, until the data preprocessing is completed, return to the preprocessing interface.</p>
+</li>
+</ol>
+<a class="reference internal image-reference" href="_images/preprocess-mode-tutorial.png"><img alt="Mode Select Tutorial" src="_images/preprocess-mode-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+<section id="view-results">
+<h3>2.3 View Results<a class="headerlink" href="#view-results" title="Link to this heading"></a></h3>
+<p>After you have done the data preprocessing and GenePair Transformation, you can use the radio above the right card to select the resulting plot that you are interested in for observation.</p>
+<a class="reference internal image-reference" href="_images/preprocess-view-res-tutorial.png"><img alt="View Preprocessing Results" src="_images/preprocess-view-res-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+</section>
+<hr class="docutils" />
+<section id="analysis-tirank">
+<h2>3. Analysis/TiRank<a class="headerlink" href="#analysis-tirank" title="Link to this heading"></a></h2>
+<section id="device-select">
+<h3>3.1 Device select<a class="headerlink" href="#device-select" title="Link to this heading"></a></h3>
+<p>You first need to choose whether you want to use CPU or GPU to train the model. In the Device drop down box, you can choose Cpu or Cuda(training with GPU). Note that if you need to train the Tirank model with a GPU, you will need to install torch with the appropriate version of your graphics card driver. You can use the following command to check the version of your graphics card driver.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvidia-smi
+</pre></div>
+</div>
+<p>You can then use the following code to see if the current GPU version of torch is available in your python environment.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>If the output is True, then you can use the GPU to train the model. If the output is False, it means that the current version of torch does not correspond to your GPU version, and you need to download the corresponding version of torch from the <a class="reference external" href="https://pytorch.org/">Pytorch</a> official website according to your GPU version.</p>
+<a class="reference internal image-reference" href="_images/device-tutorial.png"><img alt="Device Select Tutorial" src="_images/device-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+<section id="training-tirank-model">
+<h3>3.2 Training TiRank Model<a class="headerlink" href="#training-tirank-model" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>If necessary, you can click advanced to change the model parameters according to your needs. Or do not select advanced to use the default parameters. The default parameters we set are as follows.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="err">&#39;Nhead&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="err">&#39;</span><span class="kc">n</span><span class="err">_ou</span><span class="kc">t</span><span class="err">pu</span><span class="kc">t</span><span class="err">&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">32</span>
+<span class="err">&#39;</span><span class="kc">n</span><span class="err">hid</span><span class="mi">1</span><span class="err">&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">96</span>
+<span class="err">&#39;</span><span class="kc">n</span><span class="err">hid</span><span class="mi">2</span><span class="err">&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span>
+<span class="err">&#39;</span><span class="kc">nla</span><span class="err">yers&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
+<span class="err">&#39;</span><span class="kc">n</span><span class="err">_</span><span class="kc">tra</span><span class="err">ils&#39;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
+<span class="err">&#39;dropou</span><span class="kc">t</span><span class="err">&#39;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
+</pre></div>
+</div>
+</li>
+<li><p>Click the ‘Train’ button to start training the model. This will take a lot of time, so please be patient.</p></li>
+</ol>
+<a class="reference internal image-reference" href="_images/train-tutorial.png"><img alt="Train Model Tutorial" src="_images/train-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+<section id="prediction">
+<h3>3.3 Prediction<a class="headerlink" href="#prediction" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p>You can select ‘Reject’ to perform the rejection and ‘advanced’ to change the prediction parameters. The default parameters are as follows.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="err">&#39;Tolera</span><span class="kc">n</span><span class="err">ce&#39;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span>
+<span class="err">&#39;Rejec</span><span class="kc">t</span><span class="err">_mode&#39;</span><span class="p">:</span><span class="w"> </span><span class="err">&#39;GMM&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Click the ‘Predict’ button to predict.</p></li>
+</ol>
+<a class="reference internal image-reference" href="_images/predict-tutorial.png"><img alt="Predict Tutorial" src="_images/predict-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+<section id="id1">
+<h3>3.4 View Results<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p>When you have finished training and prediction, you can select the resulting graph that interests you in the drop-down box in the upper left corner of the right card for observation.</p>
+<a class="reference internal image-reference" href="_images/train-predict-tutorial.png"><img alt="View Analysis Results" src="_images/train-predict-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+</section>
+<hr class="docutils" />
+<section id="analysis-differential-expression-genes-pathway-enrichment">
+<h2>4. Analysis/Differential expression genes &amp; Pathway enrichment<a class="headerlink" href="#analysis-differential-expression-genes-pathway-enrichment" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Differential expression genes</strong>: You need to select the logFC threshold and P-value threshold values from the drop-down boxes and click the “Perform” button to execute.</p></li>
+<li><p><strong>Pathway enrichment</strong>: You just need to click the ‘Perform’ button to perform Pathway enrichment analysis very easily.</p></li>
+<li><p><strong>View Results</strong>: When you have finished the differential gene analysis, you can see the analysis results on the right and click the download button to download them.</p></li>
+</ol>
+<a class="reference internal image-reference" href="_images/degpe-tutorial.png"><img alt="DEG and Pathway Enrichment Tutorial" src="_images/degpe-tutorial.png" style="width: 640px;" />
+</a>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_sc_classification.html" class="btn btn-neutral float-left" title="Tutorial 2: scRNA-seq + Classification Analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

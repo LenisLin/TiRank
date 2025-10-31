@@ -2,32 +2,46 @@
 import torch
 import torch.nn as nn
 
+"""
+Custom loss functions for training the TiRank model.
+
+This module defines the different loss components used in the multitask
+learning framework, including Cox loss for survival, cosine similarity loss
+for spatial regularization, MMD loss, and standard classification/regression losses.
+"""
+
 def regularization_loss(feature_weights):
     """
-    Calculate the L1 regularization loss.
+    Calculates the L1 regularization loss (mean absolute value) for a weight matrix.
 
-    Parameters:
-    feature_weights (torch.Tensor): The learnable weight matrix.
+    Args:
+        feature_weights (torch.Tensor): The learnable weight matrix
+            (e.g., from the encoder).
 
     Returns:
-    torch.Tensor: The calculated regularization loss.
+        torch.Tensor: The scalar L1 regularization loss.
     """
     return torch.mean(torch.abs(feature_weights))
 
 def cox_loss(pred, t, e, margin=0.1):
-    assert len(pred) == len(t) == len(e)
     """
     Calculates the Cox partial log-likelihood loss for survival analysis.
     
+    This implementation uses a pairwise comparison approach with a margin.
+
     Args:
-        pred (Tensor): Predicted risk scores, shape [batch_size]
-        t (Tensor): Event times, shape [batch_size]
-        e (Tensor): Event indicators (1 if event occurred, 0 otherwise), shape [batch_size]
-        margin (float, optional): Margin parameter, default 0.1
+        pred (torch.Tensor): Predicted risk scores, shape [batch_size].
+        t (torch.Tensor): Event times, shape [batch_size].
+        e (torch.Tensor): Event indicators (1 if event occurred, 0 otherwise),
+            shape [batch_size].
+        margin (float, optional): A margin parameter to stabilize the loss.
+            Defaults to 0.1.
 
     Returns:
-        Tensor: Cox partial log-likelihood loss, scalar
+        torch.Tensor: The scalar Cox partial log-likelihood loss.
     """
+    assert len(pred) == len(t) == len(e)
+    
     # Compute pairwise differences between predictions
     pred_diffs = pred.unsqueeze(1) - pred.unsqueeze(0)
 
@@ -52,16 +66,23 @@ def cox_loss(pred, t, e, margin=0.1):
 
 def cosine_loss(embeddings, A, weight_connected=1.0, weight_unconnected=0.1):
     """
-    Compute cosine similarity loss with balanced weighting for sparse adjacency matrix A.
+    Computes a weighted cosine similarity loss.
+
+    This loss encourages embeddings of connected nodes (A=1) to have high
+    cosine similarity (B=1) and pushes unconnected nodes (A=0) to be
+    dissimilar (B=-1). It uses different weights for connected and
+    unconnected pairs to handle sparse adjacency matrices.
 
     Args:
-        embeddings (Tensor): Embeddings, shape [n_cells, embedding_dim]
-        A (Tensor): Sparse adjacency matrix, shape [n_cells, n_cells]
-        weight_connected (float): Weight for connected pairs (A = 1)
-        weight_unconnected (float): Weight for unconnected pairs (A = 0)
+        embeddings (torch.Tensor): Embeddings, shape [n_cells, embedding_dim].
+        A (torch.Tensor): The sparse adjacency matrix, shape [n_cells, n_cells].
+        weight_connected (float, optional): Weight for connected pairs (A=1).
+            Defaults to 1.0.
+        weight_unconnected (float, optional): Weight for unconnected pairs (A=0).
+            Defaults to 0.1.
 
     Returns:
-        Tensor: Weighted cosine loss
+        torch.Tensor: The scalar weighted cosine loss.
     """
     embeddings = embeddings.to(A.device)
     # Compute cosine similarity matrix B
@@ -82,13 +103,16 @@ def cosine_loss(embeddings, A, weight_connected=1.0, weight_unconnected=0.1):
 
 def gaussian_kernel(a, b, sigma = 1.0):
     """
-    Calculates the Gaussian kernel similarity between two sets of samples.
+    Calculates the Gaussian (RBF) kernel similarity between two tensors.
 
     Args:
-        a (Tensor), b (Tensor): Input tensors where each row is a sample
+        a (torch.Tensor): First input tensor (samples x features).
+        b (torch.Tensor): Second input tensor (samples x features).
+        sigma (float, optional): The sigma value (bandwidth) of the
+            Gaussian kernel. Defaults to 1.0.
 
     Returns:
-        Tensor: Gaussian kernel similarities
+        torch.Tensor: The pairwise Gaussian kernel similarity matrix.
     """
     dim1_1, dim1_2 = a.shape[0], b.shape[0]
     depth = a.shape[1]
@@ -102,13 +126,19 @@ def gaussian_kernel(a, b, sigma = 1.0):
 
 def mmd_loss(embeddings_A, embeddings_B, sigma = 1.0):
     """
-    Calculates the Maximum Mean Discrepancy (MMD) loss between two sets of embeddings.
+    Calculates the Maximum Mean Discrepancy (MMD) loss.
+
+    MMD is used to measure the distance between the distributions of two
+    sets of embeddings.
 
     Args:
-        embeddings_A (Tensor), embeddings_B (Tensor): Input tensors containing embeddings
+        embeddings_A (torch.Tensor): Embeddings from the first distribution.
+        embeddings_B (torch.Tensor): Embeddings from the second distribution.
+        sigma (float, optional): The sigma value (bandwidth) for the
+            Gaussian kernel. Defaults to 1.0.
 
     Returns:
-        Tensor: MMD loss for each sample in embeddings_B, tensor of shape (embeddings_B.shape[0],)
+        torch.Tensor: The scalar MMD loss.
     """
     kernel_matrix_A = gaussian_kernel(embeddings_A, embeddings_A, sigma)
     kernel_matrix_B = gaussian_kernel(embeddings_B, embeddings_B, sigma)
@@ -120,14 +150,16 @@ def mmd_loss(embeddings_A, embeddings_B, sigma = 1.0):
 
 def CrossEntropy_loss(y_pred, y_true):
     """
-    Calculates the cross entropy loss between predicted and true labels.
+    Calculates the cross-entropy loss for classification.
+
+    Wrapper for `nn.CrossEntropyLoss`.
 
     Args:
-        y_pred (Tensor): Predicted labels, tensor of any shape
-        y_true (Tensor): True labels, tensor of the same shape as y_pred
+        y_pred (torch.Tensor): Predicted logits (N x C).
+        y_true (torch.Tensor): True class labels (N).
 
     Returns:
-        Tensor: Cross entropy loss, scalar
+        torch.Tensor: The scalar cross-entropy loss.
     """
 
     loss_fn = nn.CrossEntropyLoss()
@@ -141,14 +173,16 @@ def CrossEntropy_loss(y_pred, y_true):
 
 def MSE_loss(y_pred, y_true):
     """
-    Calculates the Mean Squared Error (MSE) loss between predicted and true values.
+    Calculates the Mean Squared Error (MSE) loss for regression.
+
+    Wrapper for `nn.MSELoss`.
 
     Args:
-        y_pred (Tensor): Predicted values, tensor of any shape
-        y_true (Tensor): True values, tensor of the same shape as y_pred
+        y_pred (torch.Tensor): Predicted values.
+        y_true (torch.Tensor): True values.
 
     Returns:
-        Tensor: MSE loss, scalar
+        torch.Tensor: The scalar MSE loss.
     """
 
     loss_fn = nn.MSELoss()
@@ -157,6 +191,26 @@ def MSE_loss(y_pred, y_true):
     return loss
 
 def prototype_loss(cell_embeddings, bulk_embeddings, bulk_labels, threshold=0.1, margin=1.0):
+    """
+    Calculates a prototype-based contrastive loss.
+
+    This loss computes prototype embeddings (class means) from the bulk data.
+    It then assigns pseudo-labels to single-cell embeddings based on the
+    closest prototype. Finally, it applies a contrastive loss to pull
+    confident cells (those with a large distance difference) closer to their
+    correct prototype and push them away from the incorrect one.
+
+    Args:
+        cell_embeddings (torch.Tensor): Embeddings for sc/st data.
+        bulk_embeddings (torch.Tensor): Embeddings for bulk data.
+        bulk_labels (torch.Tensor): Class labels (0 or 1) for bulk data.
+        threshold (float, optional): Confidence threshold. Only cells with a
+            distance difference greater than this are used. Defaults to 0.1.
+        margin (float, optional): Margin for the contrastive loss. Defaults to 1.0.
+
+    Returns:
+        torch.Tensor: The scalar prototype loss.
+    """
     # Compute prototypes from bulk RNA-seq data using class indices
     rank_plus_proto = bulk_embeddings[bulk_labels == 0].mean(dim=0)  # 0 for 'Rank+'
     rank_minus_proto = bulk_embeddings[bulk_labels == 1].mean(dim=0)  # 1 for 'Rank-'

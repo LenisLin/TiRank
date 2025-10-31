@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.Imageprocessing &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            TiRank
+              <img src="../../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tirank.Imageprocessing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tirank.Imageprocessing</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">timm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision.transforms</span><span class="w"> </span><span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.decomposition</span><span class="w"> </span><span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.cluster</span><span class="w"> </span><span class="kn">import</span> <span class="n">KMeans</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">repeat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">collections.abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides utilities for processing spatial transcriptomics (ST)</span>
+<span class="sd">H&amp;E (Hematoxylin and Eosin) images. It includes functions for:</span>
+<span class="sd">1. Cropping image tiles (patches) centered on each ST spot.</span>
+<span class="sd">2. Generating feature embeddings from these tiles using a pre-trained</span>
+<span class="sd">   CTransPath (Swin Transformer) model.</span>
+<span class="sd">3. Clustering these embeddings using PCA and K-means to identify</span>
+<span class="sd">   spatial &quot;pathological classes&quot;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ntuple</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Private helper function to create a tuple of size n.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        n (int): The desired size of the tuple.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        function: A function that parses its input into a tuple of size n.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Iterable</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">repeat</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">parse</span>
+
+
+<div class="viewcode-block" id="ConvStem">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.ConvStem.html#tirank.Imageprocessing.ConvStem">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConvStem</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom Convolutional Stem for the CTransPath model (replaces the patch embed layer).</span>
+
+<span class="sd">    This stem uses a series of convolutions to create patch embeddings instead</span>
+<span class="sd">    of a single large-kernel convolution.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        img_size (int, optional): The size of the input image. Defaults to 224.</span>
+<span class="sd">        patch_size (int, optional): The size of the patch. Must be 4. Defaults to 4.</span>
+<span class="sd">        in_chans (int, optional): Number of input image channels. Defaults to 3.</span>
+<span class="sd">        embed_dim (int, optional): The dimension of the output embedding. Defaults to 768.</span>
+<span class="sd">        norm_layer (nn.Module, optional): Normalization layer to use. Defaults to None.</span>
+<span class="sd">        flatten (bool, optional): Whether to flatten the output. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">in_chans</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">768</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flatten</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">assert</span> <span class="n">patch_size</span> <span class="o">==</span> <span class="mi">4</span>
+        <span class="k">assert</span> <span class="n">embed_dim</span> <span class="o">%</span> <span class="mi">8</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="n">to_2tuple</span> <span class="o">=</span> <span class="n">_ntuple</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">img_size</span> <span class="o">=</span> <span class="n">to_2tuple</span><span class="p">(</span><span class="n">img_size</span><span class="p">)</span>
+        <span class="n">patch_size</span> <span class="o">=</span> <span class="n">to_2tuple</span><span class="p">(</span><span class="n">patch_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_size</span> <span class="o">=</span> <span class="n">img_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch_size</span> <span class="o">=</span> <span class="n">patch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="n">patch_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="n">patch_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_patches</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span> <span class="o">=</span> <span class="n">flatten</span>
+
+
+        <span class="n">stem</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">input_dim</span><span class="p">,</span> <span class="n">output_dim</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">embed_dim</span> <span class="o">//</span> <span class="mi">8</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">stem</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+            <span class="n">stem</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">output_dim</span><span class="p">))</span>
+            <span class="n">stem</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">input_dim</span> <span class="o">=</span> <span class="n">output_dim</span>
+            <span class="n">output_dim</span> <span class="o">*=</span> <span class="mi">2</span>
+        <span class="n">stem</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">stem</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">)</span> <span class="k">if</span> <span class="n">norm_layer</span> <span class="k">else</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass of the convolutional stem.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (torch.Tensor): Input tensor of shape (B, C, H, W).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: Output patch embeddings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="n">H</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">W</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> \
+            <span class="sa">f</span><span class="s2">&quot;Input image size (</span><span class="si">{</span><span class="n">H</span><span class="si">}</span><span class="s2">*</span><span class="si">{</span><span class="n">W</span><span class="si">}</span><span class="s2">) doesn&#39;t match model (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">*</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># BCHW -&gt; BNC</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+
+
+<div class="viewcode-block" id="ctranspath">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.ctranspath.html#tirank.Imageprocessing.ctranspath">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ctranspath</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Factory function to create the CTransPath model.</span>
+
+<span class="sd">    Initializes a Swin Transformer (swin_tiny_patch4_window7_224) with</span>
+<span class="sd">    the custom ConvStem as the embedding layer.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.nn.Module: The CTransPath model instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">timm</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span><span class="s1">&#39;swin_tiny_patch4_window7_224&#39;</span><span class="p">,</span> <span class="n">embed_layer</span><span class="o">=</span><span class="n">ConvStem</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+
+<div class="viewcode-block" id="scale_coordinate">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.scale_coordinate.html#tirank.Imageprocessing.scale_coordinate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">scale_coordinate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scales ST spot coordinates to match the high-resolution image.</span>
+
+<span class="sd">    This function reads the scale factor from the AnnData object and applies</span>
+<span class="sd">    it to the spatial coordinates, adding the results to `data.obs` as</span>
+<span class="sd">    &#39;imagecol&#39; and &#39;imagerow&#39;.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (anndata.AnnData): The AnnData object containing spatial info.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        anndata.AnnData: The AnnData object, modified in place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert imagecol and imagerow into high-resolution coordinates.&quot;&quot;&quot;</span>
+    <span class="n">library_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;scalefactors&quot;</span><span class="p">][</span><span class="s2">&quot;tissue_hires_scalef&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="mf">0.001</span><span class="p">):</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">):</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
+    <span class="n">image_coordinates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_coordinates</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_coordinates</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<div class="viewcode-block" id="crop_images">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.crop_images.html#tirank.Imageprocessing.crop_images">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">crop_images</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">crop_size</span><span class="o">=</span><span class="mi">25</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Crops image tiles (patches) from the H&amp;E slide for each spot.</span>
+
+<span class="sd">    Uses the &#39;imagecol&#39; and &#39;imagerow&#39; coordinates from `data.obs` to</span>
+<span class="sd">    crop square patches of (2*crop_size) x (2*crop_size) from the</span>
+<span class="sd">    high-resolution image.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (anndata.AnnData): The AnnData object, after running `scale_coordinate`.</span>
+<span class="sd">        crop_size (int, optional): The &quot;radius&quot; for cropping. A size of 25</span>
+<span class="sd">            creates 50x50 pixel tiles. Defaults to 25.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.ndarray: A NumPy array stack of image tiles of shape</span>
+<span class="sd">            (n_spots, 2*crop_size, 2*crop_size, 3).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Crop image based on crop_size and return an array of cropped images.&quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">scale_coordinate</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">library_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">image_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">][</span><span class="n">library_id</span><span class="p">][</span><span class="s2">&quot;images&quot;</span><span class="p">][</span><span class="s2">&quot;hires&quot;</span><span class="p">]</span>
+    <span class="c1"># img = Image.fromarray(image_data)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">((</span><span class="n">image_data</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+    
+    <span class="n">cropped_images</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">img</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="n">col</span> <span class="o">-</span> <span class="n">crop_size</span><span class="p">,</span> <span class="n">row</span> <span class="o">-</span> <span class="n">crop_size</span><span class="p">,</span> <span class="n">col</span> <span class="o">+</span> <span class="n">crop_size</span><span class="p">,</span> <span class="n">row</span> <span class="o">+</span> <span class="n">crop_size</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagerow&quot;</span><span class="p">],</span> <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;imagecol&quot;</span><span class="p">])</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span> <span class="o">/</span> <span class="mi">255</span> <span class="k">for</span> <span class="n">tile</span> <span class="ow">in</span> <span class="n">cropped_images</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="ImageDataset">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.ImageDataset.html#tirank.Imageprocessing.ImageDataset">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    PyTorch Dataset for loading image tiles (patches).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        images_array (np.ndarray): A stack of image tiles from `crop_images`.</span>
+<span class="sd">        transform (callable, optional): A torchvision transform to apply to each</span>
+<span class="sd">            image. Defaults to None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">images_array</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images_array</span> <span class="o">=</span> <span class="n">images_array</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the total number of images (spots).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">images_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets a single image and applies transformations.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idx (int): The index of the image to fetch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: The transformed image tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">images_array</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">:</span>
+            <span class="c1"># Convert numpy image to PIL image for transformation</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">to_pil_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">collate_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Static collate function to stack images into a batch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch (list): A list of image tensors.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            torch.Tensor: A stacked batch of images.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">images</span></div>
+
+
+
+<div class="viewcode-block" id="infer_by_pretrain">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.infer_by_pretrain.html#tirank.Imageprocessing.infer_by_pretrain">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">infer_by_pretrain</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">pretrain_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates feature embeddings from image tiles using the pre-trained CTransPath.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        images (np.ndarray): A stack of image tiles (n_spots, H, W, C).</span>
+<span class="sd">        pretrain_path (str): Path to the CTransPath model&#39;s .pth weights file.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: A tensor of feature embeddings of shape (n_spots, n_features).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+    <span class="n">pre_model</span> <span class="o">=</span> <span class="n">ctranspath</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">pre_model</span><span class="o">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+    <span class="n">pre_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pretrain_path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">device</span><span class="p">)[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span>
+    <span class="n">pre_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">),</span> <span class="n">antialias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span> <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span>
+    <span class="p">])</span>
+    
+    <span class="n">images_set</span> <span class="o">=</span> <span class="n">ImageDataset</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
+    <span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">images_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">ImageDataset</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+    
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">pre_model</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="process_embeddings">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.process_embeddings.html#tirank.Imageprocessing.process_embeddings">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_embeddings</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">n_components</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Performs PCA dimensionality reduction and K-means clustering.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        embeddings (torch.Tensor or np.ndarray): The feature embeddings.</span>
+<span class="sd">        n_components (int): The number of principal components to keep.</span>
+<span class="sd">        n_clusters (int): The number of clusters to find (k).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing:</span>
+<span class="sd">            - np.ndarray: The PCA-transformed embeddings.</span>
+<span class="sd">            - np.ndarray: The cluster labels for each spot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">embeddings</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="n">pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">)</span>
+    <span class="n">pca_embeddings</span> <span class="o">=</span> <span class="n">pca</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
+    <span class="n">cluster_labels</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">pca_embeddings</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pca_embeddings</span><span class="p">,</span> <span class="n">cluster_labels</span></div>
+
+
+
+<div class="viewcode-block" id="plot_patho_class_heatmap">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.plot_patho_class_heatmap.html#tirank.Imageprocessing.plot_patho_class_heatmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_patho_class_heatmap</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">save_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates and saves a spatial scatter plot of pathological classes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (anndata.AnnData): The AnnData object with &#39;patho_class&#39; in `.obs`.</span>
+<span class="sd">        save_path (str): The file path to save the resulting plot.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots a heatmap based on &#39;patho_class&#39; labels and image coordinates.&quot;&quot;&quot;</span>
+    <span class="c1"># Extracting data</span>
+    <span class="n">x_coords</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;array_col&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">y_coords</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;array_row&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">x_coords</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">):</span>
+        <span class="n">x_coords</span> <span class="o">=</span> <span class="n">x_coords</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+        <span class="n">y_coords</span> <span class="o">=</span> <span class="n">y_coords</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;patho_class&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    
+    <span class="c1"># Number of unique labels (assuming they are sequential integers starting from 0)</span>
+    <span class="n">unique_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">num_labels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">)</span>
+    
+    <span class="c1"># Define a list of distinct colors. Add more colors if you have more classes.</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="s1">&#39;magenta&#39;</span><span class="p">,</span> <span class="s1">&#39;brown&#39;</span><span class="p">,</span> <span class="s1">&#39;pink&#39;</span><span class="p">,</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span> <span class="s1">&#39;violet&#39;</span><span class="p">,</span> <span class="s1">&#39;indigo&#39;</span><span class="p">,</span> <span class="s1">&#39;gold&#39;</span><span class="p">,</span> <span class="s1">&#39;crimson&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">num_labels</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Not enough unique colors for </span><span class="si">{</span><span class="n">num_labels</span><span class="si">}</span><span class="s2"> clusters. Some colors will be repeated.&quot;</span><span class="p">)</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="n">colors</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_labels</span> <span class="o">//</span> <span class="nb">len</span><span class="p">(</span><span class="n">colors</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        
+    <span class="c1"># Create scatter plot with distinct colors</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_labels</span><span class="p">):</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">labels</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_coords</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">y_coords</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    
+    <span class="c1"># Add legend, axis labels, and title</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Image Column&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Image Row&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Patho Class Heatmap&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Display the plot</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>  <span class="c1"># Invert y-axis for typical image display</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span><span class="n">bbox_inches</span> <span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">pad_inches</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="GetPathoClass">
+<a class="viewcode-back" href="../../generated/tirank.Imageprocessing.GetPathoClass.html#tirank.Imageprocessing.GetPathoClass">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">GetPathoClass</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">pretrain_path</span><span class="p">,</span> <span class="n">n_components</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">n_clusters</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">plot_classes</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">image_save_path</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Orchestrates the full image processing pipeline.</span>
+
+<span class="sd">    Crops tiles, generates embeddings using CTransPath, performs PCA and</span>
+<span class="sd">    K-means, and adds the results to the AnnData object.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        adata (anndata.AnnData): The AnnData object for an ST sample.</span>
+<span class="sd">        pretrain_path (str): Path to the CTransPath model&#39;s .pth weights file.</span>
+<span class="sd">        n_components (int, optional): Number of PCA components. Defaults to 50.</span>
+<span class="sd">        n_clusters (int, optional): Number of K-means clusters. Defaults to 6.</span>
+<span class="sd">        plot_classes (bool, optional): Whether to generate and save the spatial</span>
+<span class="sd">            heatmap. Defaults to True.</span>
+<span class="sd">        image_save_path (str, optional): File path to save the heatmap.</span>
+<span class="sd">            Required if `plot_classes` is True. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        anndata.AnnData: The AnnData object, modified in place with:</span>
+<span class="sd">            - `adata.obs[&quot;patho_class&quot;]`: Cluster labels for each spot.</span>
+<span class="sd">            - `adata.obsm[&quot;patho_emd&quot;]`: PCA embeddings for each spot.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">images</span> <span class="o">=</span> <span class="n">crop_images</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">infer_by_pretrain</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">pretrain_path</span><span class="p">)</span>
+
+    <span class="c1"># Example values for PCA and clustering</span>
+    <span class="n">pca_embeddings</span><span class="p">,</span> <span class="n">cluster_labels</span> <span class="o">=</span> <span class="n">process_embeddings</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">n_components</span><span class="p">,</span> <span class="n">n_clusters</span><span class="p">)</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;patho_class&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cluster_labels</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;patho_emd&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pca_embeddings</span>
+
+    <span class="k">if</span> <span class="n">plot_classes</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">image_save_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;image_save_path&#39; must be provided if &#39;plot_classes&#39; is True.&quot;</span><span class="p">)</span>
+        <span class="n">plot_patho_class_heatmap</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span><span class="n">image_save_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adata</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

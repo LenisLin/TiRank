@@ -1,0 +1,1271 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tirank.Visualization &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="../../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            TiRank
+              <img src="../../_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_sc_classification.html">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tirank.Visualization</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tirank.Visualization</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gseapy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gp</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">mannwhitneyu</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.cluster.hierarchy</span><span class="w"> </span><span class="kn">import</span> <span class="n">linkage</span><span class="p">,</span> <span class="n">dendrogram</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.Dataloader</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform_test_exp</span>
+
+<span class="c1"># Data Preparation</span>
+
+
+<div class="viewcode-block" id="create_tensor">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.create_tensor.html#tirank.Visualization.create_tensor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_tensor</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a numpy array or list-like object to a float32 PyTorch tensor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data_matrix (np.ndarray or list): The input data matrix.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: The data converted to a float32 PyTorch tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data_matrix</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># Plot loss function</span>
+<div class="viewcode-block" id="plot_loss">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.plot_loss.html#tirank.Visualization.plot_loss">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_loss</span><span class="p">(</span><span class="n">train_loss_dict</span><span class="p">,</span> <span class="n">savePath</span><span class="o">=</span><span class="s2">&quot;./loss_on_epoch.png&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots and saves the training loss curves over epochs.</span>
+
+<span class="sd">    This function takes a dictionary of loss values recorded at each epoch,</span>
+<span class="sd">    plots the trends for each loss type on a single graph, and saves</span>
+<span class="sd">    the plot to a file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        train_loss_dict (dict): A dictionary where keys are epoch identifiers</span>
+<span class="sd">            (e.g., &#39;Epoch_1&#39;) and values are dictionaries mapping loss</span>
+<span class="sd">            names (e.g., &#39;total_loss&#39;) to their numerical values.</span>
+<span class="sd">        savePath (str, optional): The file path to save the resulting</span>
+<span class="sd">            loss plot. Defaults to &quot;./loss_on_epoch.png&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Check if the dictionary is empty</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">train_loss_dict</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The loss dictionary is empty.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Determine the loss types from the first epoch</span>
+    <span class="n">loss_types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">train_loss_dict</span><span class="p">[</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">train_loss_dict</span><span class="p">))]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="c1"># Extracting the number of epochs</span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loss_dict</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Reformatting the data for plotting</span>
+    <span class="n">loss_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">loss_type</span><span class="p">:</span> <span class="p">[</span><span class="n">epoch_data</span><span class="p">[</span><span class="n">loss_type</span><span class="p">]</span> <span class="k">for</span> <span class="n">epoch_data</span> <span class="ow">in</span> <span class="n">train_loss_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="k">for</span> <span class="n">loss_type</span> <span class="ow">in</span> <span class="n">loss_types</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Plotting</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">loss_type</span><span class="p">,</span> <span class="n">losses</span> <span class="ow">in</span> <span class="n">loss_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">loss_type</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Loss Value Change Per Epoch&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Epoch&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Loss Value&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># Model Prediction</span>
+
+
+<div class="viewcode-block" id="model_predict">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.model_predict.html#tirank.Visualization.model_predict">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">model_predict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data_tensor</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates predictions from a trained model based on the specified mode.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (torch.nn.Module): The trained PyTorch model to use for prediction.</span>
+<span class="sd">        data_tensor (torch.Tensor): The input data as a PyTorch tensor.</span>
+<span class="sd">        mode (str): The operational mode, determining how to interpret the</span>
+<span class="sd">            model&#39;s output. Expected values are &quot;Cox&quot;, &quot;Classification&quot;,</span>
+<span class="sd">            or &quot;Regression&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing:</span>
+<span class="sd">            - pred_label (np.ndarray): Predicted labels. For &quot;Classification&quot;,</span>
+<span class="sd">              these are the class indices. For &quot;Regression&quot; and &quot;Cox&quot;,</span>
+<span class="sd">              this is the same as `pred_prob`.</span>
+<span class="sd">            - pred_prob (np.ndarray): Predicted probability scores. For</span>
+<span class="sd">              &quot;Classification&quot;, this is the probability of class 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">prob_scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data_tensor</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Cox&quot;</span><span class="p">:</span>
+        <span class="n">pred_prob</span> <span class="o">=</span> <span class="n">prob_scores</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Classification&quot;</span><span class="p">:</span>
+        <span class="n">pred_label</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">prob_scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">pred_prob</span> <span class="o">=</span> <span class="n">prob_scores</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;Regression&quot;</span><span class="p">:</span>
+        <span class="n">pred_prob</span> <span class="o">=</span> <span class="n">prob_scores</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">pred_label</span> <span class="o">=</span> <span class="n">pred_prob</span>
+
+    <span class="k">return</span> <span class="n">pred_label</span><span class="p">,</span> <span class="n">pred_prob</span></div>
+
+
+
+<span class="c1"># Probability Score Distribution Visualization</span>
+<div class="viewcode-block" id="plot_score_distribution">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.plot_score_distribution.html#tirank.Visualization.plot_score_distribution">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_score_distribution</span><span class="p">(</span><span class="n">savePath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots the density distribution of prediction scores for bulk and single-cell data.</span>
+
+<span class="sd">    This function loads prediction dataframes for bulk and single-cell</span>
+<span class="sd">    experiments from pickled files, plots their &quot;Pred_score&quot; distributions</span>
+<span class="sd">    on a single density plot, and saves the figure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The root directory containing the &#39;3_Analysis&#39;</span>
+<span class="sd">            subfolder, which must hold &#39;saveDF_bulk.pkl&#39; and</span>
+<span class="sd">            &#39;saveDF_sc.pkl&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Load data</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;saveDF_bulk.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">bulk_PredDF</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;saveDF_sc.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">sc_PredDF</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">pred_prob_sc</span> <span class="o">=</span> <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;Pred_score&quot;</span><span class="p">]</span>  <span class="c1"># scRNA</span>
+    <span class="n">pred_prob_bulk</span> <span class="o">=</span> <span class="n">bulk_PredDF</span><span class="p">[</span><span class="s2">&quot;Pred_score&quot;</span><span class="p">]</span>  <span class="c1"># Bulk RNA</span>
+
+    <span class="c1">## Plot</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span>
+        <span class="n">pred_prob_bulk</span><span class="p">,</span>
+        <span class="n">hist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">kde_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;shade&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Bulk&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">distplot</span><span class="p">(</span>
+        <span class="n">pred_prob_sc</span><span class="p">,</span>
+        <span class="n">hist</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">kde_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;shade&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Single Cell&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Density Plot&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Values&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Density&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Sample Type&quot;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;TiRank Pred Score Distribution.png&quot;</span><span class="p">),</span>
+        <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+        <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># Probability Score Distribution Visualization on UMAP</span>
+<div class="viewcode-block" id="plot_score_umap">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.plot_score_umap.html#tirank.Visualization.plot_score_umap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_score_umap</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">infer_mode</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Visualizes TiRank prediction scores and labels on UMAP and spatial plots.</span>
+
+<span class="sd">    This function loads an AnnData object and corresponding prediction scores.</span>
+<span class="sd">    It then generates and saves visualization plots based on the inference mode.</span>
+<span class="sd">    - For &quot;SC&quot; (single-cell) mode, it saves UMAP plots colored by score and label.</span>
+<span class="sd">    - For &quot;ST&quot; (spatial) mode, it saves UMAP and spatial plots colored by</span>
+<span class="sd">      score and label.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The base directory containing &#39;2_preprocessing&#39; and</span>
+<span class="sd">            &#39;3_Analysis&#39; subdirectories.</span>
+<span class="sd">        infer_mode (str): The type of data being plotted, either &quot;SC&quot; or &quot;ST&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If `infer_mode` is not &quot;SC&quot; or &quot;ST&quot;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">## DataPath</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Load Predict Data</span>
+    <span class="n">sc_PredDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;spot_predict_score.csv&quot;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="n">label_color_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;Rank+&quot;</span><span class="p">:</span> <span class="s2">&quot;#DE6E66&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Rank-&quot;</span><span class="p">:</span> <span class="s2">&quot;#5096DE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Background&quot;</span><span class="p">:</span> <span class="s2">&quot;lightgrey&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;SC&quot;</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;scAnndata.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;TiRank_Score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;Rank_Score&quot;</span><span class="p">]</span>
+        <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;TiRank_Label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;Rank_Label&quot;</span><span class="p">]</span>
+
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;TiRank_Score&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;UMAP of TiRank Pred Score.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+            <span class="n">scAnndata</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;TiRank_Label&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">palette</span><span class="o">=</span><span class="n">label_color_map</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;UMAP of TiRank Label Score.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">elif</span> <span class="n">infer_mode</span> <span class="o">==</span> <span class="s2">&quot;ST&quot;</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;scAnndata.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;TiRank_Score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;Rank_Score&quot;</span><span class="p">]</span>
+        <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;TiRank_Label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;Rank_Label&quot;</span><span class="p">]</span>
+
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;TiRank_Score&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;UMAP of TiRank Pred Score.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span>
+            <span class="n">scAnndata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;TiRank_Score&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha_img</span><span class="o">=</span><span class="mf">0.6</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;Spatial of TiRank Pred Score.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">umap</span><span class="p">(</span>
+            <span class="n">scAnndata</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;TiRank_Label&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">palette</span><span class="o">=</span><span class="n">label_color_map</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;UMAP of TiRank Label Score.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span>
+            <span class="n">scAnndata</span><span class="p">,</span>
+            <span class="n">color</span><span class="o">=</span><span class="s2">&quot;TiRank_Label&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">alpha_img</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+            <span class="n">palette</span><span class="o">=</span><span class="n">label_color_map</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;Spatial of TiRank Label Score.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid infer_mode selected&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># Probability Score Distribution Visualization on UMAP</span>
+<div class="viewcode-block" id="plot_label_distribution_among_conditions">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.plot_label_distribution_among_conditions.html#tirank.Visualization.plot_label_distribution_among_conditions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_label_distribution_among_conditions</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">group</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots the proportional distribution of TiRank labels within different groups.</span>
+
+<span class="sd">    This function loads prediction scores and calculates the frequency and</span>
+<span class="sd">    proportion of each &#39;Rank_Label&#39; (&#39;Rank+&#39;, &#39;Rank-&#39;, &#39;Background&#39;)</span>
+<span class="sd">    within the categories of a specified &#39;group&#39; column (e.g., cell type,</span>
+<span class="sd">    cluster). It then saves a bar plot of these proportions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The base directory containing the &#39;3_Analysis&#39;</span>
+<span class="sd">            subfolder.</span>
+<span class="sd">        group (str): The column name in &#39;spot_predict_score.csv&#39; to use</span>
+<span class="sd">            for grouping the data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the specified `group` column is not found in the</span>
+<span class="sd">            loaded DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">## DataPath</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Load Predict Data</span>
+    <span class="n">sc_PredDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;spot_predict_score.csv&quot;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sc_PredDF</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid grouping condition selected&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Creating a frequency table</span>
+    <span class="n">freq_table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">crosstab</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">sc_PredDF</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;Rank_Label&quot;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">freq_table</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Freq&quot;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Calculating cluster totals and proportions</span>
+    <span class="n">cluster_totals</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">group</span><span class="p">)[</span><span class="s2">&quot;Freq&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;TotalFreq&quot;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cluster_totals</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Proportion&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;Freq&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;TotalFreq&quot;</span><span class="p">]</span>
+
+    <span class="c1"># For now, skipping direct entropy calculation for brevity</span>
+
+    <span class="c1"># Order and adjust DataFrame for plotting</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">group</span><span class="p">],</span> <span class="n">categories</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">group</span><span class="p">]),</span> <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="n">group</span><span class="p">,</span> <span class="s2">&quot;Rank_Label&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Plotting</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">,</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="s2">&quot;Proportion&quot;</span><span class="p">,</span>
+        <span class="n">hue</span><span class="o">=</span><span class="s2">&quot;Rank_Label&quot;</span><span class="p">,</span>
+        <span class="n">palette</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Rank-&quot;</span><span class="p">:</span> <span class="s2">&quot;#4cb1c4&quot;</span><span class="p">,</span> <span class="s2">&quot;Rank+&quot;</span><span class="p">:</span> <span class="s2">&quot;#b5182b&quot;</span><span class="p">,</span> <span class="s2">&quot;Background&quot;</span><span class="p">:</span> <span class="s2">&quot;grey&quot;</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">&quot;Rank Label&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{group}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Proportion&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Proportion of Rank Labels by </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Construct the filename using the &#39;group&#39; variable. This ensures the file name reflects the content of the plot.</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Distribution of TiRank label in </span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">.png&quot;</span>
+    <span class="c1"># Save the figure, using os.path.join to construct the file path correctly.</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span>
+        <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+        <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1"># Plot the spatial map</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># Spatial Hub map (For ST only)</span>
+<div class="viewcode-block" id="plot_STmap">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.plot_STmap.html#tirank.Visualization.plot_STmap">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_STmap</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="n">group</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a composite spatial map for ST data showing cluster hubs.</span>
+
+<span class="sd">    This function is for Spatial Transcriptomics (ST) data. It loads</span>
+<span class="sd">    prediction scores, cluster-to-rank mappings from a JSON file, and the</span>
+<span class="sd">    AnnData object. It creates a new &#39;new_Rank_Label&#39; based on the hub</span>
+<span class="sd">    classification (&#39;Rank+&#39;, &#39;Rank-&#39;, &#39;Background&#39;) of each spot&#39;s `group`.</span>
+<span class="sd">    It then saves a figure with three subplots:</span>
+<span class="sd">    1. Spatial plot colored by the original `group`.</span>
+<span class="sd">    2. The H&amp;E image alone.</span>
+<span class="sd">    3. Spatial plot colored by &#39;new_Rank_Label&#39; overlaid on the H&amp;E image.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The base directory containing &#39;2_preprocessing&#39; and</span>
+<span class="sd">            &#39;3_Analysis&#39;.</span>
+<span class="sd">        group (str): The column name used for grouping (e.g., &#39;cluster&#39;)</span>
+<span class="sd">            which corresponds to the JSON file</span>
+<span class="sd">            (f&quot;{group}_category_dict.json&quot;).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the specified `group` column is not found in the</span>
+<span class="sd">            loaded DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">## DataPath</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Load Predict Data</span>
+    <span class="n">sc_PredDF</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;spot_predict_score.csv&quot;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sc_PredDF</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid grouping condition selected&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Load p-cluster results</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">group</span><span class="si">}</span><span class="s2">_category_dict.json&quot;</span><span class="p">),</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">categories_</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="c1">## Assign new label</span>
+    <span class="n">new_RankLabel</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cluster_label</span> <span class="o">=</span> <span class="n">sc_PredDF</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster_label</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">cluster_label</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">categories_</span><span class="p">[</span><span class="s2">&quot;Rank+&quot;</span><span class="p">]:</span>
+            <span class="n">new_RankLabel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Rank+&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cluster_label</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">categories_</span><span class="p">[</span><span class="s2">&quot;Rank-&quot;</span><span class="p">]:</span>
+            <span class="n">new_RankLabel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Rank-&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_RankLabel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Background&quot;</span><span class="p">)</span>
+    <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;new_Rank_Label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_RankLabel</span>
+    <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;new_Rank_Label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sc_PredDF</span><span class="p">[</span><span class="s2">&quot;new_Rank_Label&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
+
+    <span class="c1">## Load scAnndata</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;scAnndata.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">scAnndata</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">sc_PredDF</span>
+
+    <span class="c1">## Color bar</span>
+    <span class="n">label_color_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Rank+&quot;</span><span class="p">:</span> <span class="s2">&quot;#DE6E66&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Rank-&quot;</span><span class="p">:</span> <span class="s2">&quot;#5096DE&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Background&quot;</span><span class="p">:</span> <span class="s2">&quot;lightgrey&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    
+    <span class="c1"># Plot and save</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>  <span class="c1"># Adjust figsize as needed</span>
+
+    <span class="c1">## Plot 1: Category Labels Without the HE Image</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span>
+    <span class="n">scAnndata</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>       <span class="c1"># Your categorical column</span>
+    <span class="n">img_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>       <span class="c1"># No background image</span>
+    <span class="n">alpha_img</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>      <span class="c1"># No background image opacity</span>
+    <span class="c1">#spot_size=5,       # Adjust spot size</span>
+    <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>         <span class="c1"># Do not display immediately</span>
+    <span class="c1">#frameon=False,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>           <span class="c1"># Plot on the first subplot</span>
+    <span class="p">)</span>
+    <span class="c1">## Plot 2: Only the HE Image</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span>
+        <span class="n">scAnndata</span><span class="p">,</span>
+        <span class="n">img_key</span><span class="o">=</span><span class="s1">&#39;hires&#39;</span><span class="p">,</span>   <span class="c1"># Your image key (e.g., &#39;hires&#39; or &#39;lowres&#39;)</span>
+        <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>         <span class="c1"># No data overlay</span>
+        <span class="n">alpha_img</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>      <span class="c1"># Full opacity</span>
+        <span class="n">spot_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>        <span class="c1"># No spots plotted</span>
+        <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>         <span class="c1"># Do not display immediately</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>           <span class="c1"># Plot on the second subplot</span>
+    <span class="p">)</span>
+
+    <span class="c1">## Plot 3: HE Image with Category Labels</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span>
+        <span class="n">scAnndata</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;new_Rank_Label&quot;</span><span class="p">,</span>       <span class="c1"># Your categorical column</span>
+        <span class="n">img_key</span><span class="o">=</span><span class="s1">&#39;hires&#39;</span><span class="p">,</span>   <span class="c1"># Your image key</span>
+        <span class="n">alpha_img</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>      <span class="c1"># Full opacity for background image</span>
+        <span class="c1">#spot_size=5,       # Adjust spot size</span>
+        <span class="n">palette</span><span class="o">=</span><span class="n">label_color_map</span><span class="p">,</span>
+        <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>         <span class="c1"># Do not display immediately</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>           <span class="c1"># Plot on the third subplot</span>
+    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;Spatial of TiRank Hubs.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># DEG analysis</span>
+<div class="viewcode-block" id="DEG_analysis">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.DEG_analysis.html#tirank.Visualization.DEG_analysis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">DEG_analysis</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">fc_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Pvalue_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">do_p_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs and saves Differential Gene Expression (DEG) analysis.</span>
+
+<span class="sd">    This function loads a finalized AnnData object, computes DEGs between</span>
+<span class="sd">    &#39;Rank+&#39; and &#39;Rank-&#39; groups using &#39;wilcoxon&#39;, saves all results,</span>
+<span class="sd">    and then saves a filtered list of DEGs based on log-fold-change and</span>
+<span class="sd">    p-value thresholds.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The base directory containing the &#39;3_Analysis&#39;</span>
+<span class="sd">            subfolder, where &#39;final_anndata.h5ad&#39; is located and</span>
+<span class="sd">            results will be saved.</span>
+<span class="sd">        fc_threshold (float, optional): The fold-change threshold for</span>
+<span class="sd">            filtering. Defaults to 2.</span>
+<span class="sd">        Pvalue_threshold (float, optional): The p-value threshold for</span>
+<span class="sd">            filtering. Defaults to 0.05.</span>
+<span class="sd">        do_p_adjust (bool, optional): If True, use adjusted p-values for</span>
+<span class="sd">            filtering. If False, use raw p-values. Defaults to True.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+
+    <span class="c1">## Load final single-cell data</span>
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;final_anndata.h5ad&quot;</span><span class="p">))</span>
+
+    <span class="c1">## DEG</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span> <span class="s2">&quot;Rank_Label&quot;</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Rank+&quot;</span><span class="p">],</span> <span class="n">reference</span><span class="o">=</span><span class="s2">&quot;Rank-&quot;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;wilcoxon&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1">## Extract dataframe</span>
+    <span class="n">df_DEG</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">][</span><span class="s2">&quot;names&quot;</span><span class="p">]),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">][</span><span class="s2">&quot;scores&quot;</span><span class="p">]),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">][</span><span class="s2">&quot;pvals&quot;</span><span class="p">]),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">][</span><span class="s2">&quot;pvals_adj&quot;</span><span class="p">]),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">[</span><span class="s2">&quot;rank_genes_groups&quot;</span><span class="p">][</span><span class="s2">&quot;logfoldchanges&quot;</span><span class="p">]),</span>
+        <span class="p">],</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">df_DEG</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;GeneSymbol&quot;</span><span class="p">,</span> <span class="s2">&quot;Scores&quot;</span><span class="p">,</span> <span class="s2">&quot;Pvalue&quot;</span><span class="p">,</span> <span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">,</span> <span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span>
+    <span class="n">df_DEG</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">df_DEG</span><span class="p">[</span><span class="s2">&quot;GeneSymbol&quot;</span><span class="p">]</span>
+
+    <span class="n">df_DEG</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;All DEGs dataframe.csv&quot;</span><span class="p">))</span>
+
+    <span class="n">df_DEG</span> <span class="o">=</span> <span class="n">df_DEG</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df_DEG</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">fc_threshold</span><span class="p">)]</span>
+
+    <span class="k">if</span> <span class="n">do_p_adjust</span><span class="p">:</span>
+        <span class="n">df_DEG</span> <span class="o">=</span> <span class="n">df_DEG</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df_DEG</span><span class="p">[</span><span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df_DEG</span> <span class="o">=</span> <span class="n">df_DEG</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df_DEG</span><span class="p">[</span><span class="s2">&quot;Pvalue&quot;</span><span class="p">])</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">]</span>
+
+    <span class="n">df_DEG</span> <span class="o">=</span> <span class="n">df_DEG</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">df_DEG</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;Differentially expressed genes data frame.csv&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># volcano plot display the differential expressed genes</span>
+<div class="viewcode-block" id="DEG_volcano">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.DEG_volcano.html#tirank.Visualization.DEG_volcano">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">DEG_volcano</span><span class="p">(</span>
+    <span class="n">savePath</span><span class="p">,</span> <span class="n">fc_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Pvalue_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">do_p_adjust</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">top_n</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates and saves a volcano plot for DEG results.</span>
+
+<span class="sd">    This function loads the &#39;All DEGs dataframe.csv&#39; file, creates a</span>
+<span class="sd">    volcano plot (Log2(FoldChange) vs -Log10(P-value)), colors genes</span>
+<span class="sd">    based on significance thresholds, and annotates the top N most</span>
+<span class="sd">    significant up- and down-regulated genes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The base directory containing the &#39;3_Analysis&#39;</span>
+<span class="sd">            subfolder.</span>
+<span class="sd">        fc_threshold (float, optional): Fold-change threshold for coloring</span>
+<span class="sd">            and vertical lines. Defaults to 2.</span>
+<span class="sd">        Pvalue_threshold (float, optional): P-value threshold for coloring</span>
+<span class="sd">            and the horizontal line. Defaults to 0.05.</span>
+<span class="sd">        do_p_adjust (bool, optional): If True, use adjusted p-values for</span>
+<span class="sd">            the Y-axis and filtering. If False, use raw p-values.</span>
+<span class="sd">            Defaults to True.</span>
+<span class="sd">        top_n (int, optional): The number of top up- and down-regulated</span>
+<span class="sd">            genes to annotate. Defaults to 5.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Path for saving analysis results</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Load data from the specified file</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;All DEGs dataframe.csv&quot;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span>  <span class="c1"># Default color for all points</span>
+
+    <span class="n">log2FC</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">fc_threshold</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;-lg10Qvalue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">]))</span>
+    <span class="n">result</span><span class="p">[</span><span class="s2">&quot;-lg10Pvalue&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue&quot;</span><span class="p">]))</span>
+
+    <span class="c1"># Coloring points based on thresholds and P-values</span>
+    <span class="k">if</span> <span class="n">do_p_adjust</span><span class="p">:</span>
+        <span class="c1"># Marking significant upregulated genes in red</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">log2FC</span><span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">),</span>
+            <span class="s2">&quot;group&quot;</span><span class="p">,</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tab:red&quot;</span>
+        <span class="c1"># Marking significant downregulated genes in blue</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="o">-</span><span class="n">log2FC</span><span class="p">))</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">),</span>
+            <span class="s2">&quot;group&quot;</span><span class="p">,</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tab:blue&quot;</span>
+        <span class="c1"># Marking non-significant genes in grey</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">Pvalue_threshold</span><span class="p">,</span> <span class="s2">&quot;group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lightgrey&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">log2FC</span><span class="p">)</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">),</span>
+            <span class="s2">&quot;group&quot;</span><span class="p">,</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tab:red&quot;</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+            <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="o">-</span><span class="n">log2FC</span><span class="p">))</span>
+            <span class="o">&amp;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">),</span>
+            <span class="s2">&quot;group&quot;</span><span class="p">,</span>
+        <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;tab:blue&quot;</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">Pvalue_threshold</span><span class="p">,</span> <span class="s2">&quot;group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lightgrey&quot;</span>
+
+    <span class="n">result</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">log2FC</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="p">(</span><span class="n">log2FC</span><span class="p">)),</span>
+        <span class="s2">&quot;group&quot;</span><span class="p">,</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lightgrey&quot;</span>
+
+    <span class="c1"># Define axis display range</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span>
+
+    <span class="c1"># Create scatter plot</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span>
+        <span class="n">figsize</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">figaspect</span><span class="p">(</span><span class="mi">7</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+    <span class="p">)</span>  <span class="c1"># Set figure aspect ratio (height/width)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">),</span> <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;-lg10Qvalue&quot;</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Annotate points</span>
+    <span class="c1"># top N up-regulated genes</span>
+    <span class="n">top_up</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">log2FC</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">)</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="n">top_n</span><span class="p">,</span> <span class="s2">&quot;LogFoldChange&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">top_up</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;-lg10Qvalue&quot;</span><span class="p">]),</span>
+            <span class="n">textcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># top N down-regulated genes</span>
+    <span class="n">top_down</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span>
+        <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">log2FC</span><span class="p">)</span>
+        <span class="o">&amp;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;Pvalue_adj&quot;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">Pvalue_threshold</span><span class="p">)</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">nsmallest</span><span class="p">(</span><span class="n">top_n</span><span class="p">,</span> <span class="s2">&quot;LogFoldChange&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">top_down</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;-lg10Qvalue&quot;</span><span class="p">]),</span>
+            <span class="n">textcoords</span><span class="o">=</span><span class="s2">&quot;offset points&quot;</span><span class="p">,</span>
+            <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;-Log10(Q value)&quot;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Log2 (fold change)&quot;</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Remove right border</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># Remove top border</span>
+    <span class="c1"># Draw horizontal and vertical lines</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span>
+        <span class="o">-</span><span class="n">log2FC</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;dimgrey&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>  <span class="c1"># Vertical line for negative log2FC</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span>
+        <span class="n">log2FC</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;dimgrey&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>  <span class="c1"># Vertical line for positive log2FC</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span>
+        <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">Pvalue_threshold</span><span class="p">),</span>
+        <span class="n">xmin</span><span class="p">,</span>
+        <span class="n">xmax</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;dimgrey&quot;</span><span class="p">,</span>
+        <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># Horizontal line for Pvalue threshold</span>
+
+    <span class="c1"># Set x and y axis ticks</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># x-axis ticks with start point and step</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>  <span class="c1"># y-axis ticks with start point and step</span>
+
+    <span class="c1"># Save the figure</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;DEG_volcano_plot.png&quot;</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># Pathway enrichment analysis</span>
+<div class="viewcode-block" id="Pathway_Enrichment">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.Pathway_Enrichment.html#tirank.Visualization.Pathway_Enrichment">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Pathway_Enrichment</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="s2">&quot;KEGG_2016&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs and plots pathway enrichment analysis on DEGs.</span>
+
+<span class="sd">    This function loads the filtered &#39;Differentially expressed genes data frame.csv&#39;,</span>
+<span class="sd">    separates genes into up-regulated and down-regulated lists, and</span>
+<span class="sd">    runs &#39;gseapy.enrichr&#39; on the up, down, and all DEG lists using the</span>
+<span class="sd">    specified database. It saves the enrichment tables and dot plots.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        savePath (str): The base directory containing the &#39;3_Analysis&#39;</span>
+<span class="sd">            subfolder.</span>
+<span class="sd">        database (str or list, optional): The gene set library or libraries</span>
+<span class="sd">            to use for enrichment (e.g., &quot;KEGG_2016&quot;, [&quot;GO_Biological_Process_2021&quot;]).</span>
+<span class="sd">            Defaults to &quot;KEGG_2016&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;Differentially expressed genes data frame.csv&quot;</span><span class="p">),</span>
+        <span class="n">index_col</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># up and down genes</span>
+    <span class="n">upgenes</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;GeneSymbol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">downgenes</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;LogFoldChange&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;GeneSymbol&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">allgenes</span> <span class="o">=</span> <span class="n">upgenes</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">allgenes</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">downgenes</span><span class="p">)</span>
+
+    <span class="n">upenr</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">enrichr</span><span class="p">(</span>
+        <span class="n">gene_list</span><span class="o">=</span><span class="n">upgenes</span><span class="p">,</span>
+        <span class="n">gene_sets</span><span class="o">=</span><span class="n">database</span><span class="p">,</span>
+        <span class="n">organism</span><span class="o">=</span><span class="s2">&quot;Human&quot;</span><span class="p">,</span>  <span class="c1"># don&#39;t forget to set organism to the one you desired! e.g. Yeast</span>
+        <span class="n">outdir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span> <span class="s2">&quot;up&quot;</span><span class="p">),</span>
+        <span class="n">no_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># test dataset, use lower value from range(0,1)</span>
+    <span class="p">)</span>
+
+    <span class="n">downenr</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">enrichr</span><span class="p">(</span>
+        <span class="n">gene_list</span><span class="o">=</span><span class="n">downgenes</span><span class="p">,</span>
+        <span class="n">gene_sets</span><span class="o">=</span><span class="n">database</span><span class="p">,</span>
+        <span class="n">organism</span><span class="o">=</span><span class="s2">&quot;Human&quot;</span><span class="p">,</span>  <span class="c1"># don&#39;t forget to set organism to the one you desired! e.g. Yeast</span>
+        <span class="n">outdir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span> <span class="s2">&quot;down&quot;</span><span class="p">),</span>
+        <span class="n">no_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># test dataset, use lower value from range(0,1)</span>
+    <span class="p">)</span>
+
+    <span class="n">allenr</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">enrichr</span><span class="p">(</span>
+        <span class="n">gene_list</span><span class="o">=</span><span class="n">allgenes</span><span class="p">,</span>
+        <span class="n">gene_sets</span><span class="o">=</span><span class="n">database</span><span class="p">,</span>
+        <span class="n">organism</span><span class="o">=</span><span class="s2">&quot;Human&quot;</span><span class="p">,</span>  <span class="c1"># don&#39;t forget to set organism to the one you desired! e.g. Yeast</span>
+        <span class="n">outdir</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">),</span>
+        <span class="n">no_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># test dataset, use lower value from range(0,1)</span>
+    <span class="p">)</span>
+
+    <span class="n">database_name</span> <span class="o">=</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
+
+    <span class="c1">## up regulated</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">upenr</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;P-value&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Up regulated genes do not enrich in any pathway of &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">dotplot</span><span class="p">(</span>
+            <span class="n">upenr</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+            <span class="n">column</span><span class="o">=</span><span class="s2">&quot;P-value&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Up regulated genes enrich in &quot;</span> <span class="o">+</span> <span class="n">database_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">savePath_3</span><span class="p">,</span>
+                <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;up&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Up regulated genes enrich in &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1">## down regulated</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">downenr</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;P-value&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Down regulated genes do not enrich in any pathway of &quot;</span>
+            <span class="o">+</span> <span class="n">database_name</span>
+            <span class="o">+</span> <span class="s2">&quot;!&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">dotplot</span><span class="p">(</span>
+            <span class="n">downenr</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+            <span class="n">column</span><span class="o">=</span><span class="s2">&quot;P-value&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Down regulated genes enrich in &quot;</span> <span class="o">+</span> <span class="n">database_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">savePath_3</span><span class="p">,</span>
+                <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;down&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Down regulated genes enrich in &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c1">## all genes</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">allenr</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s2">&quot;P-value&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All differential do not enrich in any pathway of &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gp</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">dotplot</span><span class="p">(</span>
+            <span class="n">allenr</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+            <span class="n">column</span><span class="o">=</span><span class="s2">&quot;P-value&quot;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;All differential genes enrich in &quot;</span> <span class="o">+</span> <span class="n">database_name</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">savePath_3</span><span class="p">,</span>
+                <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;All differential enrich in &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">upenr</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">savePath_3</span><span class="p">,</span>
+            <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;up&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Pathway enrichment in &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot; data frame.csv&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">downenr</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">savePath_3</span><span class="p">,</span>
+            <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;down&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Pathway enrichment in &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot; data frame.csv&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">allenr</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">savePath_3</span><span class="p">,</span>
+            <span class="s2">&quot;enrichr&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Pathway enrichment in &quot;</span> <span class="o">+</span> <span class="n">database_name</span> <span class="o">+</span> <span class="s2">&quot; data frame.csv&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># Evaluation on Other Data</span>
+
+
+<div class="viewcode-block" id="evaluate_on_test_data">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.evaluate_on_test_data.html#tirank.Visualization.evaluate_on_test_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">evaluate_on_test_data</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">test_set</span><span class="p">,</span> <span class="n">data_path</span><span class="p">,</span> <span class="n">save_path</span><span class="p">,</span> <span class="n">bulk_gene_pairs_mat</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluates the model on external bulk RNA-seq test datasets.</span>
+
+<span class="sd">    This function iterates through a list of test dataset IDs. For each</span>
+<span class="sd">    dataset, it loads the expression and clinical metadata, transforms the</span>
+<span class="sd">    expression data into the gene-pair format, predicts labels using the</span>
+<span class="sd">    model, and saves the predictions along with a confusion matrix plot.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (torch.nn.Module): The trained classification model.</span>
+<span class="sd">        test_set (list of str): A list of dataset identifiers (e.g., [&#39;GSE_ID1&#39;])</span>
+<span class="sd">            to be loaded from `data_path`.</span>
+<span class="sd">        data_path (str): The directory containing the test data files, which</span>
+<span class="sd">            should be named like &#39;{data_id}_meta.csv&#39; and &#39;{data_id}_exp.csv&#39;.</span>
+<span class="sd">        save_path (str): The root directory where results will be saved. A</span>
+<span class="sd">            &#39;bulk_test&#39; subdirectory will be created here.</span>
+<span class="sd">        bulk_gene_pairs_mat (pd.DataFrame): The gene-pair matrix used as a</span>
+<span class="sd">            template to transform the test expression data.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">save_path</span><span class="p">)):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+
+    <span class="n">save_path_</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;bulk_test&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">save_path_</span><span class="p">)):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_path_</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">data_id</span> <span class="ow">in</span> <span class="n">test_set</span><span class="p">:</span>
+        <span class="n">test_bulk_clinical</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">data_id</span> <span class="o">+</span> <span class="s2">&quot;_meta.csv&quot;</span><span class="p">),</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">test_bulk_clinical</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Group&quot;</span><span class="p">,</span> <span class="s2">&quot;OS_status&quot;</span><span class="p">,</span> <span class="s2">&quot;OS_time&quot;</span><span class="p">]</span>
+        <span class="n">test_bulk_clinical</span><span class="p">[</span><span class="s2">&quot;Group&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_bulk_clinical</span><span class="p">[</span><span class="s2">&quot;Group&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;PR&quot;</span><span class="p">,</span> <span class="s2">&quot;CR&quot;</span><span class="p">,</span> <span class="s2">&quot;CRPR&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="n">test_bulk_exp</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">data_id</span> <span class="o">+</span> <span class="s2">&quot;_exp.csv&quot;</span><span class="p">),</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="n">test_bulk_exp_gene_pairs_mat</span> <span class="o">=</span> <span class="n">transform_test_exp</span><span class="p">(</span>
+            <span class="n">bulk_gene_pairs_mat</span><span class="p">,</span> <span class="n">test_bulk_exp</span>
+        <span class="p">)</span>
+        <span class="n">test_exp_tensor_bulk</span> <span class="o">=</span> <span class="n">create_tensor</span><span class="p">(</span><span class="n">test_bulk_exp_gene_pairs_mat</span><span class="p">)</span>
+
+        <span class="n">test_pred_label</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model_predict</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">test_exp_tensor_bulk</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;Classification&quot;</span>
+        <span class="p">)</span>
+        <span class="n">test_bulk_clinical</span><span class="p">[</span><span class="s2">&quot;TiRank_Label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_pred_label</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">test_bulk_clinical</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path_</span><span class="p">,</span> <span class="n">data_id</span> <span class="o">+</span> <span class="s2">&quot;_predict_score.csv&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">true_labels_bulk</span> <span class="o">=</span> <span class="n">test_bulk_clinical</span><span class="p">[</span><span class="s2">&quot;Group&quot;</span><span class="p">]</span>
+        <span class="n">predicted_labels_bulk</span> <span class="o">=</span> <span class="n">test_bulk_clinical</span><span class="p">[</span><span class="s2">&quot;TiRank_Label&quot;</span><span class="p">]</span>
+
+        <span class="n">cm</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">true_labels_bulk</span><span class="p">,</span> <span class="n">predicted_labels_bulk</span><span class="p">)</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Pred on bulk: </span><span class="si">{</span><span class="n">data_id</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">),</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="c1"># Functions for RNA-seq to scRNA with Regression mode</span>
+
+
+<div class="viewcode-block" id="create_boxplot">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.create_boxplot.html#tirank.Visualization.create_boxplot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_boxplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">group_column</span><span class="o">=</span><span class="s2">&quot;True Label&quot;</span><span class="p">,</span> <span class="n">score_column</span><span class="o">=</span><span class="s2">&quot;Predicted Score&quot;</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a boxplot on a given axis with a Mann-Whitney U test.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (pd.DataFrame): DataFrame containing the plot data.</span>
+<span class="sd">        title (str): Title for the subplot.</span>
+<span class="sd">        ax (matplotlib.axes.Axes): The matplotlib axis to plot on.</span>
+<span class="sd">        group_column (str, optional): The column for the x-axis groups</span>
+<span class="sd">            (must contain two groups, 0 and 1). Defaults to &quot;True Label&quot;.</span>
+<span class="sd">        score_column (str, optional): The column for the y-axis numerical</span>
+<span class="sd">            values. Defaults to &quot;Predicted Score&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">group_column</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">score_column</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+    <span class="c1"># Statistical test</span>
+    <span class="n">group0</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">group_column</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">][</span><span class="n">score_column</span><span class="p">]</span>
+    <span class="n">group1</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">group_column</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">][</span><span class="n">score_column</span><span class="p">]</span>
+    <span class="n">stat</span><span class="p">,</span> <span class="n">p_value</span> <span class="o">=</span> <span class="n">mannwhitneyu</span><span class="p">(</span><span class="n">group0</span><span class="p">,</span> <span class="n">group1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+        <span class="mf">0.5</span><span class="p">,</span>
+        <span class="mf">0.95</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;p = </span><span class="si">{</span><span class="n">p_value</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_density_plot">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.create_density_plot.html#tirank.Visualization.create_density_plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_density_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a single density (KDE) plot on a given axis.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (pd.Series or np.ndarray): The data to plot.</span>
+<span class="sd">        label (str): The label for the data series in the legend.</span>
+<span class="sd">        ax (matplotlib.axes.Axes): The matplotlib axis to plot on.</span>
+<span class="sd">        title (str): Title for the subplot.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">shade</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="create_hist_plot">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.create_hist_plot.html#tirank.Visualization.create_hist_plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_hist_plot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a histogram with a KDE overlay on a given axis.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data (pd.Series or np.ndarray): The data to plot.</span>
+<span class="sd">        ax (matplotlib.axes.Axes): The matplotlib axis to plot on.</span>
+<span class="sd">        title (str): Title for the subplot.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_comparison_density_plot">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.create_comparison_density_plot.html#tirank.Visualization.create_comparison_density_plot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_comparison_density_plot</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span> <span class="n">label1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">label2</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a density plot comparing two distributions on a given axis.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        data1 (pd.Series or np.ndarray): The first data series.</span>
+<span class="sd">        label1 (str): Label for the first data series.</span>
+<span class="sd">        data2 (pd.Series or np.ndarray): The second data series.</span>
+<span class="sd">        label2 (str): Label for the second data series.</span>
+<span class="sd">        ax (matplotlib.axes.Axes): The matplotlib axis to plot on.</span>
+<span class="sd">        title (str): Title for the subplot.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span> <span class="n">shade</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">(</span><span class="n">data2</span><span class="p">,</span> <span class="n">shade</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="plot_genepair">
+<a class="viewcode-back" href="../../generated/tirank.Visualization.plot_genepair.html#tirank.Visualization.plot_genepair">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_genepair</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">savePath</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plots and saves a clustered heatmap of a gene-pair matrix.</span>
+
+<span class="sd">    If the input DataFrame has more rows than columns, it is sampled to be</span>
+<span class="sd">    square. Hierarchical clustering (&#39;average&#39; linkage, &#39;euclidean&#39; metric)</span>
+<span class="sd">    is then applied to both rows and columns, and the resulting reordered</span>
+<span class="sd">    DataFrame is plotted as a heatmap.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        df (pd.DataFrame): The gene-pair DataFrame (e.g., samples vs. gene-pairs).</span>
+<span class="sd">        data_type (str): A string identifier (e.g., &quot;bulk&quot;, &quot;sc&quot;) used to</span>
+<span class="sd">            name the output file.</span>
+<span class="sd">        savePath (str, optional): The root directory containing the</span>
+<span class="sd">            &#39;2_preprocessing&#39; subfolder where the plot will be saved.</span>
+<span class="sd">            Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+
+    <span class="c1">## difine the figure</span>
+    <span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="s2">&quot;coolwarm&quot;</span>
+
+    <span class="c1">## define cluster</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;average&quot;</span>
+    <span class="n">metric</span> <span class="o">=</span> <span class="s2">&quot;euclidean&quot;</span>
+
+    <span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">nrow</span> <span class="o">&gt;</span> <span class="n">ncol</span><span class="p">:</span>
+        <span class="n">n_size</span> <span class="o">=</span> <span class="n">ncol</span>
+        <span class="n">sampled_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n_size</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sampled_df</span> <span class="o">=</span> <span class="n">df</span>
+
+    <span class="c1"># Generate the linkage matrices</span>
+    <span class="n">row_clusters</span> <span class="o">=</span> <span class="n">linkage</span><span class="p">(</span><span class="n">sampled_df</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
+    <span class="n">col_clusters</span> <span class="o">=</span> <span class="n">linkage</span><span class="p">(</span><span class="n">sampled_df</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span>
+
+    <span class="c1"># Create the row and column dendrogram orders</span>
+    <span class="n">row_dendr</span> <span class="o">=</span> <span class="n">dendrogram</span><span class="p">(</span><span class="n">row_clusters</span><span class="p">,</span> <span class="n">no_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">col_dendr</span> <span class="o">=</span> <span class="n">dendrogram</span><span class="p">(</span><span class="n">col_clusters</span><span class="p">,</span> <span class="n">no_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Reorder the dataframe according to the dendrograms</span>
+    <span class="n">df_clustered</span> <span class="o">=</span> <span class="n">sampled_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row_dendr</span><span class="p">[</span><span class="s2">&quot;leaves&quot;</span><span class="p">],</span> <span class="n">col_dendr</span><span class="p">[</span><span class="s2">&quot;leaves&quot;</span><span class="p">]]</span>
+
+    <span class="c1"># Plotting</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
+        <span class="n">df_clustered</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>  <span class="c1"># Turn off tick labels if not meaningful</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Clustered Heatmap of Gene Pairs&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="n">data_type</span> <span class="o">+</span> <span class="s2">&quot; gene pair heatmap.png&quot;</span><span class="p">),</span>
+        <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+        <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.1</span>
+    <span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

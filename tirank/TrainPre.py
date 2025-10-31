@@ -19,6 +19,14 @@ from .Visualization import plot_loss
 from .Dataloader import transform_test_exp
 
 # Training
+"""
+This module contains the core logic for training, hyperparameter tuning (Optuna),
+and final prediction with the TiRank model.
+
+It includes functions for a single training epoch, model validation,
+hyperparameter optimization, the GMM-based rejection/filtering mechanism,
+and permutation testing for cluster significance.
+"""
 
 
 def Train_one_epoch(
@@ -35,6 +43,33 @@ def Train_one_epoch(
     device="cpu",
     epoch=0
 ):
+    """
+    Performs a single training epoch for the TiRank multi-task model.
+
+    This function iterates through the sc/st data (dataloader_B) and computes
+    the composite loss against the bulk data (dataloader_A) and regularization
+    terms (adjacency matrices, MMD, etc.). It then performs a backward
+    pass and optimizer step.
+
+    Args:
+        model (TiRankModel): The TiRank model to be trained.
+        dataloader_A (DataLoader): DataLoader for the bulk data (train).
+        dataloader_B (DataLoader): DataLoader for the sc/st data.
+        mode (str, optional): Analysis mode ('Cox', 'Classification', 'Regression').
+        infer_mode (str, optional): Inference data type ('SC' or 'ST').
+        adj_A (torch.Tensor, optional): Adjacency matrix for sc/st data
+            (e.g., from connectivities).
+        adj_B (torch.Tensor, optional): Adjacency matrix for spatial distance (ST only).
+        pre_patho_labels (pd.Series, optional): Ground truth pathology labels (ST only).
+        optimizer (torch.optim.Optimizer, optional): The optimizer.
+        alphas (list, optional): List of floats to weight the loss components
+            [reg_loss, bulk_loss, cosine_loss_exp, spatial/patho_loss].
+        device (str, optional): The compute device ('cpu' or 'cuda').
+        epoch (int, optional): The current epoch number (for prototype loss scheduling).
+
+    Returns:
+        dict: A dictionary of the average loss values for this epoch.
+    """
 
     model.train()
 
@@ -214,6 +249,27 @@ def Validate_model(
     alphas=[1, 1, 1],
     device="cpu",
 ):
+    """
+    Performs a single validation step.
+
+    This function iterates through the dataloaders, performs a forward pass,
+    and calculates the total validation loss (without backpropagation).
+
+    Args:
+        model (TiRankModel): The TiRank model to be evaluated.
+        dataloader_A (DataLoader): DataLoader for the bulk data (validation).
+        dataloader_B (DataLoader): DataLoader for the sc/st data.
+        mode (str, optional): Analysis mode ('Cox', 'Classification', 'Regression').
+        infer_mode (str, optional): Inference data type ('SC' or 'ST').
+        adj_A (torch.Tensor, optional): Adjacency matrix for sc/st data.
+        adj_B (torch.Tensor, optional): Adjacency matrix for spatial distance (ST only).
+        pre_patho_labels (pd.Series, optional): Ground truth pathology labels (ST only).
+        alphas (list, optional): List of floats to weight the loss components.
+        device (str, optional): The compute device ('cpu' or 'cuda').
+
+    Returns:
+        float: The average validation loss for this epoch.
+    """
 
     model.eval()  # Set the model to evaluation mode
 
@@ -320,6 +376,27 @@ def Validate_model(
 
 
 def Reject_With_GMM_Bio(pred_bulk, pred_sc, tolerance, min_components, max_components):
+    """
+    Performs GMM-based rejection for Classification and Cox modes.
+
+    This function identifies phenotype-associated clusters by fitting a GMM
+    to the bulk scores (to find target means 0 and 1) and another GMM
+    to the sc/st scores, then finding sc/st clusters whose means align
+    with the bulk targets within a given tolerance.
+
+    Args:
+        pred_bulk (np.ndarray): Predicted scores from the bulk data (n_samples, 1).
+        pred_sc (np.ndarray): Predicted scores from the sc/st data (n_cells, 1).
+        tolerance (float): The maximum distance a sc/st cluster mean can be from
+            a bulk target mean to be considered aligned.
+        min_components (int): The minimum number of GMM components to try.
+        max_components (int): The maximum number of GMM components to try.
+
+    Returns:
+        np.ndarray: A binary mask (n_cells, 1) where 1 indicates a cell
+            to be rejected (phenotype-independent) and 0 indicates a cell
+            to be kept.
+    """
     print(
         f"Perform Rejection with GMM mode with tolerance={tolerance}, components=[{min_components},{max_components}]!"
     )
@@ -442,6 +519,22 @@ def Reject_With_GMM_Bio(pred_bulk, pred_sc, tolerance, min_components, max_compo
 
 
 def Reject_With_GMM_Reg(pred_bulk, pred_sc, tolerance):
+    """
+    Performs GMM-based rejection for Regression mode.
+
+    Fits a single-component GMM to both bulk and sc/st scores to find their
+    means. If the means are too divergent, rejects all cells. Otherwise,
+    rejects cells that fall outside a tolerance range around the bulk mean.
+
+    Args:
+        pred_bulk (np.ndarray): Predicted scores from the bulk data (n_samples, 1).
+        pred_sc (np.ndarray): Predicted scores from the sc/st data (n_cells, 1).
+        tolerance (float): The tolerance (std dev or max value) to define the
+            acceptance range around the bulk mean.
+
+    Returns:
+        np.ndarray: A binary mask (n_cells, 1) where 1 indicates rejection.
+    """
     print(f"Perform Rejection with GMM mode with tolerance={tolerance}!")
 
     gmm_bulk = GaussianMixture(n_components=1, random_state=619).fit(pred_bulk)
@@ -474,6 +567,22 @@ def Reject_With_GMM_Reg(pred_bulk, pred_sc, tolerance):
 
 
 def Reject_With_StrictNumber(pred_bulk, pred_sc, tolerance):
+    """
+    Performs rejection based on a strict percentile range.
+
+    Fits a 2-component GMM to bulk scores to find means and std deviations.
+    It then defines an acceptance range based on the percentile (tolerance)
+    of a normal distribution (e.g., tolerance=0.95 keeps the central 95%
+    of each bulk cluster).
+
+    Args:
+        pred_bulk (np.ndarray): Predicted scores from the bulk data (n_samples, 1).
+        pred_sc (np.ndarray): Predicted scores from the sc/st data (n_cells, 1).
+        tolerance (float): The percentile of the distribution to keep (e.g., 0.95).
+
+    Returns:
+        np.ndarray: A binary mask (n_cells, 1) where 1 indicates rejection.
+    """
     print(f"Perform Rejection with Strict Number mode with tolerance={tolerance}!")
 
     gmm_bulk = GaussianMixture(n_components=2, random_state=619).fit(pred_bulk)
@@ -556,6 +665,19 @@ def objective(
     infer_mode,
     model_save_path,
 ):
+    """
+    The objective function for Optuna hyperparameter optimization.
+
+    This function defines the search space for hyperparameters (lr, epochs,
+    loss weights), builds a model, trains it, and returns the validation loss.
+
+    Args:
+        trial (optuna.trial.Trial): An Optuna trial object.
+        (All other args are passed from the `tune_hyperparameters` wrapper)
+
+    Returns:
+        float: The validation loss for the trial.
+    """
 
     print(
         f"Initiate model in trail {trial.number} with mode: {mode}, infer mode: {infer_mode} encoder type: {encoder_type} on device: {device}."
@@ -669,6 +791,22 @@ def tune_hyperparameters(
     device="cpu",  # Computing device ('cpu' or 'cuda')
     n_trials=50,  # Number of optimization trials
 ):
+    """
+    Runs the Optuna hyperparameter tuning study.
+
+    This function loads all necessary data and model parameters, then
+    initializes and runs an Optuna study to find the best
+    hyperparameters by minimizing the validation loss.
+
+    Args:
+        savePath (str): The main project directory path.
+        device (str, optional): The compute device. Defaults to "cpu".
+        n_trials (int, optional): The number of Optuna trials to run.
+            Defaults to 50.
+    
+    Returns:
+        None
+    """
 
     savePath_3 = os.path.join(savePath, "3_Analysis")
     savePath_data2train = os.path.join(savePath_3, "data2train")
@@ -757,6 +895,19 @@ def tune_hyperparameters(
 
 # Get Best performance model
 def get_best_model(savePath):
+    """
+    Loads the best performing model from the hyperparameter tuning.
+
+    This function reads the 'best_params.pkl' file, reconstructs the
+    corresponding model filename, initializes a new `TiRankModel`
+    with the saved parameters, and loads the weights.
+
+    Args:
+        savePath (str): The main project directory path.
+
+    Returns:
+        TiRankModel: The trained TiRank model with the best weights loaded.
+    """
     print("Loading the Best Model.")
     savePath_3 = os.path.join(savePath, "3_Analysis")
     model_save_path = os.path.join(savePath_3, "checkpoints")
@@ -818,6 +969,28 @@ def get_best_model(savePath):
 
 
 def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
+    """
+    Performs inference using the best trained TiRank model.
+
+    This function loads the best model, loads the full bulk and sc/st gene
+    pair matrices, and predicts scores for all samples. It then applies the
+    chosen rejection (filtering) method to classify cells/spots as
+    'Rank+', 'Rank-', or 'Background'. The final results are saved to
+    'spot_predict_score.csv' and 'final_anndata.h5ad'.
+
+    Args:
+        savePath (str): The main project directory path.
+        mode (str): The analysis mode ('Cox', 'Classification', 'Regression').
+        do_reject (bool, optional): Whether to perform the GMM-based rejection.
+            Defaults to True.
+        tolerance (float, optional): The tolerance parameter for the rejection
+            method. Defaults to 0.05.
+        reject_mode (str, optional): The rejection method to use ('GMM' or 'Strict').
+            Defaults to "GMM".
+    
+    Returns:
+        None
+    """
     savePath_1 = os.path.join(savePath, "1_loaddata")
     savePath_2 = os.path.join(savePath, "2_preprocessing")
     savePath_3 = os.path.join(savePath, "3_Analysis")
@@ -978,6 +1151,17 @@ def Predict(savePath, mode, do_reject=True, tolerance=0.05, reject_mode="GMM"):
 
 
 def permute_once(Rank_Labels, Labels, unique_labels):
+    """
+    Helper function for a single permutation test shuffle.
+
+    Args:
+        Rank_Labels (list): The list of all 'Rank_Label' assignments.
+        Labels (list): The list of all cluster assignments.
+        unique_labels (set): The set of unique cluster labels.
+
+    Returns:
+        dict: A dictionary with permuted counts for each cluster.
+    """
     shuffled_rank_labels = np.random.permutation(Rank_Labels)
     local_counts = {
         label: {"Background": 0, "Rank+": 0, "Rank-": 0} for label in unique_labels
@@ -992,6 +1176,19 @@ def permute_once(Rank_Labels, Labels, unique_labels):
 
 
 def AssignPcluster(df_p_values):
+    """
+    Assigns a final phenotype ('Rank+', 'Rank-', 'Background') to clusters.
+
+    This assignment is based on the p-values from the permutation test.
+
+    Args:
+        df_p_values (pd.DataFrame): DataFrame with p-values for 'Rank+',
+            'Rank-', and 'Background' enrichment for each cluster.
+
+    Returns:
+        dict: A dictionary mapping the final assignment ('Rank+', 'Rank-',
+            'Background') to a list of cluster IDs.
+    """
 
     # Create boolean masks for each condition
     mask_background_high = df_p_values["Background"] > 0.05
@@ -1030,6 +1227,24 @@ def AssignPcluster(df_p_values):
 
 
 def Pcluster(savePath, clusterColName, perm_n=1001):
+    """
+    Performs a permutation test to identify significantly enriched clusters.
+
+    This function tests whether the observed number of 'Rank+' or 'Rank-'
+    labels within any given cluster (e.g., 'leiden_clusters') is
+    significantly higher than expected by chance.
+
+    Args:
+        savePath (str): The main project directory path.
+        clusterColName (str): The column name in 'spot_predict_score.csv'
+            that contains the cluster labels (e.g., 'leiden_clusters',
+            'patho_class').
+        perm_n (int, optional): The number of permutations to run.
+            Defaults to 1001.
+
+    Returns:
+        None
+    """
     # Load data
     savePath_3 = os.path.join(savePath, "3_Analysis")
     pred_df = pd.read_csv(
@@ -1093,11 +1308,30 @@ def Pcluster(savePath, clusterColName, perm_n=1001):
 
     # Save Category
     with open(os.path.join(savePath_3, f"{clusterColName}_category_dict.json"), "w") as json_file:
-        json.dump(category_dict, json_file, indent=4)    
+        json.dump(category_dict, json_file, indent=4)   
 
     return None
 
 def IdenHub(savePath, cateCol1, cateCol2, min_spots):
+    """
+    Identifies "hubs" by combining two categorical cluster labels.
+
+    This function creates a new 'combine_cluster' column by merging two
+    existing cluster labels (e.g., 'patho_class' and 'leiden_clusters').
+    It also filters out any combined clusters that have fewer than
+    `min_spots` members, labeling them as 'NA'.
+
+    Args:
+        savePath (str): The main project directory path.
+        cateCol1 (str): The name of the first categorical column in
+            'spot_predict_score.csv'.
+        cateCol2 (str): The name of the second categorical column.
+        min_spots (int): The minimum number of spots required to keep
+            a combined cluster.
+
+    Returns:
+        None
+    """
     # Load data
     savePath_3 = os.path.join(savePath, "3_Analysis")
     pred_df = pd.read_csv(
@@ -1111,7 +1345,7 @@ def IdenHub(savePath, cateCol1, cateCol2, min_spots):
         raise ValueError(f"{cateCol2} was not in prediction datafrane.")
     
     # Conbime the categorys
-    cate1 = pred_df[cateCol1].tolist()    
+    cate1 = pred_df[cateCol1].tolist()   
     cate2 = pred_df[cateCol2].tolist()
 
     pred_df["combine_cluster"] = [str(cate1[i]) + "_" + str(cate2[i]) for i in range(len(cate1))]

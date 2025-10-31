@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial 2: scRNA-seq + Classification Analysis &mdash; TiRank 1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=f2a433a1"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TiRank Web App Tutorial" href="tutorial_web.html" />
+    <link rel="prev" title="Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis" href="tutorial_st_survival.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            TiRank
+              <img src="_static/TiRank_white.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">CLI Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial_st_survival.html">Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial 2: scRNA-seq + Classification Analysis</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">GUI Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_web.html">TiRank Web App Tutorial</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">TiRank</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial 2: scRNA-seq + Classification Analysis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tutorial_sc_classification.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-2-scrna-seq-classification-analysis">
+<span id="tutorial-sc-classification"></span><h1>Tutorial 2: scRNA-seq + Classification Analysis<a class="headerlink" href="#tutorial-2-scrna-seq-classification-analysis" title="Link to this heading"></a></h1>
+<p>This tutorial demonstrates a complete workflow for integrating single-cell RNA-seq (scRNA-seq) data with bulk RNA-seq data to perform a “Classification” analysis.</p>
+<p>The example uses Melanoma (SKCM) data to identify cell populations associated with immunotherapy response.</p>
+<p><strong>Full Python Script</strong></p>
+<p>This file is available in your repository at <code class="docutils literal notranslate"><span class="pre">Example/SC-Response-SKCM.py</span></code>. The full code is included here for reference.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="c1"># Example for integrate single-cell RNA-seq data of melanoma and response information</span>
+<span class="linenos">  2</span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="linenos">  3</span><span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+<span class="linenos">  4</span>
+<span class="linenos">  5</span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="linenos">  6</span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="linenos">  7</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="linenos">  8</span>
+<span class="linenos">  9</span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="linenos"> 10</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/home/lenislin/Experiment/projects/TiRankv2/github/TiRank&quot;</span><span class="p">)</span>
+<span class="linenos"> 11</span>
+<span class="linenos"> 12</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.Model</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_seed</span><span class="p">,</span> <span class="n">initial_model_para</span>
+<span class="linenos"> 13</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.LoadData</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="linenos"> 14</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.SCSTpreprocess</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="linenos"> 15</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.GPextractor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenePairExtractor</span>
+<span class="linenos"> 16</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.Dataloader</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_val</span><span class="p">,</span> <span class="n">PackData</span>
+<span class="linenos"> 17</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.TrainPre</span><span class="w"> </span><span class="kn">import</span> <span class="n">tune_hyperparameters</span><span class="p">,</span> <span class="n">Predict</span>
+<span class="linenos"> 18</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.Visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_score_distribution</span><span class="p">,</span> <span class="n">DEG_analysis</span><span class="p">,</span> <span class="n">DEG_volcano</span><span class="p">,</span> <span class="n">Pathway_Enrichment</span>
+<span class="linenos"> 19</span><span class="kn">from</span><span class="w"> </span><span class="nn">TiRank.Visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_score_umap</span><span class="p">,</span> <span class="n">plot_label_distribution_among_conditions</span>
+<span class="linenos"> 20</span>
+<span class="linenos"> 21</span><span class="n">setup_seed</span><span class="p">(</span><span class="mi">619</span><span class="p">)</span>
+<span class="linenos"> 22</span>
+<span class="linenos"> 23</span><span class="c1">## 1. Load data</span>
+<span class="linenos"> 24</span><span class="c1"># 1.1 selecting a path to save the results</span>
+<span class="linenos"> 25</span><span class="n">savePath</span> <span class="o">=</span> <span class="s2">&quot;./SC_Respones_SKCM&quot;</span>
+<span class="linenos"> 26</span><span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>
+<span class="linenos"> 27</span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">):</span>
+<span class="linenos"> 28</span>    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 29</span>
+<span class="linenos"> 30</span><span class="n">dataPath</span> <span class="o">=</span> <span class="s2">&quot;/home/lenislin/mnt_16T/ProjectData/TiRank/data/ExampleData/SKCM_SC_Res&quot;</span>
+<span class="linenos"> 31</span>
+<span class="linenos"> 32</span><span class="c1"># 1.2 load clinical data</span>
+<span class="linenos"> 33</span><span class="n">path_to_bulk_cli</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataPath</span><span class="p">,</span> <span class="s2">&quot;Liu2019_meta.csv&quot;</span><span class="p">)</span>
+<span class="linenos"> 34</span><span class="n">bulkClinical</span> <span class="o">=</span> <span class="n">load_bulk_clinical</span><span class="p">(</span><span class="n">path_to_bulk_cli</span><span class="p">)</span>
+<span class="linenos"> 35</span><span class="n">view_dataframe</span><span class="p">(</span><span class="n">bulkClinical</span><span class="p">)</span>
+<span class="linenos"> 36</span>
+<span class="linenos"> 37</span><span class="c1"># 1.3 load bulk expression profile</span>
+<span class="linenos"> 38</span><span class="n">path_to_bulk_exp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataPath</span><span class="p">,</span> <span class="s2">&quot;Liu2019_exp.csv&quot;</span><span class="p">)</span>
+<span class="linenos"> 39</span><span class="n">bulkExp</span> <span class="o">=</span> <span class="n">load_bulk_exp</span><span class="p">(</span><span class="n">path_to_bulk_exp</span><span class="p">)</span>
+<span class="linenos"> 40</span><span class="n">bulkExp</span> <span class="o">=</span> <span class="n">normalize_data</span><span class="p">(</span><span class="n">bulkExp</span><span class="p">)</span>
+<span class="linenos"> 41</span><span class="n">view_dataframe</span><span class="p">(</span><span class="n">bulkExp</span><span class="p">)</span>  <span class="c1">## if user try to view the data</span>
+<span class="linenos"> 42</span>
+<span class="linenos"> 43</span><span class="c1"># 1.4 Check name</span>
+<span class="linenos"> 44</span><span class="n">check_bulk</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">bulkExp</span><span class="p">,</span> <span class="n">bulkClinical</span><span class="p">)</span>
+<span class="linenos"> 45</span>
+<span class="linenos"> 46</span><span class="c1"># 1.5 load SC data</span>
+<span class="linenos"> 47</span><span class="n">path_to_sc_floder</span> <span class="o">=</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataPath</span><span class="p">,</span><span class="s2">&quot;GSE120575.h5ad&quot;</span><span class="p">))</span>
+<span class="linenos"> 48</span><span class="n">scAnndata</span> <span class="o">=</span> <span class="n">load_sc_data</span><span class="p">(</span><span class="n">path_to_sc_floder</span><span class="p">,</span> <span class="n">savePath</span><span class="p">)</span>
+<span class="linenos"> 49</span><span class="n">st_exp_df</span> <span class="o">=</span> <span class="n">transfer_exp_profile</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">)</span>
+<span class="linenos"> 50</span><span class="n">view_dataframe</span><span class="p">(</span><span class="n">st_exp_df</span><span class="p">)</span>  <span class="c1">## if user try to view the data</span>
+<span class="linenos"> 51</span>
+<span class="linenos"> 52</span><span class="c1">## 2. Preprocessing</span>
+<span class="linenos"> 53</span><span class="c1"># 2.1 selecting a path to save the results</span>
+<span class="linenos"> 54</span><span class="n">savePath</span> <span class="o">=</span> <span class="s2">&quot;./SC_Respones_SKCM&quot;</span>
+<span class="linenos"> 55</span><span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>
+<span class="linenos"> 56</span><span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+<span class="linenos"> 57</span>
+<span class="linenos"> 58</span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">):</span>
+<span class="linenos"> 59</span>    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 60</span>
+<span class="linenos"> 61</span><span class="c1"># 2.2 load data</span>
+<span class="linenos"> 62</span><span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_1</span><span class="p">,</span> <span class="s2">&quot;anndata.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+<span class="linenos"> 63</span><span class="n">scAnndata</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="linenos"> 64</span><span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos"> 65</span>
+<span class="linenos"> 66</span><span class="c1"># 2.3 Preprocessing on sc/st data</span>
+<span class="linenos"> 67</span><span class="n">infer_mode</span> <span class="o">=</span> <span class="s2">&quot;Cell&quot;</span>  <span class="c1">## optional parameter</span>
+<span class="linenos"> 68</span>
+<span class="linenos"> 69</span><span class="n">scAnndata</span> <span class="o">=</span> <span class="n">FilteringAnndata</span><span class="p">(</span>
+<span class="linenos"> 70</span>    <span class="n">scAnndata</span><span class="p">,</span>
+<span class="linenos"> 71</span>    <span class="n">max_count</span><span class="o">=</span><span class="mi">35000</span><span class="p">,</span>
+<span class="linenos"> 72</span>    <span class="n">min_count</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="linenos"> 73</span>    <span class="n">MT_propor</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="linenos"> 74</span>    <span class="n">min_cell</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos"> 75</span>    <span class="n">imgPath</span><span class="o">=</span><span class="n">savePath_2</span><span class="p">,</span>
+<span class="linenos"> 76</span><span class="p">)</span>  <span class="c1">## optional parameters: max_count, min_count, MT_propor, min_cell</span>
+<span class="linenos"> 77</span><span class="n">scAnndata</span> <span class="o">=</span> <span class="n">Normalization</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">)</span>
+<span class="linenos"> 78</span><span class="n">scAnndata</span> <span class="o">=</span> <span class="n">Logtransformation</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">)</span>
+<span class="linenos"> 79</span><span class="n">scAnndata</span> <span class="o">=</span> <span class="n">Clustering</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">,</span> <span class="n">infer_mode</span><span class="o">=</span><span class="n">infer_mode</span><span class="p">,</span> <span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">)</span>
+<span class="linenos"> 80</span><span class="n">compute_similarity</span><span class="p">(</span><span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">,</span> <span class="n">ann_data</span><span class="o">=</span><span class="n">scAnndata</span><span class="p">)</span>
+<span class="linenos"> 81</span>
+<span class="linenos"> 82</span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath_2</span><span class="p">,</span> <span class="s2">&quot;scAnndata.pkl&quot;</span><span class="p">),</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="linenos"> 83</span>    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">scAnndata</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="linenos"> 84</span><span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos"> 85</span>
+<span class="linenos"> 86</span><span class="c1"># 2.4 clinical column selection and bulk data split</span>
+<span class="linenos"> 87</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;Classification&quot;</span>
+<span class="linenos"> 88</span>
+<span class="linenos"> 89</span><span class="c1"># data split</span>
+<span class="linenos"> 90</span><span class="n">generate_val</span><span class="p">(</span>
+<span class="linenos"> 91</span>    <span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">,</span> <span class="n">validation_proportion</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span>
+<span class="linenos"> 92</span><span class="p">)</span>  <span class="c1">## optinal parameter: validation_proportion</span>
+<span class="linenos"> 93</span>
+<span class="linenos"> 94</span><span class="c1"># sampling</span>
+<span class="linenos"> 95</span><span class="n">perform_sampling_on_RNAseq</span><span class="p">(</span><span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;SMOTE&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="linenos"> 96</span>
+<span class="linenos"> 97</span><span class="c1"># 2.5 Genepair Transformation</span>
+<span class="linenos"> 98</span><span class="n">GPextractor</span> <span class="o">=</span> <span class="n">GenePairExtractor</span><span class="p">(</span>
+<span class="linenos"> 99</span>    <span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">,</span>
+<span class="linenos">100</span>    <span class="n">analysis_mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+<span class="linenos">101</span>    <span class="n">top_var_genes</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+<span class="linenos">102</span>    <span class="n">top_gene_pairs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="linenos">103</span>    <span class="n">p_value_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+<span class="linenos">104</span>    <span class="n">max_cutoff</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="linenos">105</span>    <span class="n">min_cutoff</span><span class="o">=-</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="linenos">106</span><span class="p">)</span>  <span class="c1">## optinal parameter: top_var_genes, top_gene_pairs, padj_value_threshold, padj_value_threshold</span>
+<span class="linenos">107</span>
+<span class="linenos">108</span><span class="n">GPextractor</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+<span class="linenos">109</span><span class="n">GPextractor</span><span class="o">.</span><span class="n">run_extraction</span><span class="p">()</span>
+<span class="linenos">110</span><span class="n">GPextractor</span><span class="o">.</span><span class="n">save_data</span><span class="p">()</span>
+<span class="linenos">111</span>
+<span class="linenos">112</span><span class="c1">## 3. Analysis</span>
+<span class="linenos">113</span><span class="c1"># 3.1 TiRank</span>
+<span class="linenos">114</span><span class="n">savePath</span> <span class="o">=</span> <span class="s2">&quot;./SC_Respones_SKCM&quot;</span>
+<span class="linenos">115</span><span class="n">savePath_1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;1_loaddata&quot;</span><span class="p">)</span>
+<span class="linenos">116</span><span class="n">savePath_2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;2_preprocessing&quot;</span><span class="p">)</span>
+<span class="linenos">117</span><span class="n">savePath_3</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="s2">&quot;3_Analysis&quot;</span><span class="p">)</span>
+<span class="linenos">118</span>
+<span class="linenos">119</span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">):</span>
+<span class="linenos">120</span>    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">savePath_3</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">121</span>
+<span class="linenos">122</span>
+<span class="linenos">123</span><span class="c1"># 3.1.1 Dataloader</span>
+<span class="linenos">124</span><span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;Classification&quot;</span>
+<span class="linenos">125</span><span class="n">infer_mode</span> <span class="o">=</span> <span class="s2">&quot;SC&quot;</span>
+<span class="linenos">126</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+<span class="linenos">127</span>
+<span class="linenos">128</span><span class="n">PackData</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">infer_mode</span><span class="o">=</span><span class="n">infer_mode</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="linenos">129</span>
+<span class="linenos">130</span><span class="c1"># 3.1.2 Training</span>
+<span class="linenos">131</span><span class="n">encoder_type</span> <span class="o">=</span> <span class="s2">&quot;MLP&quot;</span>  <span class="c1">## Optional parameter</span>
+<span class="linenos">132</span>
+<span class="linenos">133</span><span class="c1"># Model parameter</span>
+<span class="linenos">134</span><span class="n">initial_model_para</span><span class="p">(</span>
+<span class="linenos">135</span>    <span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">,</span>
+<span class="linenos">136</span>    <span class="n">nhead</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">137</span>    <span class="n">nhid1</span><span class="o">=</span><span class="mi">96</span><span class="p">,</span>
+<span class="linenos">138</span>    <span class="n">nhid2</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<span class="linenos">139</span>    <span class="n">n_output</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="linenos">140</span>    <span class="n">nlayers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="linenos">141</span>    <span class="n">n_pred</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">142</span>    <span class="n">dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="linenos">143</span>    <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+<span class="linenos">144</span>    <span class="n">encoder_type</span><span class="o">=</span><span class="n">encoder_type</span><span class="p">,</span>
+<span class="linenos">145</span>    <span class="n">infer_mode</span><span class="o">=</span><span class="n">infer_mode</span><span class="p">,</span>
+<span class="linenos">146</span><span class="p">)</span>
+<span class="linenos">147</span>
+<span class="linenos">148</span><span class="n">tune_hyperparameters</span><span class="p">(</span>
+<span class="linenos">149</span>    <span class="c1">## Parameters Path</span>
+<span class="linenos">150</span>    <span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">,</span>
+<span class="linenos">151</span>    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="linenos">152</span>    <span class="n">n_trials</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="linenos">153</span><span class="p">)</span>  <span class="c1">## optional parameters: n_trials</span>
+<span class="linenos">154</span>
+<span class="linenos">155</span><span class="c1"># 3.1.3 Inference</span>
+<span class="linenos">156</span><span class="n">Predict</span><span class="p">(</span><span class="n">savePath</span><span class="o">=</span><span class="n">savePath</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">do_reject</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">reject_mode</span><span class="o">=</span><span class="s2">&quot;GMM&quot;</span><span class="p">)</span>
+<span class="linenos">157</span>
+<span class="linenos">158</span><span class="c1"># 3.1.4 Visualization</span>
+<span class="linenos">159</span><span class="n">plot_score_distribution</span><span class="p">(</span><span class="n">savePath</span><span class="p">)</span>  <span class="c1"># Display the prob score distribution</span>
+<span class="linenos">160</span><span class="n">plot_score_umap</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="n">infer_mode</span><span class="p">)</span>
+<span class="linenos">161</span><span class="n">plot_label_distribution_among_conditions</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="s2">&quot;leiden_clusters&quot;</span><span class="p">)</span>
+<span class="linenos">162</span>
+<span class="linenos">163</span><span class="c1"># 3.2 DEGs and Pathway enrichment</span>
+<span class="linenos">164</span><span class="n">fc_threshold</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="linenos">165</span><span class="n">Pvalue_threshold</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="linenos">166</span><span class="n">do_p_adjust</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">167</span>
+<span class="linenos">168</span><span class="n">DEG_analysis</span><span class="p">(</span>
+<span class="linenos">169</span>    <span class="n">savePath</span><span class="p">,</span>
+<span class="linenos">170</span>    <span class="n">fc_threshold</span><span class="o">=</span><span class="n">fc_threshold</span><span class="p">,</span>
+<span class="linenos">171</span>    <span class="n">Pvalue_threshold</span><span class="o">=</span><span class="n">Pvalue_threshold</span><span class="p">,</span>
+<span class="linenos">172</span>    <span class="n">do_p_adjust</span><span class="o">=</span><span class="n">do_p_adjust</span><span class="p">,</span>
+<span class="linenos">173</span><span class="p">)</span>
+<span class="linenos">174</span><span class="n">DEG_volcano</span><span class="p">(</span>
+<span class="linenos">175</span>    <span class="n">savePath</span><span class="p">,</span>
+<span class="linenos">176</span>    <span class="n">fc_threshold</span><span class="o">=</span><span class="n">fc_threshold</span><span class="p">,</span>
+<span class="linenos">177</span>    <span class="n">Pvalue_threshold</span><span class="o">=</span><span class="n">Pvalue_threshold</span><span class="p">,</span>
+<span class="linenos">178</span>    <span class="n">do_p_adjust</span><span class="o">=</span><span class="n">do_p_adjust</span><span class="p">,</span>
+<span class="linenos">179</span><span class="p">)</span>
+<span class="linenos">180</span>
+<span class="linenos">181</span><span class="c1"># database = [&quot;KEGG_2021_Human&quot;,&quot;MSigDB_Hallmark_2020&quot;,&quot;GO_Biological_Process_2023&quot;]</span>
+<span class="linenos">182</span><span class="c1"># refer to https://maayanlab.cloud/Enrichr/#libraries</span>
+<span class="linenos">183</span>
+<span class="linenos">184</span><span class="n">Pathway_Enrichment</span><span class="p">(</span><span class="n">savePath</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GO_Biological_Process_2023&quot;</span><span class="p">])</span>
+<span class="linenos">185</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorial_st_survival.html" class="btn btn-neutral float-left" title="Tutorial 1: Spatial Transcriptomics (ST) + Cox Survival Analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial_web.html" class="btn btn-neutral float-right" title="TiRank Web App Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, LenisLin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
