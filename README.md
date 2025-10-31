@@ -61,7 +61,7 @@ This includes:
 
 TiRank supports multiple installation methods. It is recommended to create a dedicated conda environment to ensure compatibility.
 
-### Method 1: Environment Setup and Installation
+### Method 1: Conda
 
 You can set up the full TiRank environment directly with the following commands:
 
