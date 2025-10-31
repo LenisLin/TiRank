@@ -37,6 +37,12 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 html_logo = '_static/TiRank_white.png'
 
+autodoc_mock_imports = [
+    "torch", "torchvision", "torchaudio",
+    "cupy", "cudnn", "pytorch_lightning",
+    "timm", "scanpy", "anndata", "igraph", "leidenalg",
+]
+
 import os
 import sys
 sys.path.insert(0, os.path.abspath('../../'))

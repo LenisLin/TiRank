@@ -1,29 +1,25 @@
-# .readthedocs.yml — RTD v2 config for TiRank
-
 version: 2
 
 build:
   os: ubuntu-22.04
   tools:
-    # Use RTD's conda toolchain (mambaforge). Works well with environment.yml.
     python: "mambaforge-22.9"
 
 sphinx:
   configuration: docs/source/conf.py
-  # Set to true later if you want warnings to fail the build.
   fail_on_warning: false
 
-# Build docs inside your conda environment
 conda:
-  environment: installation/environment.yml
+  environment: docs/environment.yml
 
-# Also install your project so autodoc can import `tirank`
-python:
-  install:
-    - method: pip
-      path: .
+# Optional: if you prefer pip-only instead of conda, you could drop the conda block
+# and replace with:
+# python:
+#   install:
+#     - method: pip
+#       path: .
+#     - requirements: docs/requirements.txt
 
-# Optional: build extra downloadable artifacts
 formats:
   - htmlzip
   - pdf

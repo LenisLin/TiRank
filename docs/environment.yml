@@ -1,0 +1,14 @@
+name: tirank-docs
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip
+  - sphinx
+  - myst-parser            # use MyST instead of recommonmark
+  - sphinx-rtd-theme
+  - sphinx-autodoc-typehints
+  - numpy                  # lightweight, helps imports that annotate np types
+  - pip:
+      - .
+
