@@ -158,6 +158,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">max_cutoff</span> <span class="o">=</span> <span class="n">max_cutoff</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_cutoff</span> <span class="o">=</span> <span class="n">min_cutoff</span>
 
+<div class="viewcode-block" id="GenePairExtractor.load_data">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.load_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads the required expression and clinical data from disk.</span>
@@ -194,8 +196,11 @@
         <span class="n">scExp</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">scAnndata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span> <span class="o">=</span> <span class="n">scExp</span>
 
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.save_data">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.save_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the generated gene pair matrices to disk.</span>
@@ -240,8 +245,11 @@
         <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save gene pair matrices done.&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.run_extraction">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.run_extraction">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_extraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Main orchestration function to run the full gene pair extraction pipeline.</span>
@@ -337,8 +345,11 @@
         <span class="n">plot_genepair</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bulk_gene_pairs_mat</span><span class="p">,</span> <span class="s2">&quot;bulk&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">savePath</span><span class="p">)</span>
         <span class="n">plot_genepair</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">single_cell_gene_pairs_mat</span><span class="p">,</span> <span class="s2">&quot;sc&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">savePath</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.extract_candidate_genes">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.extract_candidate_genes">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">extract_candidate_genes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gene_names</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Subsets the expression matrices to a list of candidate genes.</span>
@@ -360,8 +371,11 @@
         <span class="n">gene_names</span> <span class="o">=</span> <span class="n">bulk_gene_subset</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">single_cell_gene_subset</span> <span class="o">=</span> <span class="n">single_cell_gene_subset</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">gene_names</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">bulk_gene_subset</span><span class="p">,</span> <span class="n">single_cell_gene_subset</span>
+        <span class="k">return</span> <span class="n">bulk_gene_subset</span><span class="p">,</span> <span class="n">single_cell_gene_subset</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.calculate_binomial_gene_pairs">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.calculate_binomial_gene_pairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_binomial_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Finds phenotype-associated genes for &#39;Classification&#39; mode.</span>
@@ -410,8 +424,11 @@
         <span class="n">regulated_genes_in_g0</span> <span class="o">=</span> <span class="n">DEGs</span><span class="p">[</span><span class="n">DEGs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">regulated_genes_in_g1</span> <span class="o">=</span> <span class="n">DEGs</span><span class="p">[</span><span class="n">DEGs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">regulated_genes_in_g0</span><span class="p">,</span> <span class="n">regulated_genes_in_g1</span>
+        <span class="k">return</span> <span class="n">regulated_genes_in_g0</span><span class="p">,</span> <span class="n">regulated_genes_in_g1</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.calculate_survival_gene_pairs">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.calculate_survival_gene_pairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_survival_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Finds phenotype-associated genes for &#39;Cox&#39; survival mode.</span>
@@ -463,8 +480,11 @@
         <span class="n">regulated_genes_r</span> <span class="o">=</span> <span class="n">survival_results</span><span class="p">[</span><span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;HR&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span>
         <span class="n">regulated_genes_p</span> <span class="o">=</span> <span class="n">survival_results</span><span class="p">[</span><span class="n">survival_results</span><span class="p">[</span><span class="s2">&quot;HR&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">regulated_genes_r</span><span class="p">,</span> <span class="n">regulated_genes_p</span>
+        <span class="k">return</span> <span class="n">regulated_genes_r</span><span class="p">,</span> <span class="n">regulated_genes_p</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.calculate_regression_gene_pairs">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.calculate_regression_gene_pairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">calculate_regression_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Finds phenotype-associated genes for &#39;Regression&#39; mode.</span>
@@ -522,9 +542,12 @@
             <span class="n">correlation_results</span><span class="p">[</span><span class="s2">&quot;correlation&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
         <span class="p">][</span><span class="s2">&quot;gene&quot;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">positive_correlation_genes</span><span class="p">,</span> <span class="n">negative_correlation_genes</span>
+        <span class="k">return</span> <span class="n">positive_correlation_genes</span><span class="p">,</span> <span class="n">negative_correlation_genes</span></div>
+
 
     <span class="c1"># Construct bulk gene pairs</span>
+<div class="viewcode-block" id="GenePairExtractor.transform_bulk_gene_pairs">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.transform_bulk_gene_pairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">transform_bulk_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">genes_r</span><span class="p">,</span> <span class="n">genes_p</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transforms the bulk expression matrix into a gene pair matrix (REO).</span>
@@ -553,8 +576,11 @@
             <span class="n">result_values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">row_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bulk_expression</span><span class="o">.</span><span class="n">columns</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">result_df</span>
+        <span class="k">return</span> <span class="n">result_df</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.filter_gene_pairs">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.filter_gene_pairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bulk_GPMat</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Filters the bulk gene pair matrix based on co-occurrence and variance.</span>
@@ -579,8 +605,11 @@
             <span class="n">top_var_gene_pairs</span> <span class="o">=</span> <span class="n">sorted_gene_pairs</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_gene_pairs</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
             <span class="n">bulk_GPMat</span> <span class="o">=</span> <span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">top_var_gene_pairs</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">bulk_GPMat</span>
+        <span class="k">return</span> <span class="n">bulk_GPMat</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.transform_single_cell_gene_pairs">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.transform_single_cell_gene_pairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">transform_single_cell_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bulk_GPMat</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transforms the sc/st expression matrix into a gene pair matrix.</span>
@@ -610,8 +639,11 @@
             <span class="n">result</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">bulk_GPMat</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">single_cell_expression</span><span class="o">.</span><span class="n">columns</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">result_df</span>
+        <span class="k">return</span> <span class="n">result_df</span></div>
 
+
+<div class="viewcode-block" id="GenePairExtractor.split_gene_pairs">
+<a class="viewcode-back" href="../../generated/tirank.GPextractor.GenePairExtractor.html#tirank.GPextractor.GenePairExtractor.split_gene_pairs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">split_gene_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gene_pairs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Helper function to split gene pair names.</span>
@@ -630,6 +662,7 @@
         <span class="n">gene2</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;__&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">gene_pairs</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="n">gene1</span><span class="p">,</span> <span class="n">gene2</span></div>
+</div>
 
 </pre></div>
 

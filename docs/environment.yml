@@ -5,7 +5,7 @@ dependencies:
   - python=3.9
   - pip
   - sphinx
-  - myst-parser          # MyST for your .md files
+  - myst-parser         # MyST for your .md files
   - sphinx-rtd-theme
   - sphinx-autodoc-typehints
   - numpy                # light/core dep that helps with imports and type hints

@@ -114,6 +114,129 @@
              
   <section id="tirank-dataloader">
 <h1>tirank.Dataloader<a class="headerlink" href="#tirank-dataloader" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Dataloader.</span></span><span class="sig-name descname"><span class="pre">generate_val</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_proportion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Dataloader.html#generate_val"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Splits the bulk expression and clinical data into training and validation sets.</p>
+<p>Loads the full bulk expression and clinical data, combines them, performs a
+random split, and saves the training and validation sets back to disk in
+the ‘2_preprocessing/split_data’ directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>validation_proportion</strong> (<em>float</em><em>, </em><em>optional</em>) – The fraction of data to use for
+the validation set. Defaults to 0.15.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – The analysis mode (‘Cox’, ‘Classification’, ‘Regression’).
+This determines how many columns to use for the clinical data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tirank.Dataloader.</span></span><span class="sig-name descname"><span class="pre">BulkDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Dataloader.html#BulkDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>PyTorch Dataset class for bulk RNA-seq (gene pair) data.</p>
+<p>Handles different analysis modes by returning the appropriate clinical
+labels (e.g., time and event for Cox, a single label for Classification).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df_Xa</strong> (<em>pd.DataFrame</em>) – DataFrame of gene pair features (samples x gene pairs).</p></li>
+<li><p><strong>df_cli</strong> (<em>pd.DataFrame</em><em> or </em><em>pd.Series</em>) – DataFrame/Series with clinical information.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Analysis mode. One of ‘Cox’, ‘Classification’,
+or ‘Regression’. Defaults to ‘Cox’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tirank.Dataloader.</span></span><span class="sig-name descname"><span class="pre">SCDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Dataloader.html#SCDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>PyTorch Dataset class for single-cell RNA-seq (gene pair) data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df_Xb</strong> (<em>pd.DataFrame</em><em> or </em><em>np.ndarray</em>) – DataFrame of gene pair features
+(cells x gene pairs).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tirank.Dataloader.</span></span><span class="sig-name descname"><span class="pre">STDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Dataloader.html#STDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>PyTorch Dataset class for Spatial Transcriptomics (gene pair) data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df_Xc</strong> (<em>pd.DataFrame</em><em> or </em><em>np.ndarray</em>) – DataFrame of gene pair features
+(spots x gene pairs).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Dataloader.</span></span><span class="sig-name descname"><span class="pre">PackData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Dataloader.html#PackData"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads all preprocessed data and packages it into PyTorch DataLoaders.</p>
+<p>This function reads the training/validation gene pair matrices, clinical data,
+AnnData object, similarity matrix, and pathological labels from disk. It
+instantiates the Dataset classes (BulkDataset, STDataset, SCDataset) and
+wraps them in DataLoader objects. It also prepares the adjacency matrix (adj_A)
+and pathological labels (patholabels) for the model.</p>
+<p>All resulting DataLoader objects and supporting data are saved to the
+‘3_Analysis/data2train’ directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – The analysis mode (‘Cox’, ‘Classification’, ‘Regression’).</p></li>
+<li><p><strong>infer_mode</strong> (<em>str</em>) – The inference data type (‘ST’ or ‘SC’).</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Batch size for the DataLoaders. Defaults to 1024.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Dataloader.</span></span><span class="sig-name descname"><span class="pre">transform_test_exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_exp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_exp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Dataloader.html#transform_test_exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Transforms a test expression matrix into a gene pair matrix using pairs from a training set.</p>
+<p>Given a gene pair matrix from training (columns are ‘GeneA__GeneB’) and a new
+expression matrix (genes as rows), this function computes the gene pair
+values for the new data, matching the pairs from training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_exp</strong> (<em>pd.DataFrame</em>) – The gene pair matrix from the training set.
+Its columns define the gene pairs to be used.</p></li>
+<li><p><strong>test_exp</strong> (<em>pd.DataFrame</em>) – The raw gene expression matrix for the test set
+(genes as rows, samples as columns).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A new gene pair matrix (samples x gene pairs) for the</dt><dd><p>test set, with the same columns as <cite>train_exp</cite>.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

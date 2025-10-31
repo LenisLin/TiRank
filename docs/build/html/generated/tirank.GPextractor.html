@@ -108,6 +108,263 @@
              
   <section id="tirank-gpextractor">
 <h1>tirank.GPextractor<a class="headerlink" href="#tirank-gpextractor" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tirank.GPextractor.</span></span><span class="sig-name descname"><span class="pre">GenePairExtractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analysis_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_var_genes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_gene_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_value_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to extract and filter phenotype-associated gene pairs (PGPs).</p>
+<p>This class loads bulk and sc/st expression data, identifies genes associated
+with a clinical phenotype (via t-test, Cox regression, or Pearson correlation),
+creates all possible pairs between positive and negative-associated genes,
+filters these pairs based on co-occurrence and variance, and finally
+transforms both bulk and sc/st datasets into gene pair matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>analysis_mode</strong> (<em>str</em>) – The analysis mode (‘Classification’, ‘Cox’, ‘Regression’).</p></li>
+<li><p><strong>top_var_genes</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of top variable genes to
+pre-filter from the sc/st data. Defaults to 500.</p></li>
+<li><p><strong>top_gene_pairs</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of top variable gene pairs
+to select after filtering. Defaults to 2000.</p></li>
+<li><p><strong>p_value_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – P-value threshold for selecting
+phenotype-associated genes. Defaults to None (which may be an issue,
+but reflects the original code’s None default).</p></li>
+<li><p><strong>max_cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum co-occurrence proportion for filtering
+gene pairs (removes highly redundant pairs). Defaults to 0.8.</p></li>
+<li><p><strong>min_cutoff</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum co-occurrence proportion for filtering
+gene pairs (removes pairs with no co-occurrence). Defaults to 0.2.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads the required expression and clinical data from disk.</p>
+<p>Loads ‘bulkExp_train.pkl’, ‘bulkClinical_train.pkl’, and ‘scAnndata.pkl’
+from the ‘2_preprocessing’ directory and stores them as attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">save_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.save_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Saves the generated gene pair matrices to disk.</p>
+<p>Saves ‘train_bulk_gene_pairs_mat.pkl’, ‘val_bulkExp_gene_pairs_mat.pkl’,
+and ‘sc_gene_pairs_mat.pkl’ to the ‘2_preprocessing’ directory.
+The validation matrix is created by transforming the validation
+expression data using the training gene pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">run_extraction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.run_extraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Main orchestration function to run the full gene pair extraction pipeline.</p>
+<p>This function performs the following steps:
+1. Finds intersecting genes between bulk and sc/st data.
+2. Selects top variable genes from sc/st data.
+3. Subsets all expression data to these genes.
+4. Identifies phenotype-associated gene sets (e.g., risk/protective)</p>
+<blockquote>
+<div><p>based on the specified ‘analysis_mode’.</p>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p>Transforms the bulk expression data into a gene pair matrix.</p></li>
+<li><p>Filters the gene pair matrix by co-occurrence and variance.</p></li>
+<li><p>Transforms the sc/st expression data using the filtered gene pairs.</p></li>
+<li><p>Saves the final matrices as attributes and plots them.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">extract_candidate_genes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gene_names</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.extract_candidate_genes"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Subsets the expression matrices to a list of candidate genes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gene_names</strong> (<em>list</em>) – A list of gene names to keep.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>pd.DataFrame: The subsetted bulk expression matrix.</p></li>
+<li><p>pd.DataFrame: The subsetted single-cell expression matrix.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">calculate_binomial_gene_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.calculate_binomial_gene_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Finds phenotype-associated genes for ‘Classification’ mode.</p>
+<p>Performs a t-test for each gene between two groups in the clinical data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>list: Genes up-regulated in group 0 (t-stat &gt; 0).</p></li>
+<li><p>list: Genes up-regulated in group 1 (t-stat &lt; 0).</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">calculate_survival_gene_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.calculate_survival_gene_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Finds phenotype-associated genes for ‘Cox’ survival mode.</p>
+<p>Performs a univariate Cox proportional hazards model for each gene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>list: Risk genes (Hazard Ratio &gt; 1).</p></li>
+<li><p>list: Protective genes (Hazard Ratio &lt; 1).</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">calculate_regression_gene_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.calculate_regression_gene_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Finds phenotype-associated genes for ‘Regression’ mode.</p>
+<p>Performs a Pearson correlation for each gene against the continuous
+clinical variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>list: Positively correlated genes.</p></li>
+<li><p>list: Negatively correlated genes.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">transform_bulk_gene_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">genes_r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genes_p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.transform_bulk_gene_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Transforms the bulk expression matrix into a gene pair matrix (REO).</p>
+<p>Creates all possible pairs between the two gene sets (e.g., risk/protective).
+A pair is 1 if gene_r &gt; gene_p, else -1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>genes_r</strong> (<em>list</em>) – The list of genes for the “positive” set (e.g., risk genes).</p></li>
+<li><p><strong>genes_p</strong> (<em>list</em>) – The list of genes for the “negative” set (e.g., protective genes).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The transformed bulk gene pair matrix (gene pairs x samples).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">filter_gene_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bulk_GPMat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.filter_gene_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Filters the bulk gene pair matrix based on co-occurrence and variance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bulk_GPMat</strong> (<em>pd.DataFrame</em>) – The raw bulk gene pair matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The filtered bulk gene pair matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">transform_single_cell_gene_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bulk_GPMat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.transform_single_cell_gene_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Transforms the sc/st expression matrix into a gene pair matrix.</p>
+<p>Uses the <em>exact</em> same gene pairs that were filtered from the bulk data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bulk_GPMat</strong> (<em>pd.DataFrame</em>) – The filtered bulk gene pair matrix.
+The index of this DataFrame defines the gene pairs to use.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The transformed sc/st gene pair matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">split_gene_pairs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gene_pairs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/GPextractor.html#GenePairExtractor.split_gene_pairs"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Helper function to split gene pair names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gene_pairs</strong> (<em>list</em>) – A list of gene pair strings (e.g., “GENE1__GENE2”).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>list: The list of first genes (e.g., “GENE1”).</p></li>
+<li><p>list: The list of second genes (e.g., “GENE2”).</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

@@ -116,6 +116,241 @@
              
   <section id="tirank-imageprocessing">
 <h1>tirank.Imageprocessing<a class="headerlink" href="#tirank-imageprocessing" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">ConvStem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#ConvStem"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Custom Convolutional Stem for the CTransPath model (replaces the patch embed layer).</p>
+<p>This stem uses a series of convolutions to create patch embeddings instead
+of a single large-kernel convolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of the input image. Defaults to 224.</p></li>
+<li><p><strong>patch_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The size of the patch. Must be 4. Defaults to 4.</p></li>
+<li><p><strong>in_chans</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of input image channels. Defaults to 3.</p></li>
+<li><p><strong>embed_dim</strong> (<em>int</em><em>, </em><em>optional</em>) – The dimension of the output embedding. Defaults to 768.</p></li>
+<li><p><strong>norm_layer</strong> (<em>nn.Module</em><em>, </em><em>optional</em>) – Normalization layer to use. Defaults to None.</p></li>
+<li><p><strong>flatten</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to flatten the output. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#ConvStem.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Forward pass of the convolutional stem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (B, C, H, W).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output patch embeddings.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">ctranspath</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#ctranspath"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Factory function to create the CTransPath model.</p>
+<p>Initializes a Swin Transformer (swin_tiny_patch4_window7_224) with
+the custom ConvStem as the embedding layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The CTransPath model instance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">scale_coordinate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#scale_coordinate"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Scales ST spot coordinates to match the high-resolution image.</p>
+<p>This function reads the scale factor from the AnnData object and applies
+it to the spatial coordinates, adding the results to <cite>data.obs</cite> as
+‘imagecol’ and ‘imagerow’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>anndata.AnnData</em>) – The AnnData object containing spatial info.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The AnnData object, modified in place.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>anndata.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">crop_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crop_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#crop_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Crops image tiles (patches) from the H&amp;E slide for each spot.</p>
+<p>Uses the ‘imagecol’ and ‘imagerow’ coordinates from <cite>data.obs</cite> to
+crop square patches of (2*crop_size) x (2*crop_size) from the
+high-resolution image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>anndata.AnnData</em>) – The AnnData object, after running <cite>scale_coordinate</cite>.</p></li>
+<li><p><strong>crop_size</strong> (<em>int</em><em>, </em><em>optional</em>) – The “radius” for cropping. A size of 25
+creates 50x50 pixel tiles. Defaults to 25.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A NumPy array stack of image tiles of shape</dt><dd><p>(n_spots, 2*crop_size, 2*crop_size, 3).</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">ImageDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#ImageDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>PyTorch Dataset for loading image tiles (patches).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>images_array</strong> (<em>np.ndarray</em>) – A stack of image tiles from <cite>crop_images</cite>.</p></li>
+<li><p><strong>transform</strong> (<em>callable</em><em>, </em><em>optional</em>) – A torchvision transform to apply to each
+image. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#ImageDataset.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Static collate function to stack images into a batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>list</em>) – A list of image tensors.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A stacked batch of images.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">infer_by_pretrain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrain_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#infer_by_pretrain"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generates feature embeddings from image tiles using the pre-trained CTransPath.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>images</strong> (<em>np.ndarray</em>) – A stack of image tiles (n_spots, H, W, C).</p></li>
+<li><p><strong>pretrain_path</strong> (<em>str</em>) – Path to the CTransPath model’s .pth weights file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of feature embeddings of shape (n_spots, n_features).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">process_embeddings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embeddings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_clusters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#process_embeddings"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs PCA dimensionality reduction and K-means clustering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embeddings</strong> (<em>torch.Tensor</em><em> or </em><em>np.ndarray</em>) – The feature embeddings.</p></li>
+<li><p><strong>n_components</strong> (<em>int</em>) – The number of principal components to keep.</p></li>
+<li><p><strong>n_clusters</strong> (<em>int</em>) – The number of clusters to find (k).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>np.ndarray: The PCA-transformed embeddings.</p></li>
+<li><p>np.ndarray: The cluster labels for each spot.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">plot_patho_class_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#plot_patho_class_heatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generates and saves a spatial scatter plot of pathological classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>anndata.AnnData</em>) – The AnnData object with ‘patho_class’ in <cite>.obs</cite>.</p></li>
+<li><p><strong>save_path</strong> (<em>str</em>) – The file path to save the resulting plot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Imageprocessing.</span></span><span class="sig-name descname"><span class="pre">GetPathoClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrain_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_clusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_save_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Imageprocessing.html#GetPathoClass"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Orchestrates the full image processing pipeline.</p>
+<p>Crops tiles, generates embeddings using CTransPath, performs PCA and
+K-means, and adds the results to the AnnData object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>anndata.AnnData</em>) – The AnnData object for an ST sample.</p></li>
+<li><p><strong>pretrain_path</strong> (<em>str</em>) – Path to the CTransPath model’s .pth weights file.</p></li>
+<li><p><strong>n_components</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of PCA components. Defaults to 50.</p></li>
+<li><p><strong>n_clusters</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of K-means clusters. Defaults to 6.</p></li>
+<li><p><strong>plot_classes</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to generate and save the spatial
+heatmap. Defaults to True.</p></li>
+<li><p><strong>image_save_path</strong> (<em>str</em><em>, </em><em>optional</em>) – File path to save the heatmap.
+Required if <cite>plot_classes</cite> is True. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>The AnnData object, modified in place with:</dt><dd><ul class="simple">
+<li><p><cite>adata.obs[“patho_class”]</cite>: Cluster labels for each spot.</p></li>
+<li><p><cite>adata.obsm[“patho_emd”]</cite>: PCA embeddings for each spot.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>anndata.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

@@ -122,6 +122,400 @@
              
   <section id="tirank-visualization">
 <h1>tirank.Visualization<a class="headerlink" href="#tirank-visualization" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">create_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#create_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Converts a numpy array or list-like object to a float32 PyTorch tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_matrix</strong> (<em>np.ndarray</em><em> or </em><em>list</em>) – The input data matrix.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The data converted to a float32 PyTorch tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">plot_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_loss_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savePath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./loss_on_epoch.png'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#plot_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Plots and saves the training loss curves over epochs.</p>
+<p>This function takes a dictionary of loss values recorded at each epoch,
+plots the trends for each loss type on a single graph, and saves
+the plot to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_loss_dict</strong> (<em>dict</em>) – A dictionary where keys are epoch identifiers
+(e.g., ‘Epoch_1’) and values are dictionaries mapping loss
+names (e.g., ‘total_loss’) to their numerical values.</p></li>
+<li><p><strong>savePath</strong> (<em>str</em><em>, </em><em>optional</em>) – The file path to save the resulting
+loss plot. Defaults to “./loss_on_epoch.png”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">model_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#model_predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generates predictions from a trained model based on the specified mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The trained PyTorch model to use for prediction.</p></li>
+<li><p><strong>data_tensor</strong> (<em>torch.Tensor</em>) – The input data as a PyTorch tensor.</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – The operational mode, determining how to interpret the
+model’s output. Expected values are “Cox”, “Classification”,
+or “Regression”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>pred_label (np.ndarray): Predicted labels. For “Classification”,
+these are the class indices. For “Regression” and “Cox”,
+this is the same as <cite>pred_prob</cite>.</p></li>
+<li><p>pred_prob (np.ndarray): Predicted probability scores. For
+“Classification”, this is the probability of class 1.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">plot_score_distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#plot_score_distribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Plots the density distribution of prediction scores for bulk and single-cell data.</p>
+<p>This function loads prediction dataframes for bulk and single-cell
+experiments from pickled files, plots their “Pred_score” distributions
+on a single density plot, and saves the figure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>savePath</strong> (<em>str</em>) – The root directory containing the ‘3_Analysis’
+subfolder, which must hold ‘saveDF_bulk.pkl’ and
+‘saveDF_sc.pkl’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">plot_score_umap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_mode</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#plot_score_umap"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Visualizes TiRank prediction scores and labels on UMAP and spatial plots.</p>
+<p>This function loads an AnnData object and corresponding prediction scores.
+It then generates and saves visualization plots based on the inference mode.
+- For “SC” (single-cell) mode, it saves UMAP plots colored by score and label.
+- For “ST” (spatial) mode, it saves UMAP and spatial plots colored by</p>
+<blockquote>
+<div><p>score and label.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The base directory containing ‘2_preprocessing’ and
+‘3_Analysis’ subdirectories.</p></li>
+<li><p><strong>infer_mode</strong> (<em>str</em>) – The type of data being plotted, either “SC” or “ST”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <cite>infer_mode</cite> is not “SC” or “ST”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">plot_label_distribution_among_conditions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#plot_label_distribution_among_conditions"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Plots the proportional distribution of TiRank labels within different groups.</p>
+<p>This function loads prediction scores and calculates the frequency and
+proportion of each ‘Rank_Label’ (‘Rank+’, ‘Rank-’, ‘Background’)
+within the categories of a specified ‘group’ column (e.g., cell type,
+cluster). It then saves a bar plot of these proportions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The base directory containing the ‘3_Analysis’
+subfolder.</p></li>
+<li><p><strong>group</strong> (<em>str</em>) – The column name in ‘spot_predict_score.csv’ to use
+for grouping the data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the specified <cite>group</cite> column is not found in the
+    loaded DataFrame.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">plot_STmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#plot_STmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generates a composite spatial map for ST data showing cluster hubs.</p>
+<p>This function is for Spatial Transcriptomics (ST) data. It loads
+prediction scores, cluster-to-rank mappings from a JSON file, and the
+AnnData object. It creates a new ‘new_Rank_Label’ based on the hub
+classification (‘Rank+’, ‘Rank-’, ‘Background’) of each spot’s <cite>group</cite>.
+It then saves a figure with three subplots:
+1. Spatial plot colored by the original <cite>group</cite>.
+2. The H&amp;E image alone.
+3. Spatial plot colored by ‘new_Rank_Label’ overlaid on the H&amp;E image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The base directory containing ‘2_preprocessing’ and
+‘3_Analysis’.</p></li>
+<li><p><strong>group</strong> (<em>str</em>) – The column name used for grouping (e.g., ‘cluster’)
+which corresponds to the JSON file
+(f”{group}_category_dict.json”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the specified <cite>group</cite> column is not found in the
+    loaded DataFrame.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">DEG_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pvalue_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_p_adjust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#DEG_analysis"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs and saves Differential Gene Expression (DEG) analysis.</p>
+<p>This function loads a finalized AnnData object, computes DEGs between
+‘Rank+’ and ‘Rank-’ groups using ‘wilcoxon’, saves all results,
+and then saves a filtered list of DEGs based on log-fold-change and
+p-value thresholds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The base directory containing the ‘3_Analysis’
+subfolder, where ‘final_anndata.h5ad’ is located and
+results will be saved.</p></li>
+<li><p><strong>fc_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The fold-change threshold for
+filtering. Defaults to 2.</p></li>
+<li><p><strong>Pvalue_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The p-value threshold for
+filtering. Defaults to 0.05.</p></li>
+<li><p><strong>do_p_adjust</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use adjusted p-values for
+filtering. If False, use raw p-values. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">DEG_volcano</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pvalue_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_p_adjust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#DEG_volcano"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Generates and saves a volcano plot for DEG results.</p>
+<p>This function loads the ‘All DEGs dataframe.csv’ file, creates a
+volcano plot (Log2(FoldChange) vs -Log10(P-value)), colors genes
+based on significance thresholds, and annotates the top N most
+significant up- and down-regulated genes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The base directory containing the ‘3_Analysis’
+subfolder.</p></li>
+<li><p><strong>fc_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Fold-change threshold for coloring
+and vertical lines. Defaults to 2.</p></li>
+<li><p><strong>Pvalue_threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – P-value threshold for coloring
+and the horizontal line. Defaults to 0.05.</p></li>
+<li><p><strong>do_p_adjust</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use adjusted p-values for
+the Y-axis and filtering. If False, use raw p-values.
+Defaults to True.</p></li>
+<li><p><strong>top_n</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of top up- and down-regulated
+genes to annotate. Defaults to 5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">Pathway_Enrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'KEGG_2016'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#Pathway_Enrichment"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs and plots pathway enrichment analysis on DEGs.</p>
+<p>This function loads the filtered ‘Differentially expressed genes data frame.csv’,
+separates genes into up-regulated and down-regulated lists, and
+runs ‘gseapy.enrichr’ on the up, down, and all DEG lists using the
+specified database. It saves the enrichment tables and dot plots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The base directory containing the ‘3_Analysis’
+subfolder.</p></li>
+<li><p><strong>database</strong> (<em>str</em><em> or </em><em>list</em><em>, </em><em>optional</em>) – The gene set library or libraries
+to use for enrichment (e.g., “KEGG_2016”, [“GO_Biological_Process_2021”]).
+Defaults to “KEGG_2016”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">evaluate_on_test_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_gene_pairs_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#evaluate_on_test_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Evaluates the model on external bulk RNA-seq test datasets.</p>
+<p>This function iterates through a list of test dataset IDs. For each
+dataset, it loads the expression and clinical metadata, transforms the
+expression data into the gene-pair format, predicts labels using the
+model, and saves the predictions along with a confusion matrix plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The trained classification model.</p></li>
+<li><p><strong>test_set</strong> (<em>list</em><em> of </em><em>str</em>) – A list of dataset identifiers (e.g., [‘GSE_ID1’])
+to be loaded from <cite>data_path</cite>.</p></li>
+<li><p><strong>data_path</strong> (<em>str</em>) – The directory containing the test data files, which
+should be named like ‘{data_id}_meta.csv’ and ‘{data_id}_exp.csv’.</p></li>
+<li><p><strong>save_path</strong> (<em>str</em>) – The root directory where results will be saved. A
+‘bulk_test’ subdirectory will be created here.</p></li>
+<li><p><strong>bulk_gene_pairs_mat</strong> (<em>pd.DataFrame</em>) – The gene-pair matrix used as a
+template to transform the test expression data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">create_boxplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'True</span> <span class="pre">Label'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Predicted</span> <span class="pre">Score'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#create_boxplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Creates a boxplot on a given axis with a Mann-Whitney U test.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.DataFrame</em>) – DataFrame containing the plot data.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Title for the subplot.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The matplotlib axis to plot on.</p></li>
+<li><p><strong>group_column</strong> (<em>str</em><em>, </em><em>optional</em>) – The column for the x-axis groups
+(must contain two groups, 0 and 1). Defaults to “True Label”.</p></li>
+<li><p><strong>score_column</strong> (<em>str</em><em>, </em><em>optional</em>) – The column for the y-axis numerical
+values. Defaults to “Predicted Score”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">create_density_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#create_density_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Creates a single density (KDE) plot on a given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – The data to plot.</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – The label for the data series in the legend.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The matplotlib axis to plot on.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Title for the subplot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">create_hist_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#create_hist_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Creates a histogram with a KDE overlay on a given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – The data to plot.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The matplotlib axis to plot on.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Title for the subplot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">create_comparison_density_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#create_comparison_density_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Creates a density plot comparing two distributions on a given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data1</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – The first data series.</p></li>
+<li><p><strong>label1</strong> (<em>str</em>) – Label for the first data series.</p></li>
+<li><p><strong>data2</strong> (<em>pd.Series</em><em> or </em><em>np.ndarray</em>) – The second data series.</p></li>
+<li><p><strong>label2</strong> (<em>str</em>) – Label for the second data series.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em>) – The matplotlib axis to plot on.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Title for the subplot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Visualization.</span></span><span class="sig-name descname"><span class="pre">plot_genepair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savePath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Visualization.html#plot_genepair"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Plots and saves a clustered heatmap of a gene-pair matrix.</p>
+<p>If the input DataFrame has more rows than columns, it is sampled to be
+square. Hierarchical clustering (‘average’ linkage, ‘euclidean’ metric)
+is then applied to both rows and columns, and the resulting reordered
+DataFrame is plotted as a heatmap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – The gene-pair DataFrame (e.g., samples vs. gene-pairs).</p></li>
+<li><p><strong>data_type</strong> (<em>str</em>) – A string identifier (e.g., “bulk”, “sc”) used to
+name the output file.</p></li>
+<li><p><strong>savePath</strong> (<em>str</em><em>, </em><em>optional</em>) – The root directory containing the
+‘2_preprocessing’ subfolder where the plot will be saved.
+Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

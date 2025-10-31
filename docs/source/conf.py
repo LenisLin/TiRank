@@ -20,7 +20,8 @@ extensions = [
     'sphinx.ext.autosummary',   # Core: creates summary tables
     'sphinx.ext.napoleon',      # Enables Sphinx to read Google-style docstrings
     'sphinx.ext.viewcode',      # Adds a "[source]" link next to your functions
-    'nbsphinx'
+    'nbsphinx',
+    'sphinx_autodoc_typehints'
 ]
 
 source_suffix = {
@@ -62,7 +63,29 @@ import sys
 sys.path.insert(0, os.path.abspath('../../'))
 
 autodoc_mock_imports = [
+    # Heavy scientific
     "torch", "torchvision", "torchaudio",
     "cupy", "cudnn", "pytorch_lightning",
     "timm", "scanpy", "anndata", "igraph", "leidenalg",
+
+    # Additions based on your error log and dependencies
+    "pandas",
+    "scipy",
+    "numpy", # Even though it's in environment.yml, good to mock
+    "scikit-learn",
+    "lifelines",
+    "statsmodels",
+    "imbalanced-learn",
+    "matplotlib",
+    "seaborn",
+    "pillow",
+    "gseapy",
+    "dash",
+    "dash-bootstrap-components",
+    "optuna",
+    "sklearn",
+    "PIL",
+    "imblearn",
+    
+    # Add any other third-party lib your code imports
 ]

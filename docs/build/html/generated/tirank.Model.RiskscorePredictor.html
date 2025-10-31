@@ -123,7 +123,8 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="tirank.Model.RiskscorePredictor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tirank.Model.</span></span><span class="sig-name descname"><span class="pre">RiskscorePredictor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Model.html#RiskscorePredictor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tirank.Model.RiskscorePredictor" title="Link to this definition"></a></dt>
-<dd><p>Prediction head for ‘Cox’ survival analysis.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Prediction head for ‘Cox’ survival analysis.</p>
 <p>Predicts a single risk score, applying a sigmoid activation to
 constrain the output between 0 and 1.</p>
 <dl class="field-list simple">
@@ -136,6 +137,23 @@ constrain the output between 0 and 1.</p>
 </ul>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tirank.Model.RiskscorePredictor.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embedding</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Model.html#RiskscorePredictor.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tirank.Model.RiskscorePredictor.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass for the risk score predictor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>embedding</strong> (<em>torch.Tensor</em>) – Input embedding tensor from the encoder.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Predicted risk score (scalar tensor).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>

@@ -121,6 +121,340 @@
              
   <section id="tirank-trainpre">
 <h1>tirank.TrainPre<a class="headerlink" href="#tirank-trainpre" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">Train_one_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Cox'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_patho_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#Train_one_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs a single training epoch for the TiRank multi-task model.</p>
+<p>This function iterates through the sc/st data (dataloader_B) and computes
+the composite loss against the bulk data (dataloader_A) and regularization
+terms (adjacency matrices, MMD, etc.). It then performs a backward
+pass and optimizer step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="tirank.Model.TiRankModel.html#tirank.Model.TiRankModel" title="tirank.Model.TiRankModel"><em>TiRankModel</em></a>) – The TiRank model to be trained.</p></li>
+<li><p><strong>dataloader_A</strong> (<em>DataLoader</em>) – DataLoader for the bulk data (train).</p></li>
+<li><p><strong>dataloader_B</strong> (<em>DataLoader</em>) – DataLoader for the sc/st data.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Analysis mode (‘Cox’, ‘Classification’, ‘Regression’).</p></li>
+<li><p><strong>infer_mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Inference data type (‘SC’ or ‘ST’).</p></li>
+<li><p><strong>adj_A</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Adjacency matrix for sc/st data
+(e.g., from connectivities).</p></li>
+<li><p><strong>adj_B</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Adjacency matrix for spatial distance (ST only).</p></li>
+<li><p><strong>pre_patho_labels</strong> (<em>pd.Series</em><em>, </em><em>optional</em>) – Ground truth pathology labels (ST only).</p></li>
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em><em>, </em><em>optional</em>) – The optimizer.</p></li>
+<li><p><strong>alphas</strong> (<em>list</em><em>, </em><em>optional</em>) – List of floats to weight the loss components
+[reg_loss, bulk_loss, cosine_loss_exp, spatial/patho_loss].</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The compute device (‘cpu’ or ‘cuda’).</p></li>
+<li><p><strong>epoch</strong> (<em>int</em><em>, </em><em>optional</em>) – The current epoch number (for prototype loss scheduling).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of the average loss values for this epoch.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">Validate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Cox'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_patho_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1,</span> <span class="pre">1,</span> <span class="pre">1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#Validate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs a single validation step.</p>
+<p>This function iterates through the dataloaders, performs a forward pass,
+and calculates the total validation loss (without backpropagation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="tirank.Model.TiRankModel.html#tirank.Model.TiRankModel" title="tirank.Model.TiRankModel"><em>TiRankModel</em></a>) – The TiRank model to be evaluated.</p></li>
+<li><p><strong>dataloader_A</strong> (<em>DataLoader</em>) – DataLoader for the bulk data (validation).</p></li>
+<li><p><strong>dataloader_B</strong> (<em>DataLoader</em>) – DataLoader for the sc/st data.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Analysis mode (‘Cox’, ‘Classification’, ‘Regression’).</p></li>
+<li><p><strong>infer_mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Inference data type (‘SC’ or ‘ST’).</p></li>
+<li><p><strong>adj_A</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Adjacency matrix for sc/st data.</p></li>
+<li><p><strong>adj_B</strong> (<em>torch.Tensor</em><em>, </em><em>optional</em>) – Adjacency matrix for spatial distance (ST only).</p></li>
+<li><p><strong>pre_patho_labels</strong> (<em>pd.Series</em><em>, </em><em>optional</em>) – Ground truth pathology labels (ST only).</p></li>
+<li><p><strong>alphas</strong> (<em>list</em><em>, </em><em>optional</em>) – List of floats to weight the loss components.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The compute device (‘cpu’ or ‘cuda’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The average validation loss for this epoch.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">Reject_With_GMM_Bio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_bulk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_sc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_components</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_components</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#Reject_With_GMM_Bio"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs GMM-based rejection for Classification and Cox modes.</p>
+<p>This function identifies phenotype-associated clusters by fitting a GMM
+to the bulk scores (to find target means 0 and 1) and another GMM
+to the sc/st scores, then finding sc/st clusters whose means align
+with the bulk targets within a given tolerance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred_bulk</strong> (<em>np.ndarray</em>) – Predicted scores from the bulk data (n_samples, 1).</p></li>
+<li><p><strong>pred_sc</strong> (<em>np.ndarray</em>) – Predicted scores from the sc/st data (n_cells, 1).</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em>) – The maximum distance a sc/st cluster mean can be from
+a bulk target mean to be considered aligned.</p></li>
+<li><p><strong>min_components</strong> (<em>int</em>) – The minimum number of GMM components to try.</p></li>
+<li><p><strong>max_components</strong> (<em>int</em>) – The maximum number of GMM components to try.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A binary mask (n_cells, 1) where 1 indicates a cell</dt><dd><p>to be rejected (phenotype-independent) and 0 indicates a cell
+to be kept.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">Reject_With_GMM_Reg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_bulk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_sc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#Reject_With_GMM_Reg"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs GMM-based rejection for Regression mode.</p>
+<p>Fits a single-component GMM to both bulk and sc/st scores to find their
+means. If the means are too divergent, rejects all cells. Otherwise,
+rejects cells that fall outside a tolerance range around the bulk mean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred_bulk</strong> (<em>np.ndarray</em>) – Predicted scores from the bulk data (n_samples, 1).</p></li>
+<li><p><strong>pred_sc</strong> (<em>np.ndarray</em>) – Predicted scores from the sc/st data (n_cells, 1).</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em>) – The tolerance (std dev or max value) to define the
+acceptance range around the bulk mean.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A binary mask (n_cells, 1) where 1 indicates rejection.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">Reject_With_StrictNumber</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_bulk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_sc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#Reject_With_StrictNumber"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs rejection based on a strict percentile range.</p>
+<p>Fits a 2-component GMM to bulk scores to find means and std deviations.
+It then defines an acceptance range based on the percentile (tolerance)
+of a normal distribution (e.g., tolerance=0.95 keeps the central 95%
+of each bulk cluster).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred_bulk</strong> (<em>np.ndarray</em>) – Predicted scores from the bulk data (n_samples, 1).</p></li>
+<li><p><strong>pred_sc</strong> (<em>np.ndarray</em>) – Predicted scores from the sc/st data (n_cells, 1).</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em>) – The percentile of the distribution to keep (e.g., 0.95).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A binary mask (n_cells, 1) where 1 indicates rejection.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trial</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhead</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nhid2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlayers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_patho</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader_Bulk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader_Bulk</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader_SC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj_B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_patho_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_save_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#objective"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>The objective function for Optuna hyperparameter optimization.</p>
+<p>This function defines the search space for hyperparameters (lr, epochs,
+loss weights), builds a model, trains it, and returns the validation loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trial</strong> (<em>optuna.trial.Trial</em>) – An Optuna trial object.</p></li>
+<li><p><strong>wrapper</strong><strong>)</strong> (<em>(</em><em>All other args are passed from the tune_hyperparameters</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The validation loss for the trial.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">tune_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#tune_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Runs the Optuna hyperparameter tuning study.</p>
+<p>This function loads all necessary data and model parameters, then
+initializes and runs an Optuna study to find the best
+hyperparameters by minimizing the validation loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>device</strong> (<em>str</em><em>, </em><em>optional</em>) – The compute device. Defaults to “cpu”.</p></li>
+<li><p><strong>n_trials</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of Optuna trials to run.
+Defaults to 50.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">get_best_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#get_best_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads the best performing model from the hyperparameter tuning.</p>
+<p>This function reads the ‘best_params.pkl’ file, reconstructs the
+corresponding model filename, initializes a new <cite>TiRankModel</cite>
+with the saved parameters, and loads the weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trained TiRank model with the best weights loaded.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="tirank.Model.TiRankModel.html#tirank.Model.TiRankModel" title="tirank.Model.TiRankModel">TiRankModel</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">Predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_reject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reject_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GMM'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#Predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs inference using the best trained TiRank model.</p>
+<p>This function loads the best model, loads the full bulk and sc/st gene
+pair matrices, and predicts scores for all samples. It then applies the
+chosen rejection (filtering) method to classify cells/spots as
+‘Rank+’, ‘Rank-’, or ‘Background’. The final results are saved to
+‘spot_predict_score.csv’ and ‘final_anndata.h5ad’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – The analysis mode (‘Cox’, ‘Classification’, ‘Regression’).</p></li>
+<li><p><strong>do_reject</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to perform the GMM-based rejection.
+Defaults to True.</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em><em>, </em><em>optional</em>) – The tolerance parameter for the rejection
+method. Defaults to 0.05.</p></li>
+<li><p><strong>reject_mode</strong> (<em>str</em><em>, </em><em>optional</em>) – The rejection method to use (‘GMM’ or ‘Strict’).
+Defaults to “GMM”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">permute_once</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Rank_Labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_labels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#permute_once"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Helper function for a single permutation test shuffle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Rank_Labels</strong> (<em>list</em>) – The list of all ‘Rank_Label’ assignments.</p></li>
+<li><p><strong>Labels</strong> (<em>list</em>) – The list of all cluster assignments.</p></li>
+<li><p><strong>unique_labels</strong> (<em>set</em>) – The set of unique cluster labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with permuted counts for each cluster.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">AssignPcluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_p_values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#AssignPcluster"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Assigns a final phenotype (‘Rank+’, ‘Rank-’, ‘Background’) to clusters.</p>
+<p>This assignment is based on the p-values from the permutation test.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>df_p_values</strong> (<em>pd.DataFrame</em>) – DataFrame with p-values for ‘Rank+’,
+‘Rank-’, and ‘Background’ enrichment for each cluster.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A dictionary mapping the final assignment (‘Rank+’, ‘Rank-‘,</dt><dd><p>’Background’) to a list of cluster IDs.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">Pcluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clusterColName</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perm_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#Pcluster"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs a permutation test to identify significantly enriched clusters.</p>
+<p>This function tests whether the observed number of ‘Rank+’ or ‘Rank-’
+labels within any given cluster (e.g., ‘leiden_clusters’) is
+significantly higher than expected by chance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>clusterColName</strong> (<em>str</em>) – The column name in ‘spot_predict_score.csv’
+that contains the cluster labels (e.g., ‘leiden_clusters’,
+‘patho_class’).</p></li>
+<li><p><strong>perm_n</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of permutations to run.
+Defaults to 1001.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.TrainPre.</span></span><span class="sig-name descname"><span class="pre">IdenHub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cateCol1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cateCol2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_spots</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/TrainPre.html#IdenHub"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Identifies “hubs” by combining two categorical cluster labels.</p>
+<p>This function creates a new ‘combine_cluster’ column by merging two
+existing cluster labels (e.g., ‘patho_class’ and ‘leiden_clusters’).
+It also filters out any combined clusters that have fewer than
+<cite>min_spots</cite> members, labeling them as ‘NA’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>cateCol1</strong> (<em>str</em>) – The name of the first categorical column in
+‘spot_predict_score.csv’.</p></li>
+<li><p><strong>cateCol2</strong> (<em>str</em>) – The name of the second categorical column.</p></li>
+<li><p><strong>min_spots</strong> (<em>int</em>) – The minimum number of spots required to keep
+a combined cluster.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

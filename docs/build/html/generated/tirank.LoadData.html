@@ -115,6 +115,144 @@
              
   <section id="tirank-loaddata">
 <h1>tirank.LoadData<a class="headerlink" href="#tirank-loaddata" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.LoadData.</span></span><span class="sig-name descname"><span class="pre">load_bulk_exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_bulk_exp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/LoadData.html#load_bulk_exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads a bulk expression file (CSV or TXT) into a DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path_to_bulk_exp</strong> (<em>str</em>) – The file path to the bulk expression data.
+Assumes genes are rows and samples are columns.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pandas DataFrame of the expression data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.LoadData.</span></span><span class="sig-name descname"><span class="pre">load_bulk_clinical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_bulk_cli</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/LoadData.html#load_bulk_clinical"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads a bulk clinical data file (CSV, TXT, or Excel) into a DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path_to_bulk_cli</strong> (<em>str</em>) – The file path to the bulk clinical data.
+Assumes samples are rows and clinical variables are columns.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pandas DataFrame of the clinical data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.LoadData.</span></span><span class="sig-name descname"><span class="pre">check_bulk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulkExp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulkClinical</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/LoadData.html#check_bulk"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Checks and filters bulk data for common samples.</p>
+<p>Intersects the samples in the bulk expression columns and the bulk
+clinical index. Filters both DataFrames to keep only the common
+samples and saves the results as pickle files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path to save results.</p></li>
+<li><p><strong>bulkExp</strong> (<em>pd.DataFrame</em>) – Bulk expression DataFrame (genes x samples).</p></li>
+<li><p><strong>bulkClinical</strong> (<em>pd.DataFrame</em>) – Bulk clinical DataFrame (samples x variables).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.LoadData.</span></span><span class="sig-name descname"><span class="pre">load_sc_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_sc_h5ead</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/LoadData.html#load_sc_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads single-cell RNA-seq data from an .h5ad file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_sc_h5ead</strong> (<em>str</em>) – The file path to the .h5ad file.</p></li>
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path to save the
+loaded AnnData object as ‘anndata.pkl’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded AnnData object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sc.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.LoadData.</span></span><span class="sig-name descname"><span class="pre">load_st_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_st_floder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/LoadData.html#load_st_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Loads spatial transcriptomics (ST) data from a 10x Visium folder.</p>
+<p>Uses scanpy.read_visium() to load the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_st_floder</strong> (<em>str</em>) – The file path to the directory containing
+the 10x Visium output (e.g., ‘spatial’, ‘filtered_feature_bc_matrix.h5’).</p></li>
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path to save the
+loaded AnnData object as ‘anndata.pkl’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded AnnData object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sc.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.LoadData.</span></span><span class="sig-name descname"><span class="pre">view_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/LoadData.html#view_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Prints a top-left subset of a DataFrame for quick viewing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – The DataFrame to view.</p></li>
+<li><p><strong>nrow</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of rows to show. Defaults to 10.</p></li>
+<li><p><strong>ncol</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of columns to show. Defaults to 8.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.LoadData.</span></span><span class="sig-name descname"><span class="pre">transfer_exp_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scAnndata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/LoadData.html#transfer_exp_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Converts the .X matrix of an AnnData object to a pandas DataFrame.</p>
+<p>Handles both sparse and dense .X matrices. The resulting DataFrame
+is structured as genes (rows) x cells/spots (columns).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scAnndata</strong> (<em>sc.AnnData</em>) – The AnnData object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The expression matrix as a pandas DataFrame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

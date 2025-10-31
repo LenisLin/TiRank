@@ -118,6 +118,235 @@
              
   <section id="tirank-scstpreprocess">
 <h1>tirank.SCSTpreprocess<a class="headerlink" href="#tirank-scstpreprocess" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">merge_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bulkClinical_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulkClinical_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulkExp_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulkExp_2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#merge_datasets"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Merges two bulk expression and clinical datasets, finding intersecting genes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bulkClinical_1</strong> (<em>pd.DataFrame</em>) – Clinical data for the first cohort.</p></li>
+<li><p><strong>bulkClinical_2</strong> (<em>pd.DataFrame</em>) – Clinical data for the second cohort.</p></li>
+<li><p><strong>bulkExp_1</strong> (<em>pd.DataFrame</em>) – Expression data for the first cohort (genes x samples).</p></li>
+<li><p><strong>bulkExp_2</strong> (<em>pd.DataFrame</em>) – Expression data for the second cohort (genes x samples).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>pd.DataFrame: The merged expression DataFrame.</p></li>
+<li><p>pd.DataFrame: The merged clinical DataFrame.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Or returns 0 if no intersecting genes are found.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">normalize_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#normalize_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Normalize gene expression data using z-score normalization (row-wise).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exp</strong> (<em>pd.DataFrame</em>) – A pandas DataFrame with genes as rows and samples as columns.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A z-score normalized DataFrame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">is_imbalanced</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bulkClinical</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#is_imbalanced"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Checks if the primary clinical variable is imbalanced.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bulkClinical</strong> (<em>pd.DataFrame</em>) – DataFrame with clinical data. Assumes
+the variable of interest is in the first column.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – The minimum proportion for a class to be
+considered ‘balanced’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the minority class is below the threshold, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">perform_sampling_on_RNAseq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SMOTE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#perform_sampling_on_RNAseq"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs sampling (over- or under-sampling) on the bulk training data.</p>
+<p>This function is used to correct for class imbalance in ‘Classification’ mode.
+It loads the training data, applies the specified sampling method, and
+overwrites the training files with the resampled data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – The sampling method to use. One of ‘SMOTE’,
+‘downsample’ (RandomUnderSampler), ‘upsample’ (RandomOverSampler),
+or ‘tomeklinks’ (TomekLinks). Defaults to “SMOTE”.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – The imbalance threshold. Sampling is only
+performed if the minority class proportion is below this value.
+Defaults to 0.5.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">FilteringAnndata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MT_propor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imgPath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#FilteringAnndata"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Filters an AnnData object based on QC metrics.</p>
+<p>Filters cells/spots based on total counts and mitochondrial percentage.
+Filters genes based on minimum cell count. Also saves a QC violin plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adata</strong> (<em>sc.AnnData</em>) – The AnnData object to filter.</p></li>
+<li><p><strong>max_count</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum total counts per cell/spot.
+Defaults to 35000.</p></li>
+<li><p><strong>min_count</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimum total counts per cell/spot.
+Defaults to 5000.</p></li>
+<li><p><strong>MT_propor</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum percentage of mitochondrial gene
+counts. Defaults to 10.</p></li>
+<li><p><strong>min_cell</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimum number of cells/spots a gene must
+be expressed in. Defaults to 10.</p></li>
+<li><p><strong>imgPath</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to save the QC violin plot.
+Defaults to “./”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The filtered AnnData object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sc.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">Normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#Normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs total count normalization (target_sum=1e4) on an AnnData object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>adata</strong> (<em>sc.AnnData</em>) – The AnnData object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The normalized AnnData object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sc.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">Logtransformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#Logtransformation"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs log1p transformation on an AnnData object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>adata</strong> (<em>sc.AnnData</em>) – The AnnData object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The log-transformed AnnData object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sc.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">Clustering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ann_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#Clustering"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Performs standard clustering (HVGs, PCA, neighbors, UMAP, Leiden).</p>
+<p>If neighbors are already computed, it just re-runs Leiden. Otherwise,
+it runs the full pipeline. Saves a UMAP or spatial plot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ann_data</strong> (<em>sc.AnnData</em>) – The AnnData object.</p></li>
+<li><p><strong>infer_mode</strong> (<em>str</em>) – The inference data type (‘SC’ or ‘ST’) for plotting.</p></li>
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path to save plots.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The clustered AnnData object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sc.AnnData</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">compute_similarity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">savePath</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ann_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculate_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#compute_similarity"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Extracts and saves the cell/spot similarity matrix (connectivities).</p>
+<p>Optionally, it can also calculate a spatial distance-based adjacency
+matrix (6 nearest neighbors) for ST data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>savePath</strong> (<em>str</em>) – The main project directory path.</p></li>
+<li><p><strong>ann_data</strong> (<em>sc.AnnData</em>) – A clustered AnnData object (must have
+<cite>ann_data.obsp[‘connectivities’]</cite>).</p></li>
+<li><p><strong>calculate_distance</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to compute the spatial
+distance matrix (ST only). Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.SCSTpreprocess.</span></span><span class="sig-name descname"><span class="pre">calculate_populations_meanRank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/SCSTpreprocess.html#calculate_populations_meanRank"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the mean feature values for each cell subpopulation (category).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_data</strong> (<em>pd.DataFrame</em>) – Input DataFrame (samples x features).</p></li>
+<li><p><strong>category</strong> (<em>pd.Series</em>) – A Series indicating the category (e.g., cluster)
+of each sample. Must share the same index as <cite>input_data</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A DataFrame where rows are categories and columns</dt><dd><p>are the mean of features for that category.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

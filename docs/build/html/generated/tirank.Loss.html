@@ -116,6 +116,194 @@
              
   <section id="tirank-loss">
 <h1>tirank.Loss<a class="headerlink" href="#tirank-loss" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">regularization_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#regularization_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the L1 regularization loss (mean absolute value) for a weight matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature_weights</strong> (<em>torch.Tensor</em>) – The learnable weight matrix
+(e.g., from the encoder).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar L1 regularization loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">cox_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#cox_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the Cox partial log-likelihood loss for survival analysis.</p>
+<p>This implementation uses a pairwise comparison approach with a margin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<em>torch.Tensor</em>) – Predicted risk scores, shape [batch_size].</p></li>
+<li><p><strong>t</strong> (<em>torch.Tensor</em>) – Event times, shape [batch_size].</p></li>
+<li><p><strong>e</strong> (<em>torch.Tensor</em>) – Event indicators (1 if event occurred, 0 otherwise),
+shape [batch_size].</p></li>
+<li><p><strong>margin</strong> (<em>float</em><em>, </em><em>optional</em>) – A margin parameter to stabilize the loss.
+Defaults to 0.1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar Cox partial log-likelihood loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">cosine_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embeddings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_connected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_unconnected</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#cosine_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes a weighted cosine similarity loss.</p>
+<p>This loss encourages embeddings of connected nodes (A=1) to have high
+cosine similarity (B=1) and pushes unconnected nodes (A=0) to be
+dissimilar (B=-1). It uses different weights for connected and
+unconnected pairs to handle sparse adjacency matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embeddings</strong> (<em>torch.Tensor</em>) – Embeddings, shape [n_cells, embedding_dim].</p></li>
+<li><p><strong>A</strong> (<em>torch.Tensor</em>) – The sparse adjacency matrix, shape [n_cells, n_cells].</p></li>
+<li><p><strong>weight_connected</strong> (<em>float</em><em>, </em><em>optional</em>) – Weight for connected pairs (A=1).
+Defaults to 1.0.</p></li>
+<li><p><strong>weight_unconnected</strong> (<em>float</em><em>, </em><em>optional</em>) – Weight for unconnected pairs (A=0).
+Defaults to 0.1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar weighted cosine loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">gaussian_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#gaussian_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the Gaussian (RBF) kernel similarity between two tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>torch.Tensor</em>) – First input tensor (samples x features).</p></li>
+<li><p><strong>b</strong> (<em>torch.Tensor</em>) – Second input tensor (samples x features).</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The sigma value (bandwidth) of the
+Gaussian kernel. Defaults to 1.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The pairwise Gaussian kernel similarity matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">mmd_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embeddings_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embeddings_B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#mmd_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the Maximum Mean Discrepancy (MMD) loss.</p>
+<p>MMD is used to measure the distance between the distributions of two
+sets of embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>embeddings_A</strong> (<em>torch.Tensor</em>) – Embeddings from the first distribution.</p></li>
+<li><p><strong>embeddings_B</strong> (<em>torch.Tensor</em>) – Embeddings from the second distribution.</p></li>
+<li><p><strong>sigma</strong> (<em>float</em><em>, </em><em>optional</em>) – The sigma value (bandwidth) for the
+Gaussian kernel. Defaults to 1.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar MMD loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">CrossEntropy_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#CrossEntropy_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the cross-entropy loss for classification.</p>
+<p>Wrapper for <cite>nn.CrossEntropyLoss</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> (<em>torch.Tensor</em>) – Predicted logits (N x C).</p></li>
+<li><p><strong>y_true</strong> (<em>torch.Tensor</em>) – True class labels (N).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar cross-entropy loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">MSE_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#MSE_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates the Mean Squared Error (MSE) loss for regression.</p>
+<p>Wrapper for <cite>nn.MSELoss</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> (<em>torch.Tensor</em>) – Predicted values.</p></li>
+<li><p><strong>y_true</strong> (<em>torch.Tensor</em>) – True values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar MSE loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tirank.Loss.</span></span><span class="sig-name descname"><span class="pre">prototype_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell_embeddings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_embeddings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bulk_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/tirank/Loss.html#prototype_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Calculates a prototype-based contrastive loss.</p>
+<p>This loss computes prototype embeddings (class means) from the bulk data.
+It then assigns pseudo-labels to single-cell embeddings based on the
+closest prototype. Finally, it applies a contrastive loss to pull
+confident cells (those with a large distance difference) closer to their
+correct prototype and push them away from the incorrect one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell_embeddings</strong> (<em>torch.Tensor</em>) – Embeddings for sc/st data.</p></li>
+<li><p><strong>bulk_embeddings</strong> (<em>torch.Tensor</em>) – Embeddings for bulk data.</p></li>
+<li><p><strong>bulk_labels</strong> (<em>torch.Tensor</em>) – Class labels (0 or 1) for bulk data.</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>optional</em>) – Confidence threshold. Only cells with a
+distance difference greater than this are used. Defaults to 0.1.</p></li>
+<li><p><strong>margin</strong> (<em>float</em><em>, </em><em>optional</em>) – Margin for the contrastive loss. Defaults to 1.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scalar prototype loss.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>

@@ -247,14 +247,19 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
 
+<div class="viewcode-block" id="TransformerEncoderModel.init_weights">
+<a class="viewcode-back" href="../../generated/tirank.Model.TransformerEncoderModel.html#tirank.Model.TransformerEncoderModel.init_weights">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes weights for the linear layers.&quot;&quot;&quot;</span>
         <span class="n">initrange</span> <span class="o">=</span> <span class="mf">0.1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc_in</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>  <span class="c1"># Added line</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc_in</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>  <span class="c1"># Added line</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc_out</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc_out</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc_out</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="TransformerEncoderModel.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.TransformerEncoderModel.html#tirank.Model.TransformerEncoderModel.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for the Transformer encoder.</span>
@@ -273,6 +278,7 @@
         <span class="n">embedding</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc_out</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">embedding</span></div>
+</div>
 
 
 
@@ -303,6 +309,8 @@
         <span class="n">pe</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;pe&#39;</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span>
 
+<div class="viewcode-block" id="PositionalEncoding.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.PositionalEncoding.html#tirank.Model.PositionalEncoding.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for PositionalEncoding.</span>
@@ -315,6 +323,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pe</span><span class="p">[:</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="p">:]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+</div>
 
         
 
@@ -359,6 +368,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ELU</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropout_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
 
+<div class="viewcode-block" id="DenseNetEncoderModel.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.DenseNetEncoderModel.html#tirank.Model.DenseNetEncoderModel.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for the DenseNet encoder.</span>
@@ -381,6 +392,7 @@
         <span class="c1"># Compute the final embedding without activation or dropout</span>
         <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">embedding</span></div>
+</div>
 
 
 
@@ -417,6 +429,8 @@
             <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">nhid</span><span class="p">,</span> <span class="n">n_output</span><span class="p">)</span>
         <span class="p">)</span>
 
+<div class="viewcode-block" id="MLPEncoderModel.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.MLPEncoderModel.html#tirank.Model.MLPEncoderModel.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for the MLP encoder.</span>
@@ -429,6 +443,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">embedding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">embedding</span></div>
+</div>
 
 
 <span class="c1"># Risk score Predictor</span>
@@ -462,6 +477,8 @@
             <span class="c1"># nn.Linear(n_features, nhout),</span>
         <span class="p">)</span>
 
+<div class="viewcode-block" id="RiskscorePredictor.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.RiskscorePredictor.html#tirank.Model.RiskscorePredictor.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for the risk score predictor.</span>
@@ -474,6 +491,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">risk_score</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RiskscoreMLP</span><span class="p">(</span><span class="n">embedding</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">risk_score</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+</div>
 
 
 <span class="c1"># Regression score Predictor</span>
@@ -506,6 +524,8 @@
             <span class="c1"># nn.Linear(n_features, nhout),</span>
         <span class="p">)</span>
 
+<div class="viewcode-block" id="RegscorePredictor.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.RegscorePredictor.html#tirank.Model.RegscorePredictor.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for the regression score predictor.</span>
@@ -518,6 +538,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">risk_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RegscoreMLP</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">risk_score</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+</div>
 
 
 <span class="c1"># Bionomial Predictor</span>
@@ -550,6 +571,8 @@
             <span class="c1"># nn.Linear(n_features, nhout),</span>
         <span class="p">)</span>
 
+<div class="viewcode-block" id="ClassscorePredictor.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.ClassscorePredictor.html#tirank.Model.ClassscorePredictor.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for the classification score predictor.</span>
@@ -562,6 +585,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">proba_score</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ClassscoreMLP</span><span class="p">(</span><span class="n">embedding</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">proba_score</span></div>
+</div>
 
 
 
@@ -595,6 +619,8 @@
             <span class="c1"># nn.Linear(n_features, nclass),</span>
         <span class="p">)</span>
 
+<div class="viewcode-block" id="PathologyPredictor.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.PathologyPredictor.html#tirank.Model.PathologyPredictor.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass for the pathology predictor.</span>
@@ -607,6 +633,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pathology_score</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PathologyMLP</span><span class="p">(</span><span class="n">embedding</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">pathology_score</span></div>
+</div>
 
 
 <span class="c1"># Main network</span>
@@ -681,6 +708,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pathologpredictor</span> <span class="o">=</span> <span class="n">PathologyPredictor</span><span class="p">(</span>
             <span class="n">n_output</span><span class="p">,</span> <span class="n">nhid2</span><span class="p">,</span> <span class="n">n_patho</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
 
+<div class="viewcode-block" id="TiRankModel.forward">
+<a class="viewcode-back" href="../../generated/tirank.Model.TiRankModel.html#tirank.Model.TiRankModel.forward">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The main forward pass for the TiRank model.</span>
@@ -699,8 +728,11 @@
         <span class="n">risk_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predictor</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
         <span class="n">patho_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pathologpredictor</span><span class="p">(</span><span class="n">embedding</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">risk_score</span><span class="p">,</span> <span class="n">patho_pred</span>
+        <span class="k">return</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">risk_score</span><span class="p">,</span> <span class="n">patho_pred</span></div>
 
+
+<div class="viewcode-block" id="TiRankModel.init_weights">
+<a class="viewcode-back" href="../../generated/tirank.Model.TiRankModel.html#tirank.Model.TiRankModel.init_weights">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies Xavier uniform initialization to linear layers.</span>
@@ -713,6 +745,7 @@
             <span class="c1"># print(&quot;Perfoem xavier_uniform initiate&quot;)</span>
             <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 
