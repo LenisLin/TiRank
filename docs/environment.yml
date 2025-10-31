@@ -9,3 +9,4 @@ dependencies:
   - sphinx-rtd-theme
   - sphinx-autodoc-typehints
   - numpy                # light/core dep that helps with imports and type hints
+  - nbsphinx

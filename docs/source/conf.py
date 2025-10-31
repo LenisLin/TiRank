@@ -15,13 +15,18 @@ release = '1.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'recommonmark',
+    'myst_parser',
     'sphinx.ext.autodoc',       # Core: pulls documentation from docstrings
     'sphinx.ext.autosummary',   # Core: creates summary tables
     'sphinx.ext.napoleon',      # Enables Sphinx to read Google-style docstrings
     'sphinx.ext.viewcode',      # Adds a "[source]" link next to your functions
     'nbsphinx'
 ]
+
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "myst",
+}
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -48,15 +53,16 @@ napoleon_numpy_docstring = False
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
+nbsphinx_execute = 'never'
 html_static_path = ['_static']
 html_logo = '_static/TiRank_white.png'
+
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../../'))
 
 autodoc_mock_imports = [
     "torch", "torchvision", "torchaudio",
     "cupy", "cudnn", "pytorch_lightning",
     "timm", "scanpy", "anndata", "igraph", "leidenalg",
 ]
-
-import os
-import sys
-sys.path.insert(0, os.path.abspath('../../'))
