@@ -1,4 +1,0 @@
-Web
-docs
-installation
-tirank
