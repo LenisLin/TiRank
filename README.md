@@ -1,6 +1,6 @@
 # TiRank
 
-<img src="./docs/source/_static/TiRank_white.png" alt="TiRank Logo" width=50% />
+<img src="./docs/source/_static/TiRank_white.png" alt="TiRank Logo" width="50%" />
 
 | | |
 | :--- | :--- |
@@ -9,128 +9,291 @@
 | **License** | [![License](https://img.shields.io/github/license/LenisLin/TiRank?style=flat-square)](https://github.com/LenisLin/TiRank/blob/main/LICENSE) |
 | **Build Status** | [![Documentation Status](https://readthedocs.org/projects/tirank/badge/?version=latest&style=flat-square)](https://tirank.readthedocs.io/en/latest/) |
 
-TiRank is a cutting-edge toolkit designed to integrate and analyze RNA-seq and single-cell RNA-seq (scRNA-seq) data. By seamlessly combining spatial transcriptomics or scRNA-seq data with bulk RNA sequencing data, TiRank enables researchers to identify phenotype-associated regions or clusters. The toolkit supports various analysis modes, including survival analysis (Cox), classification, and regression, providing a comprehensive solution for transcriptomic data analysis.
-
-![TiRank Workflow](./docs/source/_static/Fig1.png)
-
----
-
-## TiRank Features
-
-- **🔗 Seamless Data Integration**:
-    Combines bulk RNA-seq with single-cell or spatial transcriptomics data.
-
-- **🔄 Versatile Analysis Modes**:
-    Includes survival analysis (Cox), classification, and regression.
-
-- **📈 Advanced Visualization**:
-    Offers tools for generating UMAP plots, spatial maps, and other visualizations.
-
-- **⚙️ Customizable Hyperparameters**:
-    Provides flexibility to fine-tune settings for optimized results.
-
----
-
 ## Table of Contents
 
-- 📖 [Full Documentation](#full-documentation)
-- 🛠️ [Installation](#installation)
-- 📚 [Quickstart Tutorials](#quickstart-tutorials)
+- 📚 [a) Overview](#a-overview)
+- 🌟 [b) Features](#b-features)
+- ⚙️ [c) Requirements](#c-requirements)
+- 🛠️ [d) Installation](#d-installation)
+- 🧩 [e) Configure & Run the Scripts](#e-configure--run-the-scripts)
+- 🔢 [f) Usage](#f-usage)
+- 📊 [g) Output Structure](#g-output-structure)
+- ✅ [h) Testing](#h-testing)
+- 📚 [Full Documentation](#full-documentation)
 - 🧑‍💻 [Support](#support)
 - 📜 [License](#license)
 
 ---
 
-## Full Documentation
+## a) Overview
 
-For detailed guides on using TiRank, please see our full documentation site:
+**TiRank** integrates bulk RNA‐seq with single-cell or spatial transcriptomics to identify phenotype-associated regions or cell clusters. It supports Cox survival analysis, classification, and regression, and ships with Python scripts and a web GUI.
 
-### ➡️ [**https://tirank.readthedocs.io**](https://tirank.readthedocs.io)
-
-This includes:
-
-  * **[Installation](https://tirank.readthedocs.io/en/latest/model_input.html)**
-  * **[CLI Tutorial](https://tirank.readthedocs.io/en/latest/result_interpretation.html)**
-  * **[Web Tutorial](https://tirank.readthedocs.io/en/latest/hyperparameters.html)**
-  * **[Features Document](https://tirank.readthedocs.io/en/latest/api.html)**
-  * **[API Reference](https://tirank.readthedocs.io/en/latest/api.html)**
+![TiRank Workflow](./docs/source/_static/Fig1.png)
 
 ---
 
-## Installation
+## b) Features
 
-TiRank supports multiple installation methods. It is recommended to create a dedicated conda environment to ensure compatibility.
+- **🔗 Integration**: Bulk + scRNA-seq or spatial transcriptomics
+- **🔄 Modes**: Cox survival, classification, regression
+- **📈 Visualization**: UMAPs, spatial maps, score distributions
+- **⚙️ Tunable**: Hyperparameters exposed for fine control
+- **🧰 Interfaces**: Scripts/CLI, Python API, Web GUI
 
-### Method 1: Conda
+---
 
-You can set up the full TiRank environment directly with the following commands:
+## c) Requirements
 
+### System
+- **OS**: Tested on `Ubuntu 22.04`, `Ubuntu 20.04`
+- **Python**: `3.9`
+- **RAM**: ≥ **16 GB** (more for large datasets)
+- **GPU (important)**: **CUDA-compatible GPU required**
+  - Tested with `RTX 2080Ti (CUDA 11.2)`, `RTX 3090 (CUDA 12.1)`, `RTX 4090 (CUDA 12.5)`
+- **Disk**: Enough for datasets and intermediate files
+
+### Data
+- **Spatial or Single-Cell data**: To characterize heterogeneity
+- **Bulk data**: Expression matrix + clinical metadata aligned by sample IDs
+
+---
+
+## d) Installation
+
+TiRank supports multiple setups.
+
+<!-- ### Method 1: pip (Quick Start)
+```bash
+pip install tirank
+``` -->
+
+### Method 1: Conda (Recommended)
 ```bash
 cd TiRank
 conda env create -f ./installation/environment.yml
-````
-
-Then, activate the environment and run TiRank:
-
-```bash
 conda activate Tirank
-```
-
------
-
-`Note`: The TiRank framework has been tested on `Ubuntu 22.04` with `Python 3.9`, using `NVIDIA Driver 12.4` and `RTX 3090 GPUs`.
+````
 
 ### Method 2: Docker
 
-1.  **Install Docker**:
+```bash
+docker pull lenislin/tirank_v1:latest
+docker run -it --gpus all -p 8050:8050 -v $PWD:/workspace lenislin/tirank_v1:latest /bin/bash
+```
 
-      - Ensure Docker is installed on your system.
+### Method 3: Interactive Web Tool (GUI)
 
-2.  **Pull the TiRank Docker Image**:
+See **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)**.
 
-    ```bash
-    docker pull lenislin/tirank_v1:latest
-    ```
+---
 
-3.  **Run the Docker Container**:
+## e) Configure & Run the Scripts
 
-    ```bash
-    docker run -p 8050:8050 lenislin/tirank_v1:latest /bin/bash
-    ```
+Set your **data folder** and **results folder** so the example scripts can find inputs and save outputs. Only two variables need editing: `dataPath` and `savePath`.
 
-### Method 3: Interactive Web Tool
+### Folder layout (example)
 
-For instructions on running the TiRank-GUI, please see the **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)** in our documentation.
+```
+TiRank/
+├── Example/
+│   ├── SC-Response-SKCM.py
+│   └── ST-Cox-CRC.py
+├── data/
+│   └── ExampleData/
+│       ├── SKCM_SC_Res/                 # for SC-Response-SKCM.py
+│       │   ├── Liu2019_meta.csv
+│       │   └── Liu2019_exp.csv
+│       └── CRC_ST_Prog/                 # for ST-Cox-CRC.py
+│           ├── GSE39582_clinical_os.csv
+│           ├── GSE39582_exp_os.csv
+│           └── SN048_A121573_Rep1/      # ST folder (contents as provided)
+└── results/                              # any writable location you choose
+    ├── SC_Respones_SKCM/
+    └── ST_Survival_CRC/
+```
 
------
+### Edit just these lines
 
-## Quickstart Tutorials
+**A) `Example/SC-Response-SKCM.py`**
 
-### Examples:
+```python
+# point to your data and results
+dataPath = "./data/ExampleData/SKCM_SC_Res"
+savePath = "./results/SC_Respones_SKCM"
+```
 
-1.  **Integrating scRNA-seq Data for Melanoma Response Analysis**
+**B) `Example/ST-Cox-CRC.py`**
 
-      - [Example Script](./docs/Example/SC-Response-SKCM.py)
-      - ➡️ **See the full [scRNA-seq Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)**
+```python
+# point to your data and results
+dataPath = "./data/ExampleData/CRC_ST_Prog"
+savePath = "./results/ST_Survival_CRC"
+```
 
-2.  **Combining Spatial Transcriptomics and Bulk Data for Phenotype Detection**
+> Notes:
+>
+> * Relative paths above work if run from the repo root. Absolute paths are fine.
+> * Filenames must match those shown in the tree.
 
-      - [Example Script](./docs/Example/ST-Cox-CRC.py)
-      - ➡️ **See the full [ST-Cox Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)**
+### Run from the repo root
 
-3.  **Comprehensive Downstream Analysis**
+```bash
+python Example/SC-Response-SKCM.py
+python Example/ST-Cox-CRC.py
+```
 
-      - [Example Workflow](./docs/Example/Downstream/CRC)
+---
 
------
+## f) Usage
 
+### Scripted workflows (recommended)
+
+1. **scRNA-seq → bulk (Melanoma response)**
+
+```bash
+python Example/SC-Response-SKCM.py
+```
+
+* Tutorial: [https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)
+
+2. **Spatial transcriptomics → bulk (Survival, CRC)**
+
+```bash
+python Example/ST-Cox-CRC.py
+```
+
+* Tutorial: [https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)
+
+3. **Downstream analysis examples**
+
+* See `./docs/Example/Downstream/CRC` for ideas and templates.
+
+### Web GUI
+
+* Launch the interactive tool (see GUI tutorial).
+* Typical data placement for GUI:
+
+  ```
+    Web/
+    ├── assets/
+    ├── components/
+    ├── img/
+    ├── layout/
+    ├── data/
+    │   ├── pretrainModel/
+    │   │   └── ctranspath.pth
+    │   ├── ExampleData/
+    │   │   ├── CRC_ST_Prog/
+    │   │   └── SKCM_SC_Res/
+    ├── tiRankWeb/
+    └── app.py
+  ```
+* Pretrained model (optional): `Web/data/pretrainModel/ctranspath.pth`
+
+---
+
+## g) Output Structure
+
+Each run writes to `<savePath>/` with a consistent structure:
+
+```
+<savePath>/
+├── 1_loaddata/
+│   ├── anndata.pkl
+│   ├── bulk_clinical.pkl
+│   └── bulk_exp.pkl
+│
+├── 2_preprocessing/
+│   ├── 'bulk gene pair heatmap.png'
+│   ├── qc_violins.png
+│   ├── scAnndata.pkl
+│   ├── sc_gene_pairs_mat.pkl
+│   ├── similarity_df.pkl
+│   ├── split_data/
+│   ├── train_bulk_gene_pairs_mat.pkl
+│   └── val_bulkExp_gene_pairs_mat.pkl
+│
+└── 3_Analysis/
+    ├── checkpoints/
+    ├── data2train/
+    ├── final_anndata.h5ad
+    ├── model_para.pkl
+    ├── saveDF_bulk.pkl
+    ├── saveDF_sc.pkl
+    ├── 'TiRank Pred Score Distribution.png'
+    ├── 'UMAP of TiRank Label Score.png'
+    ├── 'UMAP of TiRank Pred Score.png'
+    └── spot_predict_score.csv   <-- **FINAL RESULT FILE**
+```
+
+### Final output interpretation
+
+The file **`spot_predict_score.csv`** contains **`Rank_Label`**:
+
+* **Cox (survival)**:
+
+  * `TiRank+` → worse survival
+  * `TiRank-` → better survival
+* **Classification**:
+
+  * `TiRank+` ↔ phenotype `1`
+  * `TiRank-` ↔ phenotype `0`
+* **Regression**:
+
+  * `TiRank+` → higher phenotype score
+  * `TiRank-` → lower phenotype score
+
+Use this for downstream tasks like subpopulation discovery, DEG, and pathway enrichment.
+
+---
+
+## h) Testing
+
+### Quick installation test
+
+```bash
+python - <<'PY'
+import tirank
+print("TiRank version:", getattr(tirank, "__version__", "unknown"))
+PY
+```
+
+### Full test with example data
+
+1. **Download sample data**
+   📥 [https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
+2. **Place data**
+   Put the folders under `./data/ExampleData/` as shown in [e)](#e-configure--run-the-scripts).
+3. **Configure paths**
+   Edit `dataPath` and `savePath` in the scripts.
+4. **Run**
+
+   ```bash
+   python Example/SC-Response-SKCM.py
+   ```
+5. **Verify**
+
+   * Check `<savePath>/3_Analysis/spot_predict_score.csv`
+   * Ensure a valid `Rank_Label` column is present.
+
+---
+
+## Full Documentation
+
+Complete guides, tutorials, API reference, and result interpretation:
+
+### ➡️ **[https://tirank.readthedocs.io](https://tirank.readthedocs.io)**
+
+---
 
 ## Support
 
-For assistance, please visit the [TiRank GitHub Issues page](https://github.com/LenisLin/TiRank/issues).
+Questions or issues? Open an issue on GitHub:
+[https://github.com/LenisLin/TiRank/issues](https://github.com/LenisLin/TiRank/issues)
 
------
+---
 
 ## License
 
-TiRank is distributed under the MIT License.
+TiRank is released under the **MIT License**.
