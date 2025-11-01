@@ -34,7 +34,7 @@ if not os.path.exists(savePath_1):
     os.makedirs(savePath_1, exist_ok=True)
 
 ## 1.2 Load clinical data
-dataPath = "./CRC_ST_Prog/"  # Directory containing your data
+dataPath = "./data/ExampleData/CRC_ST_Prog/"  # Directory containing your data
 path_to_bulk_cli = os.path.join(dataPath, "GSE39582_clinical_os.csv")
 bulkClinical = load_bulk_clinical(path_to_bulk_cli)
 view_dataframe(bulkClinical)  # Optional: view the clinical data DataFrame

@@ -91,7 +91,7 @@ See **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)*
 If you plan to run the example scripts in **f) Usage**, download and place the data now:
 
 * 📥 **Sample data**: [https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
-* Unzip/place the folders under `./data/ExampleData/` exactly as shown in **e) Configuration**.
+* Unzip/place the folders under `data/ExampleData/` exactly as shown in **e) Configuration**.
 
 ---
 
@@ -150,14 +150,6 @@ Edit **two variables** in each script—`dataPath` and `savePath`—then run fro
 
 **Script:** `Example/SC-Response-SKCM.py`
 
-**Edit these lines:**
-
-```python
-# point to your data and results
-dataPath = "./data/ExampleData/SKCM_SC_Res"
-savePath = "./results/SC_Respones_SKCM"
-```
-
 **Run:**
 
 ```bash
@@ -171,14 +163,6 @@ python Example/SC-Response-SKCM.py
 ### 2) Spatial transcriptomics → bulk (CRC survival)
 
 **Script:** `Example/ST-Cox-CRC.py`
-
-**Edit these lines:**
-
-```python
-# point to your data and results
-dataPath = "./data/ExampleData/CRC_ST_Prog"
-savePath = "./results/ST_Survival_CRC"
-```
 
 **Run:**
 

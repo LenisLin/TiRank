@@ -27,10 +27,10 @@ savePath_1 = os.path.join(savePath, "1_loaddata")
 if not os.path.exists(savePath_1):
     os.makedirs(savePath_1, exist_ok=True)
 
-dataPath = "/home/lenislin/mnt_16T/ProjectData/TiRank/data/ExampleData/SKCM_SC_Res"
+dataPath = "./data/ExampleData/SKCM_SC_Res"
 
 # 1.2 load clinical data
-path_to_bulk_cli = os.path.os.path.join(dataPath, "Liu2019_meta.csv")
+path_to_bulk_cli = os.path.join(dataPath, "Liu2019_meta.csv")
 bulkClinical = load_bulk_clinical(path_to_bulk_cli)
 view_dataframe(bulkClinical)
 
