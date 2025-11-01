@@ -149,6 +149,7 @@ Web/
 ### 1) scRNA-seq → bulk (Melanoma response)
 
 **Script:** `Example/SC-Response-SKCM.py`
+**Data:** `data/ExampleData/SKCM_SC_Res`
 
 **Run:**
 
@@ -163,6 +164,7 @@ python Example/SC-Response-SKCM.py
 ### 2) Spatial transcriptomics → bulk (CRC survival)
 
 **Script:** `Example/ST-Cox-CRC.py`
+**Data:** `data/ExampleData/CRC_ST_Prog`
 
 **Run:**
 
