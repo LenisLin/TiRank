@@ -144,7 +144,7 @@ Web/
 
 ## f) Usage (How to Run)
 
-Edit **two variables** in each script—`dataPath` and `savePath`—then run from the repo root.
+(Optional) Edit **two variables** in each script—`dataPath` and `savePath`—then run from the repo root.
 
 ### 1) scRNA-seq → bulk (Melanoma response)
 
