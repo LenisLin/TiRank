@@ -15,8 +15,8 @@
 - 🌟 [b) Features](#b-features)
 - ⚙️ [c) Requirements](#c-requirements)
 - 🛠️ [d) Installation](#d-installation)
-- 🧩 [e) Configure & Run the Scripts](#e-configure--run-the-scripts)
-- 🔢 [f) Usage](#f-usage)
+- 🗂️ [e) Configuration (Files & Layout)](#e-configuration-files--layout)
+- ▶️ [f) Usage (How to Run)](#f-usage-how-to-run)
 - 📊 [g) Output Structure](#g-output-structure)
 - ✅ [h) Testing](#h-testing)
 - 📚 [Full Documentation](#full-documentation)
@@ -35,10 +35,10 @@
 
 ## b) Features
 
-- **🔗 Integration**: Bulk + scRNA-seq or spatial transcriptomics
-- **🔄 Modes**: Cox survival, classification, regression
-- **📈 Visualization**: UMAPs, spatial maps, score distributions
-- **⚙️ Tunable**: Hyperparameters exposed for fine control
+- **🔗 Integration**: Bulk + scRNA-seq or spatial transcriptomics  
+- **🔄 Modes**: Cox survival, classification, regression  
+- **📈 Visualization**: UMAPs, spatial maps, score distributions  
+- **⚙️ Tunable**: Key hyperparameters exposed  
 - **🧰 Interfaces**: Scripts/CLI, Python API, Web GUI
 
 ---
@@ -54,7 +54,7 @@
 - **Disk**: Enough for datasets and intermediate files
 
 ### Data
-- **Spatial or Single-Cell data**: To characterize heterogeneity
+- **Spatial or Single-Cell data**: To characterize heterogeneity  
 - **Bulk data**: Expression matrix + clinical metadata aligned by sample IDs
 
 ---
@@ -86,36 +86,71 @@ docker run -it --gpus all -p 8050:8050 -v $PWD:/workspace lenislin/tirank_v1:lat
 
 See **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)**.
 
+### (Required for examples) Download example data
+
+If you plan to run the example scripts in **f) Usage**, download and place the data now:
+
+* 📥 **Sample data**: [https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
+* Unzip/place the folders under `./data/ExampleData/` exactly as shown in **e) Configuration**.
+
 ---
 
-## e) Configure & Run the Scripts
+## e) Configuration (Files & Layout)
 
-Set your **data folder** and **results folder** so the example scripts can find inputs and save outputs. Only two variables need editing: `dataPath` and `savePath`.
+This section shows **where files live** and **which scripts exist**. (How to run is in [f) Usage](#f-usage-how-to-run).)
 
-### Folder layout (example)
+### CLI
 
 ```
 TiRank/
 ├── Example/
-│   ├── SC-Response-SKCM.py
-│   └── ST-Cox-CRC.py
+│   ├── SC-Response-SKCM.py      # scRNA-seq → bulk (melanoma response)
+│   └── ST-Cox-CRC.py            # Spatial transcriptomics → bulk (CRC survival)
 ├── data/
 │   └── ExampleData/
-│       ├── SKCM_SC_Res/                 # for SC-Response-SKCM.py
+│       ├── SKCM_SC_Res/
 │       │   ├── Liu2019_meta.csv
 │       │   └── Liu2019_exp.csv
-│       └── CRC_ST_Prog/                 # for ST-Cox-CRC.py
+│       └── CRC_ST_Prog/
 │           ├── GSE39582_clinical_os.csv
 │           ├── GSE39582_exp_os.csv
-│           └── SN048_A121573_Rep1/      # ST folder (contents as provided)
-└── results/                              # any writable location you choose
+│           └── SN048_A121573_Rep1/   # ST folder (contents as provided)
+└── results/                          # any writable location you choose
     ├── SC_Respones_SKCM/
     └── ST_Survival_CRC/
 ```
 
-### Edit just these lines
+### Web GUI
 
-**A) `Example/SC-Response-SKCM.py`**
+```
+Web/
+├── assets/
+├── components/
+├── img/
+├── layout/
+├── data/
+│   ├── pretrainModel/
+│   │   └── ctranspath.pth
+│   ├── ExampleData/
+│   │   ├── CRC_ST_Prog/
+│   │   └── SKCM_SC_Res/
+├── tiRankWeb/
+└── app.py
+```
+
+> Tip: Keep filenames exactly as shown. Scripts create needed subfolders under `results/` automatically.
+
+---
+
+## f) Usage (How to Run)
+
+Edit **two variables** in each script—`dataPath` and `savePath`—then run from the repo root.
+
+### 1) scRNA-seq → bulk (Melanoma response)
+
+**Script:** `Example/SC-Response-SKCM.py`
+
+**Edit these lines:**
 
 ```python
 # point to your data and results
@@ -123,7 +158,21 @@ dataPath = "./data/ExampleData/SKCM_SC_Res"
 savePath = "./results/SC_Respones_SKCM"
 ```
 
-**B) `Example/ST-Cox-CRC.py`**
+**Run:**
+
+```bash
+python Example/SC-Response-SKCM.py
+```
+
+**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)
+
+---
+
+### 2) Spatial transcriptomics → bulk (CRC survival)
+
+**Script:** `Example/ST-Cox-CRC.py`
+
+**Edit these lines:**
 
 ```python
 # point to your data and results
@@ -131,65 +180,21 @@ dataPath = "./data/ExampleData/CRC_ST_Prog"
 savePath = "./results/ST_Survival_CRC"
 ```
 
-> Notes:
->
-> * Relative paths above work if run from the repo root. Absolute paths are fine.
-> * Filenames must match those shown in the tree.
-
-### Run from the repo root
+**Run:**
 
 ```bash
-python Example/SC-Response-SKCM.py
 python Example/ST-Cox-CRC.py
 ```
+
+**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)
 
 ---
 
-## f) Usage
+### Notes
 
-### Scripted workflows (recommended)
-
-1. **scRNA-seq → bulk (Melanoma response)**
-
-```bash
-python Example/SC-Response-SKCM.py
-```
-
-* Tutorial: [https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)
-
-2. **Spatial transcriptomics → bulk (Survival, CRC)**
-
-```bash
-python Example/ST-Cox-CRC.py
-```
-
-* Tutorial: [https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)
-
-3. **Downstream analysis examples**
-
-* See `./docs/Example/Downstream/CRC` for ideas and templates.
-
-### Web GUI
-
-* Launch the interactive tool (see GUI tutorial).
-* Typical data placement for GUI:
-
-  ```
-    Web/
-    ├── assets/
-    ├── components/
-    ├── img/
-    ├── layout/
-    ├── data/
-    │   ├── pretrainModel/
-    │   │   └── ctranspath.pth
-    │   ├── ExampleData/
-    │   │   ├── CRC_ST_Prog/
-    │   │   └── SKCM_SC_Res/
-    ├── tiRankWeb/
-    └── app.py
-  ```
-* Pretrained model (optional): `Web/data/pretrainModel/ctranspath.pth`
+* Use `os.path.join(...)` for portability (avoid the typo `os.path.os.path.join`).
+* Relative paths above work if you run from the repo root. Absolute paths are fine.
+* Ensure `results/` is writable.
 
 ---
 
@@ -231,18 +236,9 @@ Each run writes to `<savePath>/` with a consistent structure:
 
 The file **`spot_predict_score.csv`** contains **`Rank_Label`**:
 
-* **Cox (survival)**:
-
-  * `TiRank+` → worse survival
-  * `TiRank-` → better survival
-* **Classification**:
-
-  * `TiRank+` ↔ phenotype `1`
-  * `TiRank-` ↔ phenotype `0`
-* **Regression**:
-
-  * `TiRank+` → higher phenotype score
-  * `TiRank-` → lower phenotype score
+* **Cox (survival)**: `TiRank+` → worse survival, `TiRank-` → better survival
+* **Classification**: `TiRank+` ↔ phenotype `1`, `TiRank-` ↔ phenotype `0`
+* **Regression**: `TiRank+` → higher phenotype score, `TiRank-` → lower phenotype score
 
 Use this for downstream tasks like subpopulation discovery, DEG, and pathway enrichment.
 
@@ -259,20 +255,21 @@ print("TiRank version:", getattr(tirank, "__version__", "unknown"))
 PY
 ```
 
-### Full test with example data
+### Full test with example data (single script)
 
-1. **Download sample data**
-   📥 [https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
-2. **Place data**
-   Put the folders under `./data/ExampleData/` as shown in [e)](#e-configure--run-the-scripts).
-3. **Configure paths**
-   Edit `dataPath` and `savePath` in the scripts.
-4. **Run**
+1. **Confirm you already downloaded and placed** the data in **d) Installation**.
+2. **Configure** `Example/SC-Response-SKCM.py`:
+
+   ```python
+   dataPath = "./data/ExampleData/SKCM_SC_Res"
+   savePath = "./results/SC_Respones_SKCM"
+   ```
+3. **Run**
 
    ```bash
    python Example/SC-Response-SKCM.py
    ```
-5. **Verify**
+4. **Verify**
 
    * Check `<savePath>/3_Analysis/spot_predict_score.csv`
    * Ensure a valid `Rank_Label` column is present.
