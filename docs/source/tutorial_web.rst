@@ -14,7 +14,27 @@ Introduction of TiRank Web
 
 The development of the TiRank-web application leverages the Python Dash framework (`https://dash.plotly.com <https://dash.plotly.com/>`_) a product of Plotly designed for the creation and deployment of data-driven applications with custom interfaces. TiRank-web is structured into six key sections: Homepage, Upload Data, Pre-processing, Analysis, Tutorial, and FAQs, aimed at enhancing user engagement and efficiency. 
 
-In the Upload Data section, users can upload their datasets, which TiRank then organizes into designated folders for temporary storage and figure generation. The Pre-processing phase involves comprehensive data cleaning, normalization, and partitioning into training and validation subsets to enable hyperparameter optimization. This phase ends in the construction of a binary gene pair matrix, setting the stage for the subsequent Analysis phase. Here, a neural network model is employed to compute the 'TiRank Score', integrating a rejection mechanism for filtering out entities with low confidence. This phase also encompasses tools for differential gene expression analysis and pathway enrichment, thereby supporting biomarker discovery and further scientific investigation. The Tutorial and FAQs segments provide extensive guidance and address common questions, thus ensuring effective exploration of TiRank-web's capabilities.
+In the Upload Data section, users can upload their datasets, which TiRank then organizes into designated folders for temporary storage and figure generation. 
+The Pre-processing phase involves comprehensive data cleaning, normalization, and partitioning into training and validation subsets to enable hyperparameter optimization. 
+This phase ends in the construction of a binary gene pair matrix, setting the stage for the subsequent Analysis phase. 
+Here, a neural network model is employed to compute the 'TiRank Score', integrating a rejection mechanism for filtering out entities with low confidence. 
+This phase also encompasses tools for differential gene expression analysis and pathway enrichment, thereby supporting biomarker discovery and further scientific investigation. 
+The Tutorial and FAQs segments provide extensive guidance and address common questions, thus ensuring effective exploration of TiRank-web's capabilities.
+
+
+----
+
+Video Tutorial of TiRank Web
+--------------------------
+
+.. figure:: _static/TiRank_Youtub.png
+   :alt: Watch the video
+   :width: 400px
+   :align: center
+   :target: https://www.youtube.com/watch?v=YMflTzJF6s8
+
+   `▶ Watch the video on YouTube <https://www.youtube.com/watch?v=YMflTzJF6s8>`_
+
 
 ----
 

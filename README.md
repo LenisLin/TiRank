@@ -86,6 +86,16 @@ docker run -it --gpus all -p 8050:8050 -v $PWD:/workspace lenislin/tirank_v1:lat
 
 See **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)**.
 
+**TiRank GUI Video**
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=YMflTzJF6s8">
+    <img src="docs/source/_static/TiRank_Youtub.png" alt="Watch the video" width="400">
+  </a>
+</p>
+
+
+
 ### (Required for examples) Download example data
 
 If you plan to run the example scripts in **f) Usage**, download and place the data now:
