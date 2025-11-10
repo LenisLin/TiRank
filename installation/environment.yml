@@ -384,3 +384,5 @@ dependencies:
       - werkzeug==3.0.6
       - wrapt==2.0.0
       - click==8.1.8
+      - snakemake==7.32.4
+      - pulp==2.7.0

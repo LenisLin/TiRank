@@ -9,6 +9,7 @@ from .SCSTpreprocess import *
 from .TrainPre import *
 from .Visualization import *
 from .main import *
+from .tirank_cli import *
 
 # Define an __all__ list that specifies all the modules you want to be imported when 'from TiRank import *' is used
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     'Model', 
     'SCSTpreprocess', 
     'TrainPre', 
-    'Visualization'
-    'main'
+    'Visualization',
+    'main',
+    'tirank_cli'
 ]

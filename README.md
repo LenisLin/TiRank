@@ -27,7 +27,7 @@
 
 ## a) Overview
 
-**TiRank** integrates bulk RNA‐seq with single-cell or spatial transcriptomics to identify phenotype-associated regions or cell clusters. It supports Cox survival analysis, classification, and regression, and ships with Python scripts and a web GUI.
+**TiRank** integrates bulk RNA‐seq with single-cell or spatial transcriptomics to identify phenotype-associated regions or cell clusters. It supports Cox survival analysis, classification, and regression, and ships with standalone Python scripts, a standardized Snakemake workflow, and a user-friendly web GUI.
 
 ![TiRank Workflow](./docs/source/_static/Fig1.png)
 
@@ -35,11 +35,11 @@
 
 ## b) Features
 
-- **🔗 Integration**: Bulk + scRNA-seq or spatial transcriptomics  
-- **🔄 Modes**: Cox survival, classification, regression  
-- **📈 Visualization**: UMAPs, spatial maps, score distributions  
-- **⚙️ Tunable**: Key hyperparameters exposed  
-- **🧰 Interfaces**: Scripts/CLI, Python API, Web GUI
+- **🔗 Integration**: Bulk + scRNA-seq or spatial transcriptomics
+- **🔄 Modes**: Cox survival, classification, regression
+- **📈 Visualization**: UMAPs, spatial maps, score distributions
+- **⚙️ Tunable**: Key hyperparameters exposed
+- **🧰 Interfaces**: Scripts/CLI, Snakemake Workflow, Python API, Web GUI
 
 ---
 
@@ -54,7 +54,7 @@
 - **Disk**: Enough for datasets and intermediate files
 
 ### Data
-- **Spatial or Single-Cell data**: To characterize heterogeneity  
+- **Spatial or Single-Cell data**: To characterize heterogeneity
 - **Bulk data**: Expression matrix + clinical metadata aligned by sample IDs
 
 ---
@@ -62,11 +62,6 @@
 ## d) Installation
 
 TiRank supports multiple setups.
-
-<!-- ### Method 1: pip (Quick Start)
-```bash
-pip install tirank
-``` -->
 
 ### Method 1: Conda (Recommended)
 ```bash
@@ -94,8 +89,6 @@ See **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)*
   </a>
 </p>
 
-
-
 ### (Required for examples) Download example data
 
 If you plan to run the example scripts in **f) Usage**, download and place the data now:
@@ -103,31 +96,35 @@ If you plan to run the example scripts in **f) Usage**, download and place the d
 * 📥 **Sample data**: [https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
 * Unzip/place the folders under `data/ExampleData/` exactly as shown in **e) Configuration**.
 
----
+-----
 
 ## e) Configuration (Files & Layout)
 
-This section shows **where files live** and **which scripts exist**. (How to run is in [f) Usage](#f-usage-how-to-run).)
+This section shows **where files live** and **which scripts exist**. (How to run is in [f) Usage](https://www.google.com/search?q=%23f-usage-how-to-run).)
 
-### CLI
+### CLI & Workflow
 
 ```
 TiRank/
+├── tirank/                       # CLI entry point for workflows
+│   └── tirank_cli.py
+├── workflow/                     # Snakemake workflow files
+│   ├── Snakefile
+│   └── config.yaml
 ├── Example/
-│   ├── SC-Response-SKCM.py      # scRNA-seq → bulk (melanoma response)
-│   └── ST-Cox-CRC.py            # Spatial transcriptomics → bulk (CRC survival)
+│   ├── SC-Response-SKCM.py       # scRNA-seq → bulk (melanoma response)
+│   └── ST-Cox-CRC.py             # Spatial transcriptomics → bulk (CRC survival)
 ├── data/
 │   └── ExampleData/
 │       ├── SKCM_SC_Res/
+│       │   ├── GSE120575.h5ad    # scRNA-seq datatirank_cli.py
 │       │   ├── Liu2019_meta.csv
 │       │   └── Liu2019_exp.csv
 │       └── CRC_ST_Prog/
 │           ├── GSE39582_clinical_os.csv
 │           ├── GSE39582_exp_os.csv
-│           └── SN048_A121573_Rep1/   # ST folder (contents as provided)
-└── results/                          # any writable location you choose
-    ├── SC_Respones_SKCM/
-    └── ST_Survival_CRC/
+│           └── SN048_A121573_Rep1/   # ST folder
+└── Example/                      # default output location
 ```
 
 ### Web GUI
@@ -142,21 +139,25 @@ Web/
 │   ├── pretrainModel/
 │   │   └── ctranspath.pth
 │   ├── ExampleData/
-│   │   ├── CRC_ST_Prog/
-│   │   └── SKCM_SC_Res/
+│       ├── CRC_ST_Prog/
+│       └── SKCM_SC_Res/
 ├── tiRankWeb/
 └── app.py
 ```
 
 > Tip: Keep filenames exactly as shown. Scripts create needed subfolders under `results/` automatically.
 
----
+-----
 
 ## f) Usage (How to Run)
 
+You can run TiRank using standalone Python scripts or the standardized Snakemake workflow.
+
+### Option A: Python Scripts
+
 (Optional) Edit **two variables** in each script—`dataPath` and `savePath`—then run from the repo root.
 
-### 1) scRNA-seq → bulk (Melanoma response)
+#### 1\) scRNA-seq → bulk (Melanoma response)
 
 **Script:** `Example/SC-Response-SKCM.py`
 **Data:** `data/ExampleData/SKCM_SC_Res`
@@ -167,11 +168,9 @@ Web/
 python Example/SC-Response-SKCM.py
 ```
 
-**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)
+**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial\_sc\_classification.html](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)
 
----
-
-### 2) Spatial transcriptomics → bulk (CRC survival)
+#### 2\) Spatial transcriptomics → bulk (CRC survival)
 
 **Script:** `Example/ST-Cox-CRC.py`
 **Data:** `data/ExampleData/CRC_ST_Prog`
@@ -182,17 +181,30 @@ python Example/SC-Response-SKCM.py
 python Example/ST-Cox-CRC.py
 ```
 
-**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)
+**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial\_st\_survival.html](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)
 
----
+-----
+
+### Option B: Standardized Workflow (Snakemake)
+
+For reproducible, automated runs on new datasets without modifying code.
+
+1.  **Configure**: Edit `workflow/config.yaml` to point to your data paths and set parameters.
+2.  **Run**:
+    ```bash
+    cd workflow
+    snakemake --use-conda -c1
+    ```
+    *(Replace `-c1` with the number of CPU cores available, e.g., `-c16`)*
+
+-----
 
 ### Notes
 
-* Use `os.path.join(...)` for portability (avoid the typo `os.path.os.path.join`).
-* Relative paths above work if you run from the repo root. Absolute paths are fine.
-* Ensure `results/` is writable.
+  * Use `os.path.join(...)` for portability in custom scripts.
+  * Ensure `Example/` is writable.
 
----
+-----
 
 ## g) Output Structure
 
@@ -232,13 +244,13 @@ Each run writes to `<savePath>/` with a consistent structure:
 
 The file **`spot_predict_score.csv`** contains **`Rank_Label`**:
 
-* **Cox (survival)**: `TiRank+` → worse survival, `TiRank-` → better survival
-* **Classification**: `TiRank+` ↔ phenotype `1`, `TiRank-` ↔ phenotype `0`
-* **Regression**: `TiRank+` → higher phenotype score, `TiRank-` → lower phenotype score
+  * **Cox (survival)**: `TiRank+` → worse survival, `TiRank-` → better survival
+  * **Classification**: `TiRank+` ↔ phenotype `1`, `TiRank-` ↔ phenotype `0`
+  * **Regression**: `TiRank+` → higher phenotype score, `TiRank-` → lower phenotype score
 
 Use this for downstream tasks like subpopulation discovery, DEG, and pathway enrichment.
 
----
+-----
 
 ## h) Testing
 
@@ -251,26 +263,18 @@ print("TiRank version:", getattr(tirank, "__version__", "unknown"))
 PY
 ```
 
-### Full test with example data (single script)
+### Workflow test (Snakemake)
 
-1. **Confirm you already downloaded and placed** the data in **d) Installation**.
-2. **Configure** `Example/SC-Response-SKCM.py`:
+Verify pipeline integrity and configuration without running full analysis:
 
-   ```python
-   dataPath = "./data/ExampleData/SKCM_SC_Res"
-   savePath = "./results/SC_Respones_SKCM"
-   ```
-3. **Run**
+```bash
+cd workflow
+snakemake -n
+```
 
-   ```bash
-   python Example/SC-Response-SKCM.py
-   ```
-4. **Verify**
+*(If successfully configured, this will print the list of jobs to be executed)*
 
-   * Check `<savePath>/3_Analysis/spot_predict_score.csv`
-   * Ensure a valid `Rank_Label` column is present.
-
----
+-----
 
 ## Full Documentation
 
@@ -278,14 +282,14 @@ Complete guides, tutorials, API reference, and result interpretation:
 
 ### ➡️ **[https://tirank.readthedocs.io](https://tirank.readthedocs.io)**
 
----
+-----
 
 ## Support
 
 Questions or issues? Open an issue on GitHub:
 [https://github.com/LenisLin/TiRank/issues](https://github.com/LenisLin/TiRank/issues)
 
----
+-----
 
 ## License
 

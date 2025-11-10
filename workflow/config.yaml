@@ -1,0 +1,22 @@
+# config.yaml
+
+# --- 1. Input Data Paths ---
+# The user only needs to change these three lines to run their own data.
+scst_data: "../data/ExampleData/SKCM_SC_Res/GSE120575.h5ad"  # path to SC/ST data
+bulk_expression: "../data/ExampleData/SKCM_SC_Res/Liu2019_exp.csv"    # path to bulk expression
+bulk_clinical: "../data/ExampleData/SKCM_SC_Res/Liu2019_meta.csv"  # path to bulk clinical labels
+
+# --- 2. Analysis Parameters ---
+output_dir: "../Example/SKCM_SC_Res_experiment"
+datatype: "SC"               # Options: "SC" or "ST"
+mode: "Classification"       # Options: "Classification", "Cox", "Regression"
+
+# --- 3. Advanced Settings ---
+preprocessing:
+  lognormalize: True
+  top_var_genes: 2000
+  top_gene_pairs: 500
+
+model:
+  device: "cuda"              # Use "cpu" if GPU is not available
+  tolerance: 0.05
