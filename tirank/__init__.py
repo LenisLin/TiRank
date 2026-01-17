@@ -1,3 +1,5 @@
+__version__ = "1.0.0"
+
 # Import each module within the TiRank package
 from .Dataloader import *
 from .GPextractor import *

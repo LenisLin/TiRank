@@ -1,16 +1,16 @@
 import argparse
 import os
 # ADJUST THIS IMPORT to match your package structure.
-# If this script is in the same folder as main.py, use: from main import GenePairSelection, TiRank
+# If this script is in the same folder as main.py, use: from main import GenePairSelection, tirank
 
-from TiRank.Dataloader import *
-from TiRank.GPextractor import *
-from TiRank.Imageprocessing import *
-from TiRank.LoadData import *
-from TiRank.Model import *
-from TiRank.SCSTpreprocess import *
-from TiRank.TrainPre import *
-from TiRank.Visualization import *
+from tirank.Dataloader import *
+from tirank.GPextractor import *
+from tirank.Imageprocessing import *
+from tirank.LoadData import *
+from tirank.Model import *
+from tirank.SCSTpreprocess import *
+from tirank.TrainPre import *
+from tirank.Visualization import *
 
 def GenePairSelection(scst_exp_path, bulk_exp_path, bulk_cli_path, datatype, mode, savePath, lognormalize, model_path = None, validation_proportion=0.15, top_var_genes=2000, top_gene_pairs=1000, p_value_threshold=0.05, max_cutoff=0.8, min_cutoff=-0.8):
   
@@ -100,7 +100,7 @@ def GenePairSelection(scst_exp_path, bulk_exp_path, bulk_cli_path, datatype, mod
   GPextractor.run_extraction()
   GPextractor.save_data()
   
-def TiRank(savePath, datatype, mode, nhead=2, nhid1=96, nhid2=8, n_output=32, nlayers=3, dropout=0.5, encoder_type="MLP" ,device="cuda", tolerance=0.05):
+def tirank(savePath, datatype, mode, nhead=2, nhid1=96, nhid2=8, n_output=32, nlayers=3, dropout=0.5, encoder_type="MLP" ,device="cuda", tolerance=0.05):
   savePath_1 = os.path.join(savePath, "1_loaddata")
   savePath_2 = os.path.join(savePath, "2_preprocessing")
   savePath_3 = os.path.join(savePath, "3_Analysis")
@@ -147,7 +147,7 @@ def TiRank(savePath, datatype, mode, nhead=2, nhid1=96, nhid2=8, n_output=32, nl
   plot_score_distribution(savePath)  # Display the prob score distribution
 
 def main():
-    parser = argparse.ArgumentParser(description="TiRank CLI Wrapper for Snakemake")
+    parser = argparse.ArgumentParser(description="tirank CLI Wrapper for Snakemake")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # --- Subcommand: prepare (calls GenePairSelection) ---
@@ -163,8 +163,8 @@ def main():
     parser_prep.add_argument("--top_var_genes", type=int, default=2000)
     parser_prep.add_argument("--top_gene_pairs", type=int, default=1000)
 
-    # --- Subcommand: run (calls TiRank) ---
-    parser_run = subparsers.add_parser("run", help="Run TiRank model training and inference")
+    # --- Subcommand: run (calls tirank) ---
+    parser_run = subparsers.add_parser("run", help="Run tirank model training and inference")
     parser_run.add_argument("--save_path", required=True, help="Output directory (must match prepare step)")
     parser_run.add_argument("--datatype", required=True, choices=["SC", "ST"])
     parser_run.add_argument("--mode", required=True, choices=["Classification", "Cox", "Regression"])
@@ -189,15 +189,15 @@ def main():
         print("Preparation complete.")
 
     elif args.command == "run":
-        print("Starting TiRank Model...")
-        TiRank(
+        print("Starting tirank Model...")
+        tirank(
             savePath=args.save_path,
             datatype=args.datatype,
             mode=args.mode,
             device=args.device,
             tolerance=args.tolerance
         )
-        print("TiRank complete.")
+        print("tirank complete.")
 
 if __name__ == "__main__":
     main()

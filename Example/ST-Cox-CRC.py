@@ -1,5 +1,5 @@
-# TiRank Analysis Pipeline Example
-# This script demonstrates how to use the TiRank library to integrate spatial transcriptomics (ST)
+# tirank Analysis Pipeline Example
+# This script demonstrates how to use the tirank library to integrate spatial transcriptomics (ST)
 # and bulk transcriptomics data to identify phenotype-associated spots and determine significant clusters.
 
 # Import necessary libraries and modules
@@ -10,15 +10,15 @@ import torch
 import pickle
 import os
 
-from TiRank.Model import setup_seed, initial_model_para
-from TiRank.LoadData import *
-from TiRank.SCSTpreprocess import *
-from TiRank.Imageprocessing import GetPathoClass
-from TiRank.GPextractor import GenePairExtractor
-from TiRank.Dataloader import generate_val, PackData
-from TiRank.TrainPre import tune_hyperparameters, Predict, Pcluster, IdenHub
-from TiRank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
-from TiRank.Visualization import plot_score_umap, plot_label_distribution_among_conditions,plot_STmap
+from tirank.Model import setup_seed, initial_model_para
+from tirank.LoadData import *
+from tirank.SCSTpreprocess import *
+from tirank.Imageprocessing import GetPathoClass
+from tirank.GPextractor import GenePairExtractor
+from tirank.Dataloader import generate_val, PackData
+from tirank.TrainPre import tune_hyperparameters, Predict, Pcluster, IdenHub
+from tirank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
+from tirank.Visualization import plot_score_umap, plot_label_distribution_among_conditions,plot_STmap
 
 # Set random seed for reproducibility
 setup_seed(619)
@@ -152,7 +152,7 @@ GPextractor.save_data()
 # 3. Analysis
 # --------------------------------------------
 
-## 3.1 TiRank Analysis
+## 3.1 tirank Analysis
 # Define paths for saving analysis results
 savePath_3 = os.path.join(savePath, "3_Analysis")
 if not os.path.exists(savePath_3):
