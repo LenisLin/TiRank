@@ -4,28 +4,29 @@ Installation
 
 TiRank supports multiple installation methods. It is recommended to create a dedicated conda environment to ensure compatibility.
 
-Method 1: Environment Setup and Installation
-------------------------------------------
-This is the recommended method. You can set up the full TiRank environment directly using the provided environment file.
+Method 1: Bioconda Installation (Recommended)
+---------------------------------------------
+This is the easiest method. You can install the stable version of TiRank directly from the Bioconda channel.
 
-1. Clone the TiRank repository:
+1. Clone the TiRank repository (for access to example scripts):
 
    .. code-block:: bash
 
       git clone https://github.com/LenisLin/TiRank.git
       cd TiRank
 
-2. Create the conda environment from the file:
+2. Create a clean python environment:
 
    .. code-block:: bash
 
-      conda env create -f installation/environment.yml
+      conda create -n tirank python=3.9
+      conda activate tirank
 
-3. Activate the new environment:
+3. Install TiRank:
 
    .. code-block:: bash
 
-      conda activate Tirank
+      conda install -c bioconda tirank
 
 .. note::
 
@@ -58,7 +59,7 @@ Method 2: Docker
 
       conda activate TiRank
       
-      python -c "import TiRank; print(TiRank.__version__)"
+      python -c "import tirank; print(tirank.__version__)"
 
 5. **Persistent Data Storage** (Optional)
 

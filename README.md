@@ -5,6 +5,7 @@
 | | |
 | :--- | :--- |
 | **Full Documentation** | 📖 [**https://tirank.readthedocs.io**](https://tirank.readthedocs.io) |
+| **Bioconda** | [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/tirank/README.html) |
 | **PyPI** | [![PyPI](https://img.shields.io/pypi/v/tirank?style=flat-square)](https://pypi.org/project/TiRank/) |
 | **License** | [![License](https://img.shields.io/github/license/LenisLin/TiRank?style=flat-square)](https://github.com/LenisLin/TiRank/blob/main/LICENSE) |
 | **Build Status** | [![Documentation Status](https://readthedocs.org/projects/tirank/badge/?version=latest&style=flat-square)](https://tirank.readthedocs.io/en/latest/) |
@@ -63,18 +64,28 @@
 
 TiRank supports multiple setups.
 
-### Method 1: Conda (Recommended)
+### Method 1: Bioconda (Recommended)
+
+TiRank is available on Bioconda. We recommend creating a fresh Python 3.9 environment first.
+
+1. **Create and activate the environment:**
 ```bash
-cd TiRank
-conda env create -f ./installation/environment.yml
-conda activate Tirank
-````
+conda create -n tirank python=3.9
+conda activate tirank
+```
+
+2. **Install TiRank:**
+```bash
+conda install -c bioconda tirank
+```
+
 
 ### Method 2: Docker
 
 ```bash
 docker pull lenislin/tirank_v1:latest
 docker run -it --gpus all -p 8050:8050 -v $PWD:/workspace lenislin/tirank_v1:latest /bin/bash
+
 ```
 
 ### Method 3: Interactive Web Tool (GUI)
@@ -84,19 +95,19 @@ See **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)*
 **TiRank GUI Video**
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=YMflTzJF6s8">
-    <img src="docs/source/_static/TiRank_Youtub.png" alt="Watch the video" width="400">
-  </a>
+<a href="https://www.youtube.com/watch?v=YMflTzJF6s8">
+<img src="docs/source/_static/TiRank_Youtub.png" alt="Watch the video" width="400">
+</a>
 </p>
 
 ### (Required for examples) Download example data
 
-If you plan to run the example scripts in **f) Usage**, download and place the data now:
+If you plan to run the example scripts in **f) Usage**, please download the testing datasets:
 
-* 📥 **Sample data**: [https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE](https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE)
-* Unzip/place the folders under `data/ExampleData/` exactly as shown in **e) Configuration**.
+* 📥 **Sample data (Zenodo)**: [18275554](https://zenodo.org/records/18275554)
+* Unzip and place the folders under `data/ExampleData/` exactly as shown in **e) Configuration**.
 
------
+---
 
 ## e) Configuration (Files & Layout)
 
@@ -125,6 +136,7 @@ TiRank/
 │           ├── GSE39582_exp_os.csv
 │           └── SN048_A121573_Rep1/   # ST folder
 └── Example/                      # default output location
+
 ```
 
 ### Web GUI
@@ -143,11 +155,12 @@ Web/
 │       └── SKCM_SC_Res/
 ├── tiRankWeb/
 └── app.py
+
 ```
 
 > Tip: Keep filenames exactly as shown. Scripts create needed subfolders under `results/` automatically.
 
------
+---
 
 ## f) Usage (How to Run)
 
@@ -157,7 +170,7 @@ You can run TiRank using standalone Python scripts or the standardized Snakemake
 
 (Optional) Edit **two variables** in each script—`dataPath` and `savePath`—then run from the repo root.
 
-#### 1\) scRNA-seq → bulk (Melanoma response)
+#### 1) scRNA-seq → bulk (Melanoma response)
 
 **Script:** `Example/SC-Response-SKCM.py`
 **Data:** `data/ExampleData/SKCM_SC_Res`
@@ -166,11 +179,12 @@ You can run TiRank using standalone Python scripts or the standardized Snakemake
 
 ```bash
 python Example/SC-Response-SKCM.py
+
 ```
 
-**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial\_sc\_classification.html](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)
+**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html](https://tirank.readthedocs.io/en/latest/tutorial_sc_classification.html)
 
-#### 2\) Spatial transcriptomics → bulk (CRC survival)
+#### 2) Spatial transcriptomics → bulk (CRC survival)
 
 **Script:** `Example/ST-Cox-CRC.py`
 **Data:** `data/ExampleData/CRC_ST_Prog`
@@ -179,32 +193,36 @@ python Example/SC-Response-SKCM.py
 
 ```bash
 python Example/ST-Cox-CRC.py
+
 ```
 
-**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial\_st\_survival.html](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)
+**Tutorial:** [https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html](https://tirank.readthedocs.io/en/latest/tutorial_st_survival.html)
 
------
+---
 
 ### Option B: Standardized Workflow (Snakemake)
 
 For reproducible, automated runs on new datasets without modifying code.
 
-1.  **Configure**: Edit `workflow/config.yaml` to point to your data paths and set parameters.
-2.  **Run**:
-    ```bash
-    cd workflow
-    snakemake --use-conda -c1
-    ```
-    *(Replace `-c1` with the number of CPU cores available, e.g., `-c16`)*
+1. **Configure**: Edit `workflow/config.yaml` to point to your data paths and set parameters.
+2. **Run**:
+```bash
+cd workflow
+snakemake --use-conda -c1
 
------
+```
+
+
+*(Replace `-c1` with the number of CPU cores available, e.g., `-c16`)*
+
+---
 
 ### Notes
 
-  * Use `os.path.join(...)` for portability in custom scripts.
-  * Ensure `Example/` is writable.
+* Use `os.path.join(...)` for portability in custom scripts.
+* Ensure `Example/` is writable.
 
------
+---
 
 ## g) Output Structure
 
@@ -238,19 +256,20 @@ Each run writes to `<savePath>/` with a consistent structure:
     ├── 'UMAP of TiRank Label Score.png'
     ├── 'UMAP of TiRank Pred Score.png'
     └── spot_predict_score.csv   <-- **FINAL RESULT FILE**
+
 ```
 
 ### Final output interpretation
 
 The file **`spot_predict_score.csv`** contains **`Rank_Label`**:
 
-  * **Cox (survival)**: `TiRank+` → worse survival, `TiRank-` → better survival
-  * **Classification**: `TiRank+` ↔ phenotype `1`, `TiRank-` ↔ phenotype `0`
-  * **Regression**: `TiRank+` → higher phenotype score, `TiRank-` → lower phenotype score
+* **Cox (survival)**: `TiRank+` → worse survival, `TiRank-` → better survival
+* **Classification**: `TiRank+` ↔ phenotype `1`, `TiRank-` ↔ phenotype `0`
+* **Regression**: `TiRank+` → higher phenotype score, `TiRank-` → lower phenotype score
 
 Use this for downstream tasks like subpopulation discovery, DEG, and pathway enrichment.
 
------
+---
 
 ## h) Testing
 
@@ -261,6 +280,7 @@ python - <<'PY'
 import tirank
 print("TiRank version:", getattr(tirank, "__version__", "unknown"))
 PY
+
 ```
 
 ### Workflow test (Snakemake)
@@ -270,11 +290,12 @@ Verify pipeline integrity and configuration without running full analysis:
 ```bash
 cd workflow
 snakemake -n
+
 ```
 
 *(If successfully configured, this will print the list of jobs to be executed)*
 
------
+---
 
 ## Full Documentation
 
@@ -282,14 +303,14 @@ Complete guides, tutorials, API reference, and result interpretation:
 
 ### ➡️ **[https://tirank.readthedocs.io](https://tirank.readthedocs.io)**
 
------
+---
 
 ## Support
 
 Questions or issues? Open an issue on GitHub:
 [https://github.com/LenisLin/TiRank/issues](https://github.com/LenisLin/TiRank/issues)
 
------
+---
 
 ## License
 
