@@ -207,16 +207,19 @@ python Example/ST-Cox-CRC.py
 
 ### Option B: Standardized Workflow (Snakemake)
 
-For reproducible, automated runs on new datasets without modifying code.
+For reproducible, automated runs on new datasets.
 
-1. **Configure**: Edit `workflow/config.yaml` to point to your data paths and set parameters.
-2. **Run**:
+1. **Install Snakemake** (We recommend version 7.32.4 for maximum compatibility):
 ```bash
-cd workflow
-snakemake --use-conda -c1
-
+conda install -c bioconda snakemake=7.32.4
 ```
 
+2. **Run the workflow:**
+```bash
+cd workflow
+# The --use-conda flag enables automatic environment creation via Bioconda
+snakemake --use-conda -c1
+```
 
 *(Replace `-c1` with the number of CPU cores available, e.g., `-c16`)*
 
