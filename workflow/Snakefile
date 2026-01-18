@@ -1,9 +1,7 @@
-configfile: "config.yaml"
-
-# Note: If you use this alternative, you might need to delete the 3_Analysis folder before re-running Snakemake, so it knows it needs to re-create it.
+# [Standard Structure] Config is now in the config/ folder
+configfile: "config/config.yaml"
 
 # --- Target Rule ---
-# Snakemake works backwards from here. It wants this specific PNG file.
 rule all:
     input:
         directory(f"{config['output_dir']}/3_Analysis")
@@ -15,18 +13,20 @@ rule prepare_data:
         bulk = config["bulk_expression"],
         cli = config["bulk_clinical"]
     output:
-        # We track the directory to know when this step is done.
         pkl_dir = directory(f"{config['output_dir']}/2_preprocessing")
     params:
         datatype = config["datatype"],
         mode = config["mode"],
         outdir = config["output_dir"],
-        # Safer way to get boolean flags from config
         norm_flag = "--lognormalize" if config["preprocessing"].get("lognormalize") else ""
-    # conda:
-    #     "../installation/environment.yml"
+    # [Reviewer Request] Bioconda Integration:
+    # This automatically builds an isolated environment with TiRank installed.
+    conda:
+        "envs/tirank.yaml"
+    # [Best Practice] Log files for debugging
+    log:
+        f"{config['output_dir']}/logs/prepare_data.log"
     shell:
-        # NOTE: Ensure tirank_cli.py is in the PROJECT ROOT (one level up)
         """
         python ../tirank/tirank_cli.py prepare \
             --scst_exp {input.scst} \
@@ -35,16 +35,14 @@ rule prepare_data:
             --datatype {params.datatype} \
             --mode {params.mode} \
             --save_path {params.outdir} \
-            {params.norm_flag}
+            {params.norm_flag} > {log} 2>&1
         """
 
 # --- Rule 2: Analysis ---
 rule run_tirank:
     input:
-        # This links this rule to the previous one by requiring its output.
         prep_dir = f"{config['output_dir']}/2_preprocessing"
     output:
-        # We can also track the whole directory for other outputs.
         res_dir = directory(f"{config['output_dir']}/3_Analysis")
     params:
         datatype = config["datatype"],
@@ -52,8 +50,10 @@ rule run_tirank:
         outdir = config["output_dir"],
         device = config["model"]["device"],
         tol = config["model"]["tolerance"]
-    # conda:
-    #     "../installation/environment.yml"
+    conda:
+        "envs/tirank.yaml"
+    log:
+        f"{config['output_dir']}/logs/run_tirank.log"
     shell:
         """
         python ../tirank/tirank_cli.py run \
@@ -61,5 +61,5 @@ rule run_tirank:
             --datatype {params.datatype} \
             --mode {params.mode} \
             --device {params.device} \
-            --tolerance {params.tol}
+            --tolerance {params.tol} > {log} 2>&1
         """
