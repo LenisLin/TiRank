@@ -73,13 +73,13 @@ git clone [https://github.com/LenisLin/TiRank.git](https://github.com/LenisLin/T
 cd TiRank
 ```
 
-1. **Create and activate the environment:**
+2. **Create and activate the environment:**
 ```bash
 conda create -n tirank python=3.9
 conda activate tirank
 ```
 
-1.  **Install TiRank:**
+3.  **Install TiRank:**
 ```bash
 conda install -c bioconda tirank
 ```
