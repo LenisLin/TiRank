@@ -95,8 +95,7 @@ This method is for running the TiRank web application locally.
 
    Download the required datasets and pretrained models into the newly created ``data`` directory:
 
-   - `Pretrained Models <https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view>`_
-   - `Example Data <https://drive.google.com/drive/folders/1CsvNsDOm3GY8slit9Hl29DdpwnOc29bE>`_
+   - `Example Data and Pretrained Models <https://zenodo.org/records/18275554>`_
 
 2. **Set Up Directory Structure**
 
