@@ -110,8 +110,18 @@ See **[GUI Tutorial](https://tirank.readthedocs.io/en/latest/tutorial_web.html)*
 If you plan to run the example scripts in **f) Usage**, please download the testing datasets:
 
 * 📥 **Sample data (Zenodo)**: [18275554](https://zenodo.org/records/18275554)
-* Unzip and place the folders under `data/ExampleData/` exactly as shown in **e) Configuration**.
-
+* 🧠 **Pretrained Model**: Required for Spatial Transcriptomics analysis. Download `ctranspath.pth` from the Zenodo link above (or [Google Drive](https://drive.google.com/file/d/1DoDx_70_TLj98gTf6YTXnu4tFhsFocDX/view)).
+* **Setup**:
+  1. Unzip the sample data folders under `data/ExampleData/`.
+  2. Create a folder `data/pretrainModel/` and place `ctranspath.pth` inside it.
+  
+  **Final structure should look like:**
+  ```text
+  data/
+  ├── ExampleData/
+  │   └── CRC_ST_Prog/
+  └── pretrainModel/
+      └── ctranspath.pth
 ---
 
 ## e) Configuration (Files & Layout)

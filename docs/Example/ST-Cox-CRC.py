@@ -98,7 +98,8 @@ compute_similarity(
 )
 
 # Path to the pre-trained image processing model (ensure this file is in the package)
-pretrain_path = "./ctranspath.pth"
+# Note: Ensure you have downloaded ctranspath.pth into data/pretrainModel/
+pretrain_path = "./data/pretrainModel/ctranspath.pth"
 
 # Number of pathological clusters to identify
 n_patho_cluster = 7  # Optional variable (adjust based on your data)

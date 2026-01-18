@@ -8,10 +8,24 @@ This tutorial demonstrates a complete workflow for integrating Spatial Transcrip
 
 The example uses Colorectal Cancer (CRC) data to identify spatial spots associated with patient prognosis.
 
-**Full Python Script**
+Prerequisites: Download the Model
+---------------------------------
+Before running this script, you must download the pre-trained feature extraction model.
 
-This file is available in your repository at ``ST-Cox-CRC.py``. The full code is included here for reference.
+1. **Download:** Get ``ctranspath.pth`` from `Zenodo <https://zenodo.org/records/18275554>`_.
+2. **Setup:** Create a folder named ``data/pretrainModel/`` in your project root and place the file there.
 
-.. literalinclude:: ../Example/ST-Cox-CRC.py
+.. code-block:: text
+
+    TiRank/
+    └── data/
+        └── pretrainModel/
+            └── ctranspath.pth
+
+Full Python Script
+------------------
+This file is available in your repository at ``Example/ST-Cox-CRC.py``.
+
+.. literalinclude:: ../../../Example/ST-Cox-CRC.py
    :language: python
    :linenos:
