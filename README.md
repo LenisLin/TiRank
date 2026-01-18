@@ -66,7 +66,12 @@ TiRank supports multiple setups.
 
 ### Method 1: Bioconda (Recommended)
 
-TiRank is available on Bioconda. We recommend creating a fresh Python 3.9 environment first.
+1. **Clone the repository:**
+(Required to access example scripts and the Snakemake workflow)
+```bash
+git clone [https://github.com/LenisLin/TiRank.git](https://github.com/LenisLin/TiRank.git)
+cd TiRank
+```
 
 1. **Create and activate the environment:**
 ```bash
@@ -74,7 +79,7 @@ conda create -n tirank python=3.9
 conda activate tirank
 ```
 
-2. **Install TiRank:**
+1.  **Install TiRank:**
 ```bash
 conda install -c bioconda tirank
 ```
