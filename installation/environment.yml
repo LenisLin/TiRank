@@ -21,7 +21,6 @@ dependencies:
   # Deep Learning
   - pytorch>=2.1
   - torchvision
-  - pytorch-cuda>=12.1
   - timm>=0.5.4
   
   # Bioinformatics
