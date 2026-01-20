@@ -26,7 +26,7 @@ This is the easiest method. You can install the stable version of TiRank directl
 
    .. code-block:: bash
 
-      conda install -c bioconda tirank
+      conda install -c bioconda -c conda-forge tirank leidenalg python-igraph
 
 .. note::
 

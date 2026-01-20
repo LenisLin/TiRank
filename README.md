@@ -81,7 +81,7 @@ conda activate tirank
 
 3.  **Install TiRank:**
 ```bash
-conda install -c bioconda tirank
+conda install -c bioconda -c conda-forge tirank leidenalg python-igraph
 ```
 
 
