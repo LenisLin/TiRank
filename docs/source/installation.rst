@@ -2,129 +2,129 @@
 Installation
 ============
 
-TiRank supports multiple installation methods. It is recommended to create a dedicated conda environment to ensure compatibility.
+TiRank supports multiple installation methods. We recommend using a dedicated conda environment.
 
 Method 1: Bioconda Installation (Recommended)
 ---------------------------------------------
-This is the easiest method. You can install the stable version of TiRank directly from the Bioconda channel.
 
-1. Clone the TiRank repository (for access to example scripts):
+This is the simplest method. It installs the released TiRank package from Bioconda.
 
-   .. code-block:: bash
+1. Clone the TiRank repository (recommended to access example scripts and the Snakemake workflow):
 
-      git clone https://github.com/LenisLin/TiRank.git
-      cd TiRank
+.. code-block:: bash
 
-2. Create a clean python environment:
+   git clone https://github.com/LenisLin/TiRank.git
+   cd TiRank
 
-   .. code-block:: bash
+2. Create a clean Python environment:
 
-      conda create -n tirank python=3.9
-      conda activate tirank
+.. code-block:: bash
 
-3. Install TiRank:
+   conda create -n tirank python=3.9
+   conda activate tirank
 
-   .. code-block:: bash
+3. Install TiRank (and required graph dependencies):
 
-      conda install -c bioconda -c conda-forge tirank leidenalg python-igraph
+.. code-block:: bash
+
+   conda install -c bioconda -c conda-forge tirank leidenalg python-igraph
 
 .. note::
-
-   The TiRank framework has been tested on ``Ubuntu 22.04`` with ``Python 3.9``, using ``NVIDIA Driver 12.4`` and ``RTX 3090 GPUs``.
+   TiRank has been tested on Ubuntu 22.04 with Python 3.9.
 
 Method 2: Docker
 ----------------
 
-1. **Install Docker**
+1. Install Docker.
 
-   Ensure Docker is installed on your system.
+2. Pull the TiRank Docker image:
 
-2. **Pull the TiRank Docker Image**
+.. code-block:: bash
 
-   .. code-block:: bash
+   docker pull lenislin/tirank_v1:latest
 
-      docker pull lenislin/tirank_v1:latest
+3. Run the Docker container:
 
-3. **Run the Docker Container**
+.. code-block:: bash
 
-   .. code-block:: bash
+   docker run -p 8050:8050 lenislin/tirank_v1:latest /bin/bash
 
-      docker run -p 8050:8050 lenislin/tirank_v1:latest /bin/bash
+4. Verify TiRank inside the container:
 
-4. **Verify Container Execution**
+.. code-block:: bash
 
-   After running the above command, you should be inside the container's terminal. Verify the setup by activating the environment and checking the TiRank version:
+   conda activate TiRank
+   python -c "import tirank; print(tirank.__version__)"
 
-   .. code-block:: bash
+5. (Optional) Mount a local directory for persistent storage:
 
-      conda activate TiRank
-      
-      python -c "import tirank; print(tirank.__version__)"
+.. code-block:: bash
 
-5. **Persistent Data Storage** (Optional)
-
-   To mount a local directory to retain data inside the container:
-
-   .. code-block:: bash
-
-      docker run -it -v /path/to/local/data:/container/data lenislin/tirank_v1:latest /bin/bash
-
-6. **Stop and Remove the Docker Container**
-
-   Use the following commands to manage containers:
-
-   .. code-block:: bash
-
-      docker stop <container_id>
-      docker rm <container_id>
-
+   docker run -it -v /path/to/local/data:/container/data lenislin/tirank_v1:latest /bin/bash
 
 Method 3: Interactive Web Tool (GUI)
 ------------------------------------
 
-This method is for running the TiRank web application locally.
+This method runs the TiRank web application locally.
 
-1. **Set Up the Web Server**
+1. Set up the web server directory:
 
-   Navigate to the ``Web`` directory and create a ``data`` folder:
+.. code-block:: bash
 
-   .. code-block:: bash
+   cd TiRank/Web
+   mkdir -p data
 
-      cd TiRank/Web
-      mkdir data
+2. Download and extract the archived example datasets and pretrained model files from Zenodo:
 
-   Download the required datasets and pretrained models into the newly created ``data`` directory:
+   - Zenodo record (ExampleData.zip, ctranspath.pth, GUI tutorial video):
+     https://doi.org/10.5281/zenodo.18275554
 
-   - `Example Data and Pretrained Models <https://zenodo.org/records/18275554>`_
+3. Ensure the following directory structure under ``Web/``:
 
-2. **Set Up Directory Structure**
+.. code-block:: text
 
-   Ensure the following directory structure is maintained within the ``Web`` folder:
+   Web/
+   ├── assets/
+   ├── components/
+   ├── img/
+   ├── layout/
+   ├── data/
+   │   ├── pretrainModel/
+   │   │   └── ctranspath.pth
+   │   ├── ExampleData/
+   │   │   ├── CRC_ST_Prog/
+   │   │   └── SKCM_SC_Res/
+   ├── tiRankWeb/
+   └── app.py
 
-   .. code-block:: text
+4. Run the web application:
 
-      Web/
-      ├── assets/
-      ├── components/
-      ├── img/
-      ├── layout/
-      ├── data/
-      │   ├── pretrainModel/
-      │   │   └── ctranspath.pth
-      │   ├── ExampleData/
-      │   │   ├── CRC_ST_Prog/
-      │   │   └── SKCM_SC_Res/
-      ├── tiRankWeb/
-      └── app.py
+.. code-block:: bash
 
-3. **Run the Web Application**
+   python app.py
 
-   Execute the following command from within the ``Web`` directory:
+5. Open a browser at: ``http://localhost:8050``
 
-   .. code-block:: bash
+Method 4: Snakemake Workflow (Reproducible Execution)
+-----------------------------------------------------
 
-      python app.py
+For end-to-end workflow execution with automated environment provisioning, we recommend running the
+provided Snakemake workflow with integrated conda environment management.
 
-4. **Access the Web Interface**
+1. Install a fixed Snakemake version:
 
-   Open a web browser and navigate to ``http://localhost:8050`` to access the TiRank GUI.
+.. code-block:: bash
+
+   conda create -n tirank_smk -c conda-forge -c bioconda python=3.9 snakemake=7.32.4
+   conda activate tirank_smk
+
+2. From the TiRank repository root, run:
+
+.. code-block:: bash
+
+   snakemake --snakefile workflow/Snakefile \
+             --configfile workflow/config/config.yaml \
+             --use-conda --cores 8
+
+For details (including recommended folder layout and configuration), see:
+:doc:`snakemake_workflow`
