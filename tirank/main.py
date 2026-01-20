@@ -6,7 +6,6 @@ from .Model import *
 from .SCSTpreprocess import *
 from .TrainPre import *
 from .Visualization import *
-import pkg_resources
 
 def GenePairSelection(scst_exp_path, bulk_exp_path, bulk_cli_path, datatype, mode, savePath, lognormalize, model_path = None, validation_proportion=0.15, top_var_genes=2000, top_gene_pairs=1000, p_value_threshold=0.05, max_cutoff=0.8, min_cutoff=-0.8):
   
