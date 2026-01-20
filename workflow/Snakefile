@@ -4,7 +4,7 @@ configfile: "config/config.yaml"
 # --- Target Rule ---
 rule all:
     input:
-        directory(f"{config['output_dir']}/3_Analysis")
+        f"{config['output_dir']}/3_Analysis"
 
 # --- Rule 1: Preprocessing ---
 rule prepare_data:

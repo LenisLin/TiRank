@@ -228,7 +228,7 @@ conda install -c bioconda snakemake=7.32.4
 ```bash
 cd workflow
 # The --use-conda flag enables automatic environment creation via Bioconda
-snakemake --use-conda -c1
+snakemake --use-conda --conda-frontend conda -c1
 ```
 
 *(Replace `-c1` with the number of CPU cores available, e.g., `-c16`)*

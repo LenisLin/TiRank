@@ -4,4 +4,6 @@ channels:
   - defaults
 dependencies:
   - python=3.9
-  - tirank=1.0.0
+  - tirank>=0.1.3
+  - leidenalg
+  - python-igraph
