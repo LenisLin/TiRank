@@ -48,7 +48,6 @@ view_dataframe(st_exp_df)  ## if user try to view the data
 
 ## 2. Preprocessing
 # 2.1 selecting a path to save the results
-savePath = "./SC_Respones_SKCM"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 savePath_2 = os.path.join(savePath, "2_preprocessing")
 
@@ -108,7 +107,6 @@ GPextractor.save_data()
 
 ## 3. Analysis
 # 3.1 tirank
-savePath = "./SC_Respones_SKCM"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 savePath_2 = os.path.join(savePath, "2_preprocessing")
 savePath_3 = os.path.join(savePath, "3_Analysis")
