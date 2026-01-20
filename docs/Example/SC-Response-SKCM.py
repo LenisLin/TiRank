@@ -6,17 +6,14 @@ import torch
 import pickle
 import os
 
-import sys
-sys.path.append("/home/lenislin/Experiment/projects/TiRankv2/github/TiRank")
-
-from TiRank.Model import setup_seed, initial_model_para
-from TiRank.LoadData import *
-from TiRank.SCSTpreprocess import *
-from TiRank.GPextractor import GenePairExtractor
-from TiRank.Dataloader import generate_val, PackData
-from TiRank.TrainPre import tune_hyperparameters, Predict
-from TiRank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
-from TiRank.Visualization import plot_score_umap, plot_label_distribution_among_conditions
+from tirank.Model import setup_seed, initial_model_para
+from tirank.LoadData import *
+from tirank.SCSTpreprocess import *
+from tirank.GPextractor import GenePairExtractor
+from tirank.Dataloader import generate_val, PackData
+from tirank.TrainPre import tune_hyperparameters, Predict
+from tirank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
+from tirank.Visualization import plot_score_umap, plot_label_distribution_among_conditions
 
 setup_seed(619)
 

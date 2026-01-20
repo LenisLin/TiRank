@@ -10,15 +10,15 @@ import torch
 import pickle
 import os
 
-from TiRank.Model import setup_seed, initial_model_para
-from TiRank.LoadData import *
-from TiRank.SCSTpreprocess import *
-from TiRank.Imageprocessing import GetPathoClass
-from TiRank.GPextractor import GenePairExtractor
-from TiRank.Dataloader import generate_val, PackData
-from TiRank.TrainPre import tune_hyperparameters, Predict, Pcluster, IdenHub
-from TiRank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
-from TiRank.Visualization import plot_score_umap, plot_label_distribution_among_conditions,plot_STmap
+from tirank.Model import setup_seed, initial_model_para
+from tirank.LoadData import *
+from tirank.SCSTpreprocess import *
+from tirank.Imageprocessing import GetPathoClass
+from tirank.GPextractor import GenePairExtractor
+from tirank.Dataloader import generate_val, PackData
+from tirank.TrainPre import tune_hyperparameters, Predict, Pcluster, IdenHub
+from tirank.Visualization import plot_score_distribution, DEG_analysis, DEG_volcano, Pathway_Enrichment
+from tirank.Visualization import plot_score_umap, plot_label_distribution_among_conditions,plot_STmap
 
 # Set random seed for reproducibility
 setup_seed(619)
