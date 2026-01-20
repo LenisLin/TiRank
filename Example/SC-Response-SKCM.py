@@ -19,7 +19,7 @@ setup_seed(619)
 
 ## 1. Load data
 # 1.1 selecting a path to save the results
-savePath = "./SC_Respones_SKCM"
+savePath = "./Example/SKCM_SC_Res_experiment"
 savePath_1 = os.path.join(savePath, "1_loaddata")
 if not os.path.exists(savePath_1):
     os.makedirs(savePath_1, exist_ok=True)
