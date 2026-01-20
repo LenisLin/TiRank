@@ -136,11 +136,16 @@ TiRank/
 │   └── tirank_cli.py
 ├── workflow/                     # Snakemake workflow files
 │   ├── Snakefile
-│   └── config.yaml
-├── Example/
+│   ├── config/           
+│   │   └── config.yaml
+│   └── envs/
+│       └── tirank.yaml
+├── Example/                      # default output location
 │   ├── SC-Response-SKCM.py       # scRNA-seq → bulk (melanoma response)
 │   └── ST-Cox-CRC.py             # Spatial transcriptomics → bulk (CRC survival)
 ├── data/
+│   ├── pretrainModel/
+│   │   └── ctranspath.pth
 │   └── ExampleData/
 │       ├── SKCM_SC_Res/
 │       │   ├── GSE120575.h5ad    # scRNA-seq datatirank_cli.py
@@ -150,8 +155,6 @@ TiRank/
 │           ├── GSE39582_clinical_os.csv
 │           ├── GSE39582_exp_os.csv
 │           └── SN048_A121573_Rep1/   # ST folder
-└── Example/                      # default output location
-
 ```
 
 ### Web GUI
