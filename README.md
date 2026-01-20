@@ -69,7 +69,7 @@ TiRank supports multiple setups.
 1. **Clone the repository:**
 (Required to access example scripts and the Snakemake workflow)
 ```bash
-git clone [https://github.com/LenisLin/TiRank.git](https://github.com/LenisLin/TiRank.git)
+git clone https://github.com/LenisLin/TiRank.git
 cd TiRank
 ```
 
@@ -126,7 +126,7 @@ If you plan to run the example scripts in **f) Usage**, please download the test
 
 ## e) Configuration (Files & Layout)
 
-This section shows **where files live** and **which scripts exist**. (How to run is in [f) Usage](https://www.google.com/search?q=%23f-usage-how-to-run).)
+This section shows **where files live** and **which scripts exist**. (How to run is in [f) Usage](#f-usage)
 
 ### CLI & Workflow
 
