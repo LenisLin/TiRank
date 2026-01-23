@@ -224,7 +224,7 @@ For reproducible, automated runs on new datasets.
 
 1. **Install Snakemake** (We recommend version 7.32.4 for maximum compatibility):
 ```bash
-conda install -c bioconda snakemake=7.32.4
+conda install -c bioconda snakemake=7.32.4 pulp=2.7.0
 ```
 
 2. **Run the workflow:**

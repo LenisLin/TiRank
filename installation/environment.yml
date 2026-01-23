@@ -43,6 +43,7 @@ dependencies:
   
   # Workflow
   - snakemake=7.32.4  # Kept strict per reviewer request to use specific version for reproducible workflows
+  - pulp<2.8
 
   - pip:
     - -e .
