@@ -19,10 +19,10 @@ from components.modes import none_state, train_advanced_card, \
     predict_advanced_card, qc_violins_layout, leiden_cluster_layout, patho_label_layout, tirank_pred_score_distribution, \
     train_epoch_loss_plot, umap_of_tirank_label_score, umap_of_tirank_pred_score, \
     spatial_of_tirank_label_score, spatial_of_tirank_pred_score
-from TiRank.LoadData import *
-from TiRank.SCSTpreprocess import *
+from tirank.LoadData import *
+from tirank.SCSTpreprocess import *
 from tirankWeb.SCSTpreprocess import clustering_, compute_similarity_, FilteringAnndata_
-from TiRank.Imageprocessing import GetPathoClass
+from tirank.Imageprocessing import GetPathoClass
 from tirankWeb.dataloader import generate_val_, pack_data_
 from tirankWeb.GPextractor import GenePairExtractor
 from tirankWeb.Model import initial_model_para_
@@ -190,7 +190,7 @@ main_layout = html.Div(id='main_page', children=[
     html.Div(children=[
         html.Footer(children=[
             html.Div(children=[
-                html.P('© 2024 TiRank. All rights reserved.', style={'margin': '0'}),
+                html.P('© 2024 tirank. All rights reserved.', style={'margin': '0'}),
                 html.P('Contact us: luoling2001@163.com', style={'margin': '0'})
             ], style={'text-align': 'center', 'color': '#555', 'padding': '10px'})
         ], style={'background-color': '#333333', 'position': 'fixed', 'bottom': '0', 'width': '100%',
@@ -1151,5 +1151,5 @@ def enrichment_run(n_clicks):
 
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=8050)
+    app.run(host='0.0.0.0', port=8050)
 
