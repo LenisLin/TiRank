@@ -6,7 +6,6 @@ import pandas as pd
 import os
 import pickle
 import scanpy as sc
-from TiRank.LoadData import transfer_exp_profile
 import numpy as np
 
 
