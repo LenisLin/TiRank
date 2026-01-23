@@ -34,7 +34,7 @@ setup(
 
         'torch>=2.0.0',
         'torchvision>=0.15.0',
-        'timm>=0.5.4',
+        'timm==0.5.4',
 
         'scanpy>=1.9.0',
         'leidenalg',
